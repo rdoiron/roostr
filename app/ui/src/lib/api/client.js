@@ -6,16 +6,37 @@
 const API_BASE = '/api/v1';
 
 /**
+ * Custom API error with code.
+ */
+export class ApiError extends Error {
+	constructor(message, code, status) {
+		super(message);
+		this.name = 'ApiError';
+		this.code = code;
+		this.status = status;
+	}
+}
+
+/**
+ * Parse error response.
+ */
+async function parseError(res) {
+	try {
+		const data = await res.json();
+		return new ApiError(data.error || `HTTP ${res.status}`, data.code, res.status);
+	} catch {
+		return new ApiError(`HTTP ${res.status}`, 'UNKNOWN', res.status);
+	}
+}
+
+/**
  * Make a GET request to the API.
  * @param {string} path - API path (without base)
  * @returns {Promise<any>} Response data
  */
 export async function get(path) {
 	const res = await fetch(`${API_BASE}${path}`);
-	if (!res.ok) {
-		const error = await res.json().catch(() => ({ error: 'Unknown error' }));
-		throw new Error(error.error || `HTTP ${res.status}`);
-	}
+	if (!res.ok) throw await parseError(res);
 	return res.json();
 }
 
@@ -31,10 +52,7 @@ export async function post(path, data) {
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify(data)
 	});
-	if (!res.ok) {
-		const error = await res.json().catch(() => ({ error: 'Unknown error' }));
-		throw new Error(error.error || `HTTP ${res.status}`);
-	}
+	if (!res.ok) throw await parseError(res);
 	return res.json();
 }
 
@@ -50,10 +68,23 @@ export async function put(path, data) {
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify(data)
 	});
-	if (!res.ok) {
-		const error = await res.json().catch(() => ({ error: 'Unknown error' }));
-		throw new Error(error.error || `HTTP ${res.status}`);
-	}
+	if (!res.ok) throw await parseError(res);
+	return res.json();
+}
+
+/**
+ * Make a PATCH request to the API.
+ * @param {string} path - API path (without base)
+ * @param {any} data - Request body
+ * @returns {Promise<any>} Response data
+ */
+export async function patch(path, data) {
+	const res = await fetch(`${API_BASE}${path}`, {
+		method: 'PATCH',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(data)
+	});
+	if (!res.ok) throw await parseError(res);
 	return res.json();
 }
 
@@ -64,9 +95,38 @@ export async function put(path, data) {
  */
 export async function del(path) {
 	const res = await fetch(`${API_BASE}${path}`, { method: 'DELETE' });
-	if (!res.ok) {
-		const error = await res.json().catch(() => ({ error: 'Unknown error' }));
-		throw new Error(error.error || `HTTP ${res.status}`);
-	}
+	if (!res.ok) throw await parseError(res);
 	return res.json();
 }
+
+// API function groups for better organization
+export const setup = {
+	getStatus: () => get('/setup/status'),
+	complete: (data) => post('/setup/complete', data)
+};
+
+export const access = {
+	getMode: () => get('/access/mode'),
+	setMode: (mode) => put('/access/mode', { mode }),
+	getWhitelist: () => get('/access/whitelist'),
+	addToWhitelist: (data) => post('/access/whitelist', data),
+	removeFromWhitelist: (pubkey) => del(`/access/whitelist/${pubkey}`),
+	updateWhitelist: (pubkey, data) => patch(`/access/whitelist/${pubkey}`, data)
+};
+
+export const stats = {
+	getSummary: () => get('/stats/summary')
+};
+
+export const events = {
+	list: (params = {}) => {
+		const query = new URLSearchParams(params).toString();
+		return get(`/events${query ? '?' + query : ''}`);
+	},
+	get: (id) => get(`/events/${id}`),
+	delete: (id) => del(`/events/${id}`)
+};
+
+export const relay = {
+	getStatus: () => get('/relay/status')
+};

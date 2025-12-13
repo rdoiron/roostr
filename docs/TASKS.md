@@ -30,11 +30,11 @@ This document tracks all development tasks. Check off items as they're completed
 - [x] API-005: Create response helper utilities
 
 ### Core UI Infrastructure
-- [ ] UI-001: Create app layout component (nav, header)
-- [ ] UI-002: Set up routing structure
-- [ ] UI-003: Create API client module (/lib/api/)
-- [ ] UI-004: Add loading and error state components
-- [ ] UI-005: Set up Tailwind theme (colors, fonts)
+- [x] UI-001: Create app layout component (nav, header)
+- [x] UI-002: Set up routing structure
+- [x] UI-003: Create API client module (/lib/api/)
+- [x] UI-004: Add loading and error state components
+- [x] UI-005: Set up Tailwind theme (colors, fonts)
 
 ---
 
