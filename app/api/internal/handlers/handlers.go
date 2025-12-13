@@ -31,6 +31,7 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 
 	// Setup endpoints
 	mux.HandleFunc("GET /api/v1/setup/status", h.GetSetupStatus)
+	mux.HandleFunc("GET /api/v1/setup/validate-identity", h.ValidateIdentity)
 	mux.HandleFunc("POST /api/v1/setup/complete", h.CompleteSetup)
 
 	// Dashboard/Stats endpoints

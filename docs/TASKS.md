@@ -41,11 +41,11 @@ This document tracks all development tasks. Check off items as they're completed
 ## Phase 2: Setup Wizard
 
 ### Setup API
-- [ ] SETUP-API-001: GET /api/v1/setup/status endpoint
-- [ ] SETUP-API-002: POST /api/v1/setup/complete endpoint
-- [ ] SETUP-API-003: Implement setup state persistence
-- [ ] SETUP-API-004: Add operator pubkey validation
-- [ ] SETUP-API-005: Add NIP-05 resolution for setup
+- [x] SETUP-API-001: GET /api/v1/setup/status endpoint
+- [x] SETUP-API-002: POST /api/v1/setup/complete endpoint
+- [x] SETUP-API-003: Implement setup state persistence
+- [x] SETUP-API-004: Add operator pubkey validation
+- [x] SETUP-API-005: Add NIP-05 resolution for setup
 
 ### Setup UI
 - [ ] SETUP-UI-001: Create setup wizard container/flow
