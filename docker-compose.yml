@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  # Go API server
+  api:
+    build:
+      context: ./app/api
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - RELAY_DB_PATH=/data/nostr.db
+      - APP_DB_PATH=/data/roostr.db
+      - CONFIG_PATH=/data/config.toml
+      - RELAY_BINARY=/usr/bin/nostr-rs-relay
+    volumes:
+      - ./data:/data
+      - ./app/api:/app
+    depends_on:
+      - relay
+
+  # Svelte UI (dev server)
+  ui:
+    build:
+      context: ./app/ui
+      dockerfile: Dockerfile.dev
+    ports:
+      - "5173:5173"
+    environment:
+      - PUBLIC_API_URL=http://localhost:8080/api/v1
+    volumes:
+      - ./app/ui:/app
+      - /app/node_modules
+    depends_on:
+      - api
+
+  # nostr-rs-relay
+  relay:
+    image: scsibug/nostr-rs-relay:latest
+    ports:
+      - "7000:7000"
+    volumes:
+      - ./data:/data
+      - ./data/config.toml:/usr/src/app/config.toml:ro
+    command: ["--config", "/usr/src/app/config.toml"]
+
+volumes:
+  data:

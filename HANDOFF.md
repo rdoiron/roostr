@@ -70,7 +70,7 @@ Please read these files to understand the project:
 
 After reading, let's start with the first task: SETUP-001 (Initialize git repo with .gitignore).
 
-Actually, that's already done. Let's move to SETUP-002: Create the initial Go module and basic HTTP server structure.
+Actually, that's already done. Let's move to SETUP-002: Create Makefile with all targets.
 
 Before we start coding, confirm you understand:
 - The tech stack (Go backend, Svelte frontend)

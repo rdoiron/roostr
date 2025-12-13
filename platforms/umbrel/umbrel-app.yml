@@ -1,0 +1,23 @@
+# Umbrel App Manifest
+# https://github.com/getumbrel/umbrel-apps
+
+manifestVersion: 1
+id: roostr
+name: Roostr
+tagline: Your Private Roost on Nostr
+category: social
+version: "0.1.0"
+port: 8080
+description: >-
+  Roostr is a web-based admin interface for managing your private Nostr relay.
+  It wraps nostr-rs-relay and provides dashboard, whitelist management,
+  event browsing, sync from public relays, and paid relay access via Lightning.
+developer: Roostr
+website: https://github.com/roostr/roostr
+repo: https://github.com/roostr/roostr
+support: https://github.com/roostr/roostr/issues
+dependencies: []
+releaseNotes: >-
+  Initial release.
+submitter: Roostr
+submission: https://github.com/getumbrel/umbrel-apps/pull/XXX

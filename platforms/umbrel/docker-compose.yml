@@ -1,0 +1,22 @@
+# Umbrel Docker Compose
+# This file is used when deploying to Umbrel
+
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: ../..
+      dockerfile: platforms/umbrel/Dockerfile
+    restart: on-failure
+    ports:
+      - "${APP_ROOSTR_PORT}:8080"
+      - "${APP_ROOSTR_RELAY_PORT}:7000"
+    environment:
+      PORT: 8080
+      RELAY_DB_PATH: /data/nostr.db
+      APP_DB_PATH: /data/roostr.db
+      CONFIG_PATH: /data/config.toml
+      RELAY_BINARY: /usr/bin/nostr-rs-relay
+    volumes:
+      - ${APP_DATA_DIR}/data:/data

@@ -7,27 +7,27 @@ This document tracks all development tasks. Check off items as they're completed
 ## Phase 1: Foundation
 
 ### Project Setup
-- [ ] SETUP-001: Initialize git repo with .gitignore
-- [ ] SETUP-002: Create Makefile with all targets
-- [ ] SETUP-003: Initialize Go module (app/api/go.mod)
-- [ ] SETUP-004: Initialize Svelte project (app/ui)
-- [ ] SETUP-005: Configure Tailwind CSS
-- [ ] SETUP-006: Create basic Docker Compose for development
-- [ ] SETUP-007: Set up folder structure with placeholder files
+- [x] SETUP-001: Initialize git repo with .gitignore
+- [x] SETUP-002: Create Makefile with all targets
+- [x] SETUP-003: Initialize Go module (app/api/go.mod)
+- [x] SETUP-004: Initialize Svelte project (app/ui)
+- [x] SETUP-005: Configure Tailwind CSS
+- [x] SETUP-006: Create basic Docker Compose for development
+- [x] SETUP-007: Set up folder structure with placeholder files
 
 ### Database Layer
-- [ ] DB-001: Create app database schema (app/api/internal/db/schema.sql)
-- [ ] DB-002: Implement database connection manager
-- [ ] DB-003: Implement relay DB reader (read-only queries)
-- [ ] DB-004: Implement app DB manager (read-write)
-- [ ] DB-005: Add database migration support
+- [x] DB-001: Create app database schema (app/api/internal/db/schema.sql)
+- [x] DB-002: Implement database connection manager
+- [x] DB-003: Implement relay DB reader (read-only queries)
+- [x] DB-004: Implement app DB manager (read-write)
+- [x] DB-005: Add database migration support
 
 ### Core API Infrastructure
-- [ ] API-001: Create HTTP server with router
-- [ ] API-002: Add middleware (logging, CORS, error handling)
-- [ ] API-003: Implement health check endpoint (GET /health)
-- [ ] API-004: Add structured error responses
-- [ ] API-005: Create response helper utilities
+- [x] API-001: Create HTTP server with router
+- [x] API-002: Add middleware (logging, CORS, error handling)
+- [x] API-003: Implement health check endpoint (GET /health)
+- [x] API-004: Add structured error responses
+- [x] API-005: Create response helper utilities
 
 ### Core UI Infrastructure
 - [ ] UI-001: Create app layout component (nav, header)
