@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 )
 
@@ -49,14 +50,14 @@ func (d *DB) Migrate(ctx context.Context) error {
 }
 
 func (d *DB) applyMigration(ctx context.Context, m Migration) error {
-	return d.Transaction(ctx, func(tx *DB) error {
+	return d.Transaction(ctx, func(tx *sql.Tx) error {
 		// Execute migration SQL
-		if _, err := d.AppDB.ExecContext(ctx, m.Up); err != nil {
+		if _, err := tx.ExecContext(ctx, m.Up); err != nil {
 			return err
 		}
 
 		// Record the migration
-		if _, err := d.AppDB.ExecContext(ctx, "INSERT INTO schema_version (version) VALUES (?)", m.Version); err != nil {
+		if _, err := tx.ExecContext(ctx, "INSERT INTO schema_version (version) VALUES (?)", m.Version); err != nil {
 			return err
 		}
 
