@@ -18,7 +18,6 @@
 
 <button
 	class="{baseClasses} {variantClasses[variant]}"
-	{disabled}
 	disabled={disabled || loading}
 	{onclick}
 >

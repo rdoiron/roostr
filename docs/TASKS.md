@@ -48,14 +48,14 @@ This document tracks all development tasks. Check off items as they're completed
 - [x] SETUP-API-005: Add NIP-05 resolution for setup
 
 ### Setup UI
-- [ ] SETUP-UI-001: Create setup wizard container/flow
-- [ ] SETUP-UI-002: Step 1 - Welcome screen
-- [ ] SETUP-UI-003: Step 2 - Identity (npub input)
-- [ ] SETUP-UI-004: Step 3 - Relay name/description
-- [ ] SETUP-UI-005: Step 4 - Access mode selection
-- [ ] SETUP-UI-006: Step 5 - Add others (optional)
-- [ ] SETUP-UI-007: Step 6 - Complete screen with URLs
-- [ ] SETUP-UI-008: Add setup redirect middleware
+- [x] SETUP-UI-001: Create setup wizard container/flow
+- [x] SETUP-UI-002: Step 1 - Welcome screen
+- [x] SETUP-UI-003: Step 2 - Identity (npub input)
+- [x] SETUP-UI-004: Step 3 - Relay name/description
+- [x] SETUP-UI-005: Step 4 - Access mode selection
+- [x] SETUP-UI-006: Step 5 - Add others (optional)
+- [x] SETUP-UI-007: Step 6 - Complete screen with URLs
+- [x] SETUP-UI-008: Add setup redirect middleware
 
 ---
 
@@ -348,8 +348,8 @@ This document tracks all development tasks. Check off items as they're completed
 
 | Phase | Tasks | Completed | Progress |
 |-------|-------|-----------|----------|
-| 1. Foundation | 17 | 0 | 0% |
-| 2. Setup Wizard | 13 | 0 | 0% |
+| 1. Foundation | 17 | 17 | 100% |
+| 2. Setup Wizard | 13 | 13 | 100% |
 | 3. Dashboard | 14 | 0 | 0% |
 | 4. Access Control | 18 | 0 | 0% |
 | 5. Event Browser | 13 | 0 | 0% |
@@ -363,12 +363,12 @@ This document tracks all development tasks. Check off items as they're completed
 | 13. Statistics | 8 | 0 | 0% |
 | 14. Packaging | 14 | 0 | 0% |
 | 15. Polish | 14 | 0 | 0% |
-| **TOTAL** | **202** | **0** | **0%** |
+| **TOTAL** | **202** | **30** | **15%** |
 
 ---
 
 ## Current Focus
 
-**Next Task:** SETUP-001: Initialize git repo with .gitignore
+**Next Task:** DASH-API-001: GET /api/v1/stats/summary endpoint
 
 See SPECIFICATION.md for full details on any feature.

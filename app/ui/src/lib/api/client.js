@@ -102,7 +102,8 @@ export async function del(path) {
 // API function groups for better organization
 export const setup = {
 	getStatus: () => get('/setup/status'),
-	complete: (data) => post('/setup/complete', data)
+	complete: (data) => post('/setup/complete', data),
+	validateIdentity: (input) => get(`/setup/validate-identity?input=${encodeURIComponent(input)}`)
 };
 
 export const access = {
