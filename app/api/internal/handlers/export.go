@@ -136,6 +136,57 @@ func (h *Handler) streamNDJSON(w http.ResponseWriter, r *http.Request, filter db
 	flusher.Flush()
 }
 
+// GetExportEstimate handles GET /api/v1/events/export/estimate
+// Returns the estimated event count and byte size for an export with the given filters.
+func (h *Handler) GetExportEstimate(w http.ResponseWriter, r *http.Request) {
+	if !h.db.IsRelayDBConnected() {
+		respondError(w, http.StatusServiceUnavailable, "Relay database not connected", "RELAY_NOT_CONNECTED")
+		return
+	}
+
+	// Parse query parameters
+	query := r.URL.Query()
+
+	// Build filter
+	filter := db.EventFilter{}
+
+	// Parse kinds
+	if kinds := query.Get("kinds"); kinds != "" {
+		for _, k := range strings.Split(kinds, ",") {
+			if kind, err := strconv.Atoi(strings.TrimSpace(k)); err == nil {
+				filter.Kinds = append(filter.Kinds, kind)
+			}
+		}
+	}
+
+	// Parse time range
+	if since := query.Get("since"); since != "" {
+		if ts, err := strconv.ParseInt(since, 10, 64); err == nil {
+			filter.Since = time.Unix(ts, 0)
+		}
+	}
+	if until := query.Get("until"); until != "" {
+		if ts, err := strconv.ParseInt(until, 10, 64); err == nil {
+			filter.Until = time.Unix(ts, 0)
+		}
+	}
+
+	// Count events
+	count, err := h.db.CountEvents(r.Context(), filter)
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, "Failed to count events", "COUNT_FAILED")
+		return
+	}
+
+	// Estimate size: ~500 bytes per event (average)
+	estimatedBytes := count * 500
+
+	respondJSON(w, http.StatusOK, map[string]interface{}{
+		"count":           count,
+		"estimated_bytes": estimatedBytes,
+	})
+}
+
 // streamJSON writes events as a JSON array.
 func (h *Handler) streamJSON(w http.ResponseWriter, r *http.Request, filter db.EventFilter, flusher http.Flusher) {
 	// Write opening bracket

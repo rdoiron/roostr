@@ -1,5 +1,9 @@
 <script>
-	// Quick actions component with navigation links
+	import ExportModal from '$lib/components/export/ExportModal.svelte';
+
+	let { stats = {} } = $props();
+
+	let showExportModal = $state(false);
 </script>
 
 <div class="rounded-lg bg-white p-6 shadow">
@@ -34,6 +38,8 @@
 			Browse Events
 		</a>
 		<button
+			type="button"
+			onclick={() => (showExportModal = true)}
 			class="inline-flex items-center gap-2 rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200"
 		>
 			<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -48,3 +54,10 @@
 		</button>
 	</div>
 </div>
+
+{#if showExportModal}
+	<ExportModal
+		{stats}
+		onClose={() => (showExportModal = false)}
+	/>
+{/if}

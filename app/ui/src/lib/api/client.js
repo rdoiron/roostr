@@ -154,3 +154,21 @@ export const storage = {
 	getEstimate: (beforeDate) => get(`/storage/estimate?before_date=${encodeURIComponent(beforeDate)}`),
 	integrityCheck: () => post('/storage/integrity-check', {})
 };
+
+export const exportApi = {
+	getEstimate: (params = {}) => {
+		const query = new URLSearchParams();
+		if (params.kinds) query.set('kinds', params.kinds);
+		if (params.since) query.set('since', params.since);
+		if (params.until) query.set('until', params.until);
+		return get(`/events/export/estimate${query.toString() ? '?' + query.toString() : ''}`);
+	},
+	getExportUrl: (params = {}) => {
+		const query = new URLSearchParams();
+		if (params.format) query.set('format', params.format);
+		if (params.kinds) query.set('kinds', params.kinds);
+		if (params.since) query.set('since', params.since);
+		if (params.until) query.set('until', params.until);
+		return `${API_BASE}/events/export${query.toString() ? '?' + query.toString() : ''}`;
+	}
+};

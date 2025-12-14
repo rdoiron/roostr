@@ -179,12 +179,12 @@ This document tracks all development tasks. Check off items as they're completed
 - [x] EXPORT-API-004: Add progress tracking for large exports
 
 ### Export UI
-- [ ] EXPORT-UI-001: Create export page/modal
-- [ ] EXPORT-UI-002: Event type selection
-- [ ] EXPORT-UI-003: Date range picker
-- [ ] EXPORT-UI-004: Format selection
-- [ ] EXPORT-UI-005: Size estimation
-- [ ] EXPORT-UI-006: Download progress indicator
+- [x] EXPORT-UI-001: Create export page/modal
+- [x] EXPORT-UI-002: Event type selection
+- [x] EXPORT-UI-003: Date range picker
+- [x] EXPORT-UI-004: Format selection
+- [x] EXPORT-UI-005: Size estimation
+- [x] EXPORT-UI-006: Download progress indicator
 
 ---
 
@@ -355,7 +355,7 @@ This document tracks all development tasks. Check off items as they're completed
 | 5. Event Browser | 13 | 13 | 100% |
 | 6. Configuration | 10 | 10 | 100% |
 | 7. Storage | 16 | 16 | 100% |
-| 8. Export | 10 | 4 | 40% |
+| 8. Export | 10 | 10 | 100% |
 | 9. Sync | 15 | 0 | 0% |
 | 10. Support | 6 | 0 | 0% |
 | 11. Paid Access | 24 | 0 | 0% |
@@ -363,12 +363,12 @@ This document tracks all development tasks. Check off items as they're completed
 | 13. Statistics | 8 | 0 | 0% |
 | 14. Packaging | 14 | 0 | 0% |
 | 15. Polish | 14 | 0 | 0% |
-| **TOTAL** | **202** | **105** | **52%** |
+| **TOTAL** | **202** | **111** | **55%** |
 
 ---
 
 ## Current Focus
 
-**Next Task:** EXPORT-UI-001: Create export page/modal
+**Next Task:** SYNC-API-001: POST /api/v1/sync/start endpoint
 
 See SPECIFICATION.md for full details on any feature.

@@ -150,6 +150,6 @@
 		<RecentActivityFeed events={dashboardData.recentEvents} />
 
 		<!-- Quick Actions -->
-		<QuickActions />
+		<QuickActions stats={dashboardData.stats} />
 	{/if}
 </div>
