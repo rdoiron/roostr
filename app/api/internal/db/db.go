@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"syscall"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -209,4 +210,111 @@ func (d *DB) GetRelayDatabaseSize() (int64, error) {
 	}
 
 	return info.Size(), nil
+}
+
+// GetAppDatabaseSize returns the size of the app database file in bytes.
+func (d *DB) GetAppDatabaseSize() (int64, error) {
+	if d.appPath == "" {
+		return 0, nil
+	}
+
+	info, err := os.Stat(d.appPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return 0, nil
+		}
+		return 0, fmt.Errorf("failed to stat app database: %w", err)
+	}
+
+	return info.Size(), nil
+}
+
+// OpenRelayDBForWrite opens a temporary read-write connection to the relay database.
+// The caller is responsible for closing the connection when done.
+// This should only be used for maintenance operations like cleanup and vacuum.
+func (d *DB) OpenRelayDBForWrite() (*sql.DB, error) {
+	d.mu.RLock()
+	relayPath := d.relayPath
+	d.mu.RUnlock()
+
+	if relayPath == "" {
+		return nil, fmt.Errorf("relay database path not configured")
+	}
+
+	// Check if file exists
+	if _, err := os.Stat(relayPath); os.IsNotExist(err) {
+		return nil, fmt.Errorf("relay database does not exist: %s", relayPath)
+	}
+
+	// Open in read-write mode with WAL and busy timeout
+	dsn := fmt.Sprintf("file:%s?_journal_mode=WAL&_busy_timeout=10000", relayPath)
+	db, err := sql.Open("sqlite3", dsn)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open relay database for write: %w", err)
+	}
+
+	// Use single connection for write operations
+	db.SetMaxOpenConns(1)
+	db.SetMaxIdleConns(1)
+
+	// Test connection
+	if err := db.Ping(); err != nil {
+		db.Close()
+		return nil, fmt.Errorf("failed to ping relay database: %w", err)
+	}
+
+	return db, nil
+}
+
+// GetRelayPath returns the path to the relay database file.
+func (d *DB) GetRelayPath() string {
+	d.mu.RLock()
+	defer d.mu.RUnlock()
+	return d.relayPath
+}
+
+// GetAvailableDiskSpace returns the available disk space in bytes for the relay database path.
+func (d *DB) GetAvailableDiskSpace() (int64, error) {
+	d.mu.RLock()
+	path := d.relayPath
+	d.mu.RUnlock()
+
+	if path == "" {
+		return 0, fmt.Errorf("relay database path not configured")
+	}
+
+	// Get the directory of the database file
+	dir := filepath.Dir(path)
+
+	var stat syscall.Statfs_t
+	if err := syscall.Statfs(dir, &stat); err != nil {
+		return 0, fmt.Errorf("failed to get disk space: %w", err)
+	}
+
+	// Available space = available blocks * block size
+	available := int64(stat.Bavail) * int64(stat.Bsize)
+	return available, nil
+}
+
+// GetTotalDiskSpace returns the total disk space in bytes for the relay database path.
+func (d *DB) GetTotalDiskSpace() (int64, error) {
+	d.mu.RLock()
+	path := d.relayPath
+	d.mu.RUnlock()
+
+	if path == "" {
+		return 0, fmt.Errorf("relay database path not configured")
+	}
+
+	// Get the directory of the database file
+	dir := filepath.Dir(path)
+
+	var stat syscall.Statfs_t
+	if err := syscall.Statfs(dir, &stat); err != nil {
+		return 0, fmt.Errorf("failed to get disk space: %w", err)
+	}
+
+	// Total space = total blocks * block size
+	total := int64(stat.Blocks) * int64(stat.Bsize)
+	return total, nil
 }

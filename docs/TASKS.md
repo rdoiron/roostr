@@ -149,14 +149,14 @@ This document tracks all development tasks. Check off items as they're completed
 ## Phase 7: Storage Management
 
 ### Storage API
-- [ ] STORAGE-API-001: GET /api/v1/storage/status endpoint
-- [ ] STORAGE-API-002: GET /api/v1/storage/retention endpoint
-- [ ] STORAGE-API-003: PUT /api/v1/storage/retention endpoint
-- [ ] STORAGE-API-004: POST /api/v1/storage/cleanup endpoint
-- [ ] STORAGE-API-005: POST /api/v1/storage/vacuum endpoint
-- [ ] STORAGE-API-006: GET /api/v1/storage/deletion-requests endpoint
-- [ ] STORAGE-API-007: Implement NIP-09 deletion request processing
-- [ ] STORAGE-API-008: Background retention job
+- [x] STORAGE-API-001: GET /api/v1/storage/status endpoint
+- [x] STORAGE-API-002: GET /api/v1/storage/retention endpoint
+- [x] STORAGE-API-003: PUT /api/v1/storage/retention endpoint
+- [x] STORAGE-API-004: POST /api/v1/storage/cleanup endpoint
+- [x] STORAGE-API-005: POST /api/v1/storage/vacuum endpoint
+- [x] STORAGE-API-006: GET /api/v1/storage/deletion-requests endpoint
+- [x] STORAGE-API-007: Implement NIP-09 deletion request processing
+- [x] STORAGE-API-008: Background retention job
 
 ### Storage UI
 - [ ] STORAGE-UI-001: Add storage card to dashboard
@@ -354,7 +354,7 @@ This document tracks all development tasks. Check off items as they're completed
 | 4. Access Control | 18 | 18 | 100% |
 | 5. Event Browser | 13 | 13 | 100% |
 | 6. Configuration | 10 | 10 | 100% |
-| 7. Storage | 16 | 0 | 0% |
+| 7. Storage | 16 | 8 | 50% |
 | 8. Export | 10 | 0 | 0% |
 | 9. Sync | 15 | 0 | 0% |
 | 10. Support | 6 | 0 | 0% |
@@ -363,12 +363,12 @@ This document tracks all development tasks. Check off items as they're completed
 | 13. Statistics | 8 | 0 | 0% |
 | 14. Packaging | 14 | 0 | 0% |
 | 15. Polish | 14 | 0 | 0% |
-| **TOTAL** | **202** | **85** | **42%** |
+| **TOTAL** | **202** | **93** | **46%** |
 
 ---
 
 ## Current Focus
 
-**Next Task:** STORAGE-API-001: GET /api/v1/storage/status endpoint
+**Next Task:** STORAGE-UI-001: Add storage card to dashboard
 
 See SPECIFICATION.md for full details on any feature.

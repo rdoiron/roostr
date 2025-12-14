@@ -76,6 +76,16 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("PATCH /api/v1/config", h.UpdateConfig)
 	mux.HandleFunc("POST /api/v1/config/reload", h.ReloadConfig)
 
+	// Storage management endpoints
+	mux.HandleFunc("GET /api/v1/storage/status", h.GetStorageStatus)
+	mux.HandleFunc("GET /api/v1/storage/retention", h.GetRetentionPolicy)
+	mux.HandleFunc("PUT /api/v1/storage/retention", h.UpdateRetentionPolicy)
+	mux.HandleFunc("POST /api/v1/storage/cleanup", h.ManualCleanup)
+	mux.HandleFunc("POST /api/v1/storage/vacuum", h.RunVacuum)
+	mux.HandleFunc("GET /api/v1/storage/deletion-requests", h.GetDeletionRequests)
+	mux.HandleFunc("GET /api/v1/storage/estimate", h.GetStorageEstimate)
+	mux.HandleFunc("POST /api/v1/storage/integrity-check", h.RunIntegrityCheck)
+
 	// Serve static files for the UI (SPA fallback)
 	mux.HandleFunc("/", h.ServeUI)
 }

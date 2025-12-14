@@ -319,6 +319,50 @@ func (d *DB) GetTopAuthors(ctx context.Context, limit int) ([]struct {
 	return authors, rows.Err()
 }
 
+// CountEventsBefore counts events created before the given timestamp.
+func (d *DB) CountEventsBefore(ctx context.Context, before time.Time) (int64, error) {
+	if d.RelayDB == nil {
+		return 0, fmt.Errorf("relay database not connected")
+	}
+
+	var count int64
+	err := d.RelayDB.QueryRowContext(ctx,
+		"SELECT COUNT(*) FROM event WHERE created_at < ?",
+		before.Unix(),
+	).Scan(&count)
+	if err != nil {
+		return 0, fmt.Errorf("failed to count events: %w", err)
+	}
+
+	return count, nil
+}
+
+// EstimateEventSize estimates the average size of an event in bytes.
+// This is a rough estimate used for storage calculations.
+func (d *DB) EstimateEventSize(ctx context.Context) (int64, error) {
+	if d.RelayDB == nil {
+		return 0, fmt.Errorf("relay database not connected")
+	}
+
+	// Get average content length plus overhead for other fields
+	var avgContentLen sql.NullFloat64
+	err := d.RelayDB.QueryRowContext(ctx,
+		"SELECT AVG(LENGTH(content)) FROM event",
+	).Scan(&avgContentLen)
+	if err != nil {
+		return 0, fmt.Errorf("failed to estimate event size: %w", err)
+	}
+
+	if !avgContentLen.Valid {
+		// No events, use a default estimate
+		return 500, nil
+	}
+
+	// Add overhead for id (32), pubkey (32), sig (64), timestamp (8), kind (4), tags (~200 avg)
+	overhead := int64(340)
+	return int64(avgContentLen.Float64) + overhead, nil
+}
+
 // Helper functions
 
 func scanEvent(row *sql.Row) (*Event, error) {

@@ -13,6 +13,7 @@ import (
 	"github.com/roostr/roostr/app/api/internal/db"
 	"github.com/roostr/roostr/app/api/internal/handlers"
 	"github.com/roostr/roostr/app/api/internal/relay"
+	"github.com/roostr/roostr/app/api/internal/services"
 )
 
 func main() {
@@ -55,6 +56,12 @@ func main() {
 		}
 	}
 
+	// Initialize services
+	svc := services.New(database)
+	svc.Start()
+	defer svc.Stop()
+	log.Println("Background services started")
+
 	// Create handler with dependencies
 	h := handlers.New(database, cfg, configMgr, relayMgr)
 
@@ -92,6 +99,10 @@ func main() {
 	<-quit
 
 	log.Println("Shutting down server...")
+
+	// Stop background services first
+	log.Println("Stopping background services...")
+	svc.Stop()
 
 	// Graceful shutdown with timeout
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)

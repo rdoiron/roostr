@@ -614,12 +614,32 @@ func (d *DB) CreateDeletionRequest(ctx context.Context, eventID, requestedBy, re
 
 // GetPendingDeletionRequests retrieves all pending deletion requests.
 func (d *DB) GetPendingDeletionRequests(ctx context.Context) ([]DeletionRequest, error) {
-	rows, err := d.AppDB.QueryContext(ctx, `
-		SELECT id, event_id, author_pubkey, target_event_ids, reason, status, received_at, processed_at, events_deleted
-		FROM deletion_requests
-		WHERE status = 'pending'
-		ORDER BY received_at ASC
-	`)
+	return d.GetDeletionRequests(ctx, "pending")
+}
+
+// GetDeletionRequests retrieves deletion requests by status.
+// Pass empty string for status to get all requests.
+func (d *DB) GetDeletionRequests(ctx context.Context, status string) ([]DeletionRequest, error) {
+	var query string
+	var args []interface{}
+
+	if status == "" {
+		query = `
+			SELECT id, event_id, author_pubkey, target_event_ids, reason, status, received_at, processed_at, events_deleted
+			FROM deletion_requests
+			ORDER BY received_at DESC
+		`
+	} else {
+		query = `
+			SELECT id, event_id, author_pubkey, target_event_ids, reason, status, received_at, processed_at, events_deleted
+			FROM deletion_requests
+			WHERE status = ?
+			ORDER BY received_at DESC
+		`
+		args = append(args, status)
+	}
+
+	rows, err := d.AppDB.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -649,6 +669,178 @@ func (d *DB) GetPendingDeletionRequests(ctx context.Context) ([]DeletionRequest,
 	}
 
 	return requests, rows.Err()
+}
+
+// GetPendingDeletionCount returns the count of pending deletion requests.
+func (d *DB) GetPendingDeletionCount(ctx context.Context) (int64, error) {
+	var count int64
+	err := d.AppDB.QueryRowContext(ctx, `
+		SELECT COUNT(*) FROM deletion_requests WHERE status = 'pending'
+	`).Scan(&count)
+	return count, err
+}
+
+// UpdateDeletionRequestStatus updates the status of a deletion request.
+func (d *DB) UpdateDeletionRequestStatus(ctx context.Context, id int64, status string, eventsDeleted int64) error {
+	_, err := d.AppDB.ExecContext(ctx, `
+		UPDATE deletion_requests
+		SET status = ?, processed_at = strftime('%s', 'now'), events_deleted = ?
+		WHERE id = ?
+	`, status, eventsDeleted, id)
+	return err
+}
+
+// ============================================================================
+// Storage Management
+// ============================================================================
+
+// RetentionPolicy represents the storage retention settings.
+type RetentionPolicy struct {
+	RetentionDays int64    `json:"retention_days"` // 0 = keep forever
+	Exceptions    []string `json:"exceptions"`     // e.g., ["kind:0", "kind:3", "pubkey:operator"]
+	HonorNIP09    bool     `json:"honor_nip09"`
+	LastRun       *time.Time `json:"last_run,omitempty"`
+}
+
+// GetRetentionPolicy retrieves the current retention policy settings.
+func (d *DB) GetRetentionPolicy(ctx context.Context) (*RetentionPolicy, error) {
+	policy := &RetentionPolicy{}
+
+	// Get retention_days
+	daysStr, err := d.GetAppState(ctx, "retention_days")
+	if err != nil {
+		return nil, fmt.Errorf("failed to get retention_days: %w", err)
+	}
+	if daysStr != "" {
+		fmt.Sscanf(daysStr, "%d", &policy.RetentionDays)
+	}
+
+	// Get retention_exceptions
+	exceptionsStr, err := d.GetAppState(ctx, "retention_exceptions")
+	if err != nil {
+		return nil, fmt.Errorf("failed to get retention_exceptions: %w", err)
+	}
+	if exceptionsStr != "" {
+		json.Unmarshal([]byte(exceptionsStr), &policy.Exceptions)
+	}
+
+	// Get honor_nip09
+	honorStr, err := d.GetAppState(ctx, "honor_nip09")
+	if err != nil {
+		return nil, fmt.Errorf("failed to get honor_nip09: %w", err)
+	}
+	policy.HonorNIP09 = honorStr != "false"
+
+	// Get last_retention_run
+	lastRunStr, err := d.GetAppState(ctx, "last_retention_run")
+	if err != nil {
+		return nil, fmt.Errorf("failed to get last_retention_run: %w", err)
+	}
+	if lastRunStr != "" && lastRunStr != "0" {
+		var ts int64
+		fmt.Sscanf(lastRunStr, "%d", &ts)
+		if ts > 0 {
+			t := time.Unix(ts, 0)
+			policy.LastRun = &t
+		}
+	}
+
+	return policy, nil
+}
+
+// SetRetentionPolicy saves the retention policy settings.
+func (d *DB) SetRetentionPolicy(ctx context.Context, policy *RetentionPolicy) error {
+	// Set retention_days
+	if err := d.SetAppState(ctx, "retention_days", fmt.Sprintf("%d", policy.RetentionDays)); err != nil {
+		return fmt.Errorf("failed to set retention_days: %w", err)
+	}
+
+	// Set retention_exceptions
+	exceptionsJSON, _ := json.Marshal(policy.Exceptions)
+	if err := d.SetAppState(ctx, "retention_exceptions", string(exceptionsJSON)); err != nil {
+		return fmt.Errorf("failed to set retention_exceptions: %w", err)
+	}
+
+	// Set honor_nip09
+	honorStr := "true"
+	if !policy.HonorNIP09 {
+		honorStr = "false"
+	}
+	if err := d.SetAppState(ctx, "honor_nip09", honorStr); err != nil {
+		return fmt.Errorf("failed to set honor_nip09: %w", err)
+	}
+
+	return nil
+}
+
+// SetLastRetentionRun updates the timestamp of the last retention job run.
+func (d *DB) SetLastRetentionRun(ctx context.Context, t time.Time) error {
+	return d.SetAppState(ctx, "last_retention_run", fmt.Sprintf("%d", t.Unix()))
+}
+
+// GetLastVacuumRun returns the timestamp of the last VACUUM operation.
+func (d *DB) GetLastVacuumRun(ctx context.Context) (*time.Time, error) {
+	ts, err := d.GetAppState(ctx, "last_vacuum_run")
+	if err != nil {
+		return nil, err
+	}
+	if ts == "" || ts == "0" {
+		return nil, nil
+	}
+	var unix int64
+	fmt.Sscanf(ts, "%d", &unix)
+	if unix > 0 {
+		t := time.Unix(unix, 0)
+		return &t, nil
+	}
+	return nil, nil
+}
+
+// SetLastVacuumRun updates the timestamp of the last VACUUM operation.
+func (d *DB) SetLastVacuumRun(ctx context.Context, t time.Time) error {
+	return d.SetAppState(ctx, "last_vacuum_run", fmt.Sprintf("%d", t.Unix()))
+}
+
+// GetLastIntegrityCheck returns the timestamp of the last integrity check.
+func (d *DB) GetLastIntegrityCheck(ctx context.Context) (*time.Time, error) {
+	ts, err := d.GetAppState(ctx, "last_integrity_check")
+	if err != nil {
+		return nil, err
+	}
+	if ts == "" || ts == "0" {
+		return nil, nil
+	}
+	var unix int64
+	fmt.Sscanf(ts, "%d", &unix)
+	if unix > 0 {
+		t := time.Unix(unix, 0)
+		return &t, nil
+	}
+	return nil, nil
+}
+
+// SetLastIntegrityCheck updates the timestamp of the last integrity check.
+func (d *DB) SetLastIntegrityCheck(ctx context.Context, t time.Time) error {
+	return d.SetAppState(ctx, "last_integrity_check", fmt.Sprintf("%d", t.Unix()))
+}
+
+// RunAppVacuum runs VACUUM on the app database to reclaim space.
+func (d *DB) RunAppVacuum(ctx context.Context) error {
+	_, err := d.AppDB.ExecContext(ctx, "VACUUM")
+	if err != nil {
+		return fmt.Errorf("failed to vacuum app database: %w", err)
+	}
+	return nil
+}
+
+// RunAppIntegrityCheck runs an integrity check on the app database.
+func (d *DB) RunAppIntegrityCheck(ctx context.Context) (bool, string, error) {
+	var result string
+	err := d.AppDB.QueryRowContext(ctx, "PRAGMA integrity_check").Scan(&result)
+	if err != nil {
+		return false, "", fmt.Errorf("failed to run integrity check: %w", err)
+	}
+	return result == "ok", result, nil
 }
 
 // ============================================================================

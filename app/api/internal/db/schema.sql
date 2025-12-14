@@ -16,7 +16,14 @@ CREATE TABLE IF NOT EXISTS app_state (
 INSERT OR IGNORE INTO app_state (key, value) VALUES
     ('setup_completed', 'false'),
     ('operator_pubkey', ''),
-    ('access_mode', 'whitelist');  -- open, whitelist, paid, blacklist
+    ('access_mode', 'whitelist'),  -- open, whitelist, paid, blacklist
+    -- Storage management settings
+    ('retention_days', '0'),       -- 0 = keep forever, otherwise auto-delete after N days
+    ('retention_exceptions', '["kind:0", "kind:3", "pubkey:operator"]'),  -- JSON array of exceptions
+    ('honor_nip09', 'true'),       -- Whether to honor NIP-09 deletion requests
+    ('last_retention_run', '0'),   -- Unix timestamp of last retention job run
+    ('last_vacuum_run', '0'),      -- Unix timestamp of last VACUUM operation
+    ('last_integrity_check', '0'); -- Unix timestamp of last integrity check
 
 -- ============================================================================
 -- Whitelist Metadata
