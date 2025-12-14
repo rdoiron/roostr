@@ -66,6 +66,13 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /api/v1/access/blacklist", h.AddToBlacklist)
 	mux.HandleFunc("DELETE /api/v1/access/blacklist/{pubkey}", h.RemoveFromBlacklist)
 
+	// Paid access endpoints
+	mux.HandleFunc("GET /api/v1/access/pricing", h.GetPricingTiers)
+	mux.HandleFunc("PUT /api/v1/access/pricing", h.UpdatePricingTiers)
+	mux.HandleFunc("GET /api/v1/access/paid-users", h.GetPaidUsers)
+	mux.HandleFunc("DELETE /api/v1/access/paid-users/{pubkey}", h.RevokePaidUserAccess)
+	mux.HandleFunc("GET /api/v1/access/revenue", h.GetRevenueStats)
+
 	// NIP-05 resolution endpoint
 	mux.HandleFunc("GET /api/v1/nip05/{identifier}", h.ResolveNIP05)
 

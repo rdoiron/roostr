@@ -416,6 +416,135 @@ func (d *DB) AddPaymentHistory(ctx context.Context, pubkey, paymentHash, tier st
 	return err
 }
 
+// GetPaidUsersFiltered retrieves paid users with filtering and pagination.
+func (d *DB) GetPaidUsersFiltered(ctx context.Context, status string, limit, offset int) ([]PaidUser, int64, error) {
+	if limit <= 0 {
+		limit = 50
+	}
+	if limit > 100 {
+		limit = 100
+	}
+
+	// Build queries
+	countQuery := "SELECT COUNT(*) FROM paid_users"
+	query := `
+		SELECT id, pubkey, npub, tier, amount_sats, status, created_at, expires_at, last_payment_at
+		FROM paid_users
+	`
+	args := []interface{}{}
+
+	if status != "" && status != "all" {
+		countQuery += " WHERE status = ?"
+		query += " WHERE status = ?"
+		args = append(args, status)
+	}
+
+	// Get total count
+	var total int64
+	err := d.AppDB.QueryRowContext(ctx, countQuery, args...).Scan(&total)
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to count paid users: %w", err)
+	}
+
+	query += " ORDER BY created_at DESC LIMIT ? OFFSET ?"
+	args = append(args, limit, offset)
+
+	rows, err := d.AppDB.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to query paid users: %w", err)
+	}
+	defer rows.Close()
+
+	var users []PaidUser
+	for rows.Next() {
+		var u PaidUser
+		var createdAt, expiresAt, lastPaymentAt sql.NullInt64
+
+		err := rows.Scan(&u.ID, &u.Pubkey, &u.Npub, &u.Tier, &u.AmountSats, &u.Status, &createdAt, &expiresAt, &lastPaymentAt)
+		if err != nil {
+			return nil, 0, fmt.Errorf("failed to scan paid user: %w", err)
+		}
+
+		if createdAt.Valid {
+			u.CreatedAt = time.Unix(createdAt.Int64, 0)
+		}
+		if expiresAt.Valid {
+			t := time.Unix(expiresAt.Int64, 0)
+			u.ExpiresAt = &t
+		}
+		if lastPaymentAt.Valid {
+			u.LastPaymentAt = time.Unix(lastPaymentAt.Int64, 0)
+		}
+		users = append(users, u)
+	}
+
+	return users, total, rows.Err()
+}
+
+// CountActivePaidUsers returns the count of active paid users.
+func (d *DB) CountActivePaidUsers(ctx context.Context) (int64, error) {
+	var count int64
+	err := d.AppDB.QueryRowContext(ctx, `
+		SELECT COUNT(*) FROM paid_users WHERE status = 'active'
+	`).Scan(&count)
+	return count, err
+}
+
+// CountExpiringPaidUsers returns count of users expiring within the given days.
+func (d *DB) CountExpiringPaidUsers(ctx context.Context, withinDays int) (int64, error) {
+	var count int64
+	err := d.AppDB.QueryRowContext(ctx, `
+		SELECT COUNT(*) FROM paid_users
+		WHERE status = 'active'
+		  AND expires_at IS NOT NULL
+		  AND expires_at BETWEEN strftime('%s', 'now') AND strftime('%s', 'now') + ?
+	`, withinDays*86400).Scan(&count)
+	return count, err
+}
+
+// GetTotalRevenue returns the total revenue in satoshis from payment_history.
+func (d *DB) GetTotalRevenue(ctx context.Context) (int64, error) {
+	var total sql.NullInt64
+	err := d.AppDB.QueryRowContext(ctx, `
+		SELECT SUM(amount_sats) FROM payment_history
+	`).Scan(&total)
+	if err != nil {
+		return 0, err
+	}
+	return total.Int64, nil
+}
+
+// GetRevenueByTier returns revenue breakdown by tier.
+func (d *DB) GetRevenueByTier(ctx context.Context) (map[string]int64, error) {
+	rows, err := d.AppDB.QueryContext(ctx, `
+		SELECT tier, SUM(amount_sats) FROM payment_history GROUP BY tier
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	result := make(map[string]int64)
+	for rows.Next() {
+		var tier string
+		var total int64
+		if err := rows.Scan(&tier, &total); err != nil {
+			return nil, err
+		}
+		result[tier] = total
+	}
+	return result, rows.Err()
+}
+
+// GetPaymentCount returns the total number of payments.
+func (d *DB) GetPaymentCount(ctx context.Context) (int64, error) {
+	var count int64
+	err := d.AppDB.QueryRowContext(ctx, `
+		SELECT COUNT(*) FROM payment_history
+	`).Scan(&count)
+	return count, err
+}
+
 // ============================================================================
 // Pricing Tiers
 // ============================================================================

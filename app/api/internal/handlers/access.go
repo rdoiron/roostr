@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"net/url"
@@ -418,4 +419,251 @@ func (h *Handler) syncConfigFromDB(_ interface{}) error {
 	}
 
 	return nil
+}
+
+// ============================================================================
+// Pricing Tiers
+// ============================================================================
+
+// GetPricingTiers returns all pricing tier configurations.
+// GET /api/v1/access/pricing
+func (h *Handler) GetPricingTiers(w http.ResponseWriter, r *http.Request) {
+	tiers, err := h.db.GetPricingTiers(r.Context())
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, "Failed to get pricing tiers", "PRICING_FETCH_FAILED")
+		return
+	}
+
+	respondJSON(w, http.StatusOK, map[string]interface{}{
+		"tiers": tiers,
+	})
+}
+
+// UpdatePricingTiersRequest is the request body for updating pricing tiers.
+type UpdatePricingTiersRequest struct {
+	Tiers []db.PricingTier `json:"tiers"`
+}
+
+// UpdatePricingTiers updates the pricing tier configurations.
+// PUT /api/v1/access/pricing
+func (h *Handler) UpdatePricingTiers(w http.ResponseWriter, r *http.Request) {
+	var req UpdatePricingTiersRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		respondError(w, http.StatusBadRequest, "Invalid request body", "INVALID_JSON")
+		return
+	}
+
+	if len(req.Tiers) == 0 {
+		respondError(w, http.StatusBadRequest, "At least one pricing tier is required", "NO_TIERS")
+		return
+	}
+
+	ctx := r.Context()
+
+	// Validate each tier
+	for _, tier := range req.Tiers {
+		if tier.ID == "" {
+			respondError(w, http.StatusBadRequest, "Tier ID is required", "MISSING_TIER_ID")
+			return
+		}
+		if tier.Name == "" {
+			respondError(w, http.StatusBadRequest, "Tier name is required", "MISSING_TIER_NAME")
+			return
+		}
+		if tier.AmountSats <= 0 {
+			respondError(w, http.StatusBadRequest, "Amount must be positive", "INVALID_AMOUNT")
+			return
+		}
+	}
+
+	// Update each tier
+	for _, tier := range req.Tiers {
+		if err := h.db.UpdatePricingTier(ctx, tier); err != nil {
+			respondError(w, http.StatusInternalServerError, "Failed to update pricing tier", "PRICING_UPDATE_FAILED")
+			return
+		}
+	}
+
+	// Log the action
+	h.db.AddAuditLog(ctx, "pricing_updated", map[string]interface{}{
+		"tier_count": len(req.Tiers),
+	}, "")
+
+	respondJSON(w, http.StatusOK, map[string]interface{}{
+		"success": true,
+		"message": "Pricing tiers updated",
+	})
+}
+
+// ============================================================================
+// Paid Users
+// ============================================================================
+
+// GetPaidUsers returns a list of paid users with pagination and filtering.
+// GET /api/v1/access/paid-users
+func (h *Handler) GetPaidUsers(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	// Parse query parameters
+	status := r.URL.Query().Get("status") // active, expired, revoked, all
+	limitStr := r.URL.Query().Get("limit")
+	offsetStr := r.URL.Query().Get("offset")
+
+	limit := 50
+	offset := 0
+	if limitStr != "" {
+		if _, err := fmt.Sscanf(limitStr, "%d", &limit); err != nil {
+			limit = 50
+		}
+	}
+	if offsetStr != "" {
+		if _, err := fmt.Sscanf(offsetStr, "%d", &offset); err != nil {
+			offset = 0
+		}
+	}
+
+	users, total, err := h.db.GetPaidUsersFiltered(ctx, status, limit, offset)
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, "Failed to get paid users", "PAID_USERS_FETCH_FAILED")
+		return
+	}
+
+	// Get event counts if relay DB is connected
+	type paidUserWithCount struct {
+		db.PaidUser
+		EventCount int64 `json:"event_count"`
+	}
+
+	result := make([]paidUserWithCount, len(users))
+	if h.db.IsRelayDBConnected() && len(users) > 0 {
+		pubkeys := make([]string, len(users))
+		for i, u := range users {
+			pubkeys[i] = u.Pubkey
+		}
+		counts, _ := h.db.CountEventsByPubkey(ctx, pubkeys)
+
+		for i, u := range users {
+			result[i] = paidUserWithCount{
+				PaidUser:   u,
+				EventCount: counts[u.Pubkey],
+			}
+		}
+	} else {
+		for i, u := range users {
+			result[i] = paidUserWithCount{PaidUser: u}
+		}
+	}
+
+	respondJSON(w, http.StatusOK, map[string]interface{}{
+		"users":  result,
+		"total":  total,
+		"limit":  limit,
+		"offset": offset,
+	})
+}
+
+// RevokePaidUserAccess revokes access for a paid user.
+// DELETE /api/v1/access/paid-users/{pubkey}
+func (h *Handler) RevokePaidUserAccess(w http.ResponseWriter, r *http.Request) {
+	pubkey := r.PathValue("pubkey")
+	if pubkey == "" {
+		respondError(w, http.StatusBadRequest, "Pubkey is required", "MISSING_PUBKEY")
+		return
+	}
+
+	ctx := r.Context()
+
+	// Check if paid user exists
+	paidUser, err := h.db.GetPaidUserByPubkey(ctx, pubkey)
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, "Failed to get paid user", "DB_ERROR")
+		return
+	}
+	if paidUser == nil {
+		respondError(w, http.StatusNotFound, "Paid user not found", "USER_NOT_FOUND")
+		return
+	}
+
+	// Update status to revoked
+	if err := h.db.UpdatePaidUserStatus(ctx, pubkey, "revoked"); err != nil {
+		respondError(w, http.StatusInternalServerError, "Failed to revoke access", "REVOKE_FAILED")
+		return
+	}
+
+	// Remove from whitelist if present (and not the operator)
+	entry, _ := h.db.GetWhitelistEntryByPubkey(ctx, pubkey)
+	if entry != nil && !entry.IsOperator {
+		if err := h.db.RemoveWhitelistEntry(ctx, pubkey); err != nil {
+			log.Printf("Warning: failed to remove revoked user from whitelist: %v", err)
+		}
+	}
+
+	// Sync config.toml and reload relay
+	if err := h.syncConfigFromDB(ctx); err != nil {
+		log.Printf("Warning: failed to sync config.toml: %v", err)
+	}
+
+	// Log the action
+	h.db.AddAuditLog(ctx, "paid_user_revoked", map[string]string{
+		"pubkey": pubkey,
+		"tier":   paidUser.Tier,
+	}, "")
+
+	respondJSON(w, http.StatusOK, map[string]interface{}{
+		"success": true,
+		"message": "Access revoked",
+	})
+}
+
+// ============================================================================
+// Revenue
+// ============================================================================
+
+// GetRevenueStats returns revenue summary and statistics.
+// GET /api/v1/access/revenue
+func (h *Handler) GetRevenueStats(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	// Get total revenue
+	totalRevenue, err := h.db.GetTotalRevenue(ctx)
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, "Failed to get revenue", "REVENUE_FETCH_FAILED")
+		return
+	}
+
+	// Get active subscribers count
+	activeCount, err := h.db.CountActivePaidUsers(ctx)
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, "Failed to count active users", "COUNT_FAILED")
+		return
+	}
+
+	// Get expiring soon count (within 7 days)
+	expiringCount, err := h.db.CountExpiringPaidUsers(ctx, 7)
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, "Failed to count expiring users", "COUNT_FAILED")
+		return
+	}
+
+	// Get payment count
+	paymentCount, err := h.db.GetPaymentCount(ctx)
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, "Failed to get payment count", "COUNT_FAILED")
+		return
+	}
+
+	// Get revenue by tier
+	revenueByTier, err := h.db.GetRevenueByTier(ctx)
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, "Failed to get revenue by tier", "REVENUE_FETCH_FAILED")
+		return
+	}
+
+	respondJSON(w, http.StatusOK, map[string]interface{}{
+		"total_revenue_sats": totalRevenue,
+		"active_subscribers": activeCount,
+		"expiring_soon":      expiringCount,
+		"total_payments":     paymentCount,
+		"revenue_by_tier":    revenueByTier,
+	})
 }

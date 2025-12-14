@@ -233,11 +233,11 @@ This document tracks all development tasks. Check off items as they're completed
 - [x] LN-005: Invoice subscription/polling
 
 ### Paid Access API
-- [ ] PAID-API-001: GET /api/v1/access/pricing endpoint
-- [ ] PAID-API-002: PUT /api/v1/access/pricing endpoint
-- [ ] PAID-API-003: GET /api/v1/access/paid-users endpoint
-- [ ] PAID-API-004: DELETE /api/v1/access/paid-users/:pubkey endpoint
-- [ ] PAID-API-005: GET /api/v1/access/revenue endpoint
+- [x] PAID-API-001: GET /api/v1/access/pricing endpoint
+- [x] PAID-API-002: PUT /api/v1/access/pricing endpoint
+- [x] PAID-API-003: GET /api/v1/access/paid-users endpoint
+- [x] PAID-API-004: DELETE /api/v1/access/paid-users/:pubkey endpoint
+- [x] PAID-API-005: GET /api/v1/access/revenue endpoint
 - [x] PAID-API-006: GET /api/v1/lightning/status endpoint
 - [x] PAID-API-007: PUT /api/v1/lightning/config endpoint
 
@@ -358,17 +358,17 @@ This document tracks all development tasks. Check off items as they're completed
 | 8. Export | 10 | 10 | 100% |
 | 9. Sync | 15 | 15 | 100% |
 | 10. Support | 6 | 6 | 100% |
-| 11. Paid Access | 24 | 11 | 46% |
+| 11. Paid Access | 24 | 16 | 67% |
 | 12. Relay Controls | 10 | 0 | 0% |
 | 13. Statistics | 8 | 0 | 0% |
 | 14. Packaging | 14 | 0 | 0% |
 | 15. Polish | 14 | 0 | 0% |
-| **TOTAL** | **202** | **143** | **71%** |
+| **TOTAL** | **202** | **148** | **73%** |
 
 ---
 
 ## Current Focus
 
-**Next Task:** PAID-API-001: GET /api/v1/access/pricing endpoint
+**Next Task:** PAID-UI-001: Pricing configuration section
 
 See SPECIFICATION.md for full details on any feature.
