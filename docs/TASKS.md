@@ -62,11 +62,11 @@ This document tracks all development tasks. Check off items as they're completed
 ## Phase 3: Dashboard
 
 ### Dashboard API
-- [ ] DASH-API-001: GET /api/v1/stats/summary endpoint
-- [ ] DASH-API-002: GET /api/v1/relay/urls endpoint
-- [ ] DASH-API-003: GET /api/v1/relay/status endpoint
-- [ ] DASH-API-004: GET /api/v1/events/recent endpoint (last 10)
-- [ ] DASH-API-005: Implement Tor URL detection
+- [x] DASH-API-001: GET /api/v1/stats/summary endpoint
+- [x] DASH-API-002: GET /api/v1/relay/urls endpoint
+- [x] DASH-API-003: GET /api/v1/relay/status endpoint
+- [x] DASH-API-004: GET /api/v1/events/recent endpoint (last 10)
+- [x] DASH-API-005: Implement Tor URL detection
 
 ### Dashboard UI
 - [ ] DASH-UI-001: Create dashboard page layout
@@ -350,7 +350,7 @@ This document tracks all development tasks. Check off items as they're completed
 |-------|-------|-----------|----------|
 | 1. Foundation | 17 | 17 | 100% |
 | 2. Setup Wizard | 13 | 13 | 100% |
-| 3. Dashboard | 14 | 0 | 0% |
+| 3. Dashboard | 14 | 5 | 36% |
 | 4. Access Control | 18 | 0 | 0% |
 | 5. Event Browser | 13 | 0 | 0% |
 | 6. Configuration | 10 | 0 | 0% |
@@ -363,12 +363,12 @@ This document tracks all development tasks. Check off items as they're completed
 | 13. Statistics | 8 | 0 | 0% |
 | 14. Packaging | 14 | 0 | 0% |
 | 15. Polish | 14 | 0 | 0% |
-| **TOTAL** | **202** | **30** | **15%** |
+| **TOTAL** | **202** | **35** | **17%** |
 
 ---
 
 ## Current Focus
 
-**Next Task:** DASH-API-001: GET /api/v1/stats/summary endpoint
+**Next Task:** DASH-UI-001: Create dashboard page layout
 
 See SPECIFICATION.md for full details on any feature.

@@ -76,6 +76,16 @@ func (d *DB) SetAccessMode(ctx context.Context, mode string) error {
 // Whitelist Metadata
 // ============================================================================
 
+// GetWhitelistCount returns the number of entries in the whitelist.
+func (d *DB) GetWhitelistCount(ctx context.Context) (int64, error) {
+	var count int64
+	err := d.AppDB.QueryRowContext(ctx, "SELECT COUNT(*) FROM whitelist_meta").Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
 // WhitelistEntry represents a whitelisted pubkey with metadata.
 type WhitelistEntry struct {
 	Pubkey     string    `json:"pubkey"`

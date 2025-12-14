@@ -4,6 +4,7 @@ package handlers
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/roostr/roostr/app/api/internal/config"
 	"github.com/roostr/roostr/app/api/internal/db"
@@ -11,15 +12,17 @@ import (
 
 // Handler holds dependencies for HTTP handlers.
 type Handler struct {
-	db  *db.DB
-	cfg *config.Config
+	db        *db.DB
+	cfg       *config.Config
+	startTime time.Time // Server start time for uptime calculation
 }
 
 // New creates a new Handler instance with dependencies.
 func New(database *db.DB, cfg *config.Config) *Handler {
 	return &Handler{
-		db:  database,
-		cfg: cfg,
+		db:        database,
+		cfg:       cfg,
+		startTime: time.Now(),
 	}
 }
 
@@ -37,6 +40,8 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	// Dashboard/Stats endpoints
 	mux.HandleFunc("GET /api/v1/stats/summary", h.GetStatsSummary)
 	mux.HandleFunc("GET /api/v1/relay/status", h.GetRelayStatus)
+	mux.HandleFunc("GET /api/v1/relay/urls", h.GetRelayURLs)
+	mux.HandleFunc("GET /api/v1/events/recent", h.GetRecentEvents)
 
 	// Access control endpoints
 	mux.HandleFunc("GET /api/v1/access/mode", h.GetAccessMode)

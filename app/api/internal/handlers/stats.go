@@ -2,31 +2,86 @@ package handlers
 
 import (
 	"net/http"
+	"time"
 )
 
-// GetStatsSummary returns aggregate statistics from the relay.
+// GetStatsSummary returns aggregate statistics from the relay for the dashboard.
 func (h *Handler) GetStatsSummary(w http.ResponseWriter, r *http.Request) {
-	if !h.db.IsRelayDBConnected() {
+	ctx := r.Context()
+
+	// Determine relay status
+	relayConnected := h.db.IsRelayDBConnected()
+	relayStatus := "offline"
+	if relayConnected {
+		relayStatus = "online"
+	}
+
+	// Get uptime
+	uptimeSeconds := int64(time.Since(h.startTime).Seconds())
+
+	// Get whitelist count
+	whitelistCount, _ := h.db.GetWhitelistCount(ctx)
+
+	// Get storage size
+	storageBytes, _ := h.db.GetRelayDatabaseSize()
+
+	// If relay DB is not connected, return minimal data
+	if !relayConnected {
 		respondJSON(w, http.StatusOK, map[string]interface{}{
-			"relay_connected": false,
-			"message":         "Relay database not connected",
+			"total_events":      0,
+			"events_today":      0,
+			"storage_bytes":     storageBytes,
+			"whitelisted_count": whitelistCount,
+			"events_by_kind":    map[string]int64{},
+			"uptime_seconds":    uptimeSeconds,
+			"relay_status":      relayStatus,
 		})
 		return
 	}
 
-	stats, err := h.db.GetRelayStats(r.Context())
+	// Get relay stats
+	stats, err := h.db.GetRelayStats(ctx)
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, "Failed to get stats", "STATS_FAILED")
 		return
 	}
 
+	// Get events today
+	eventsToday, _ := h.db.GetEventsToday(ctx)
+
+	// Build events_by_kind with human-friendly labels per spec
+	eventsByKind := map[string]int64{}
+	var otherCount int64 = 0
+
+	for kind, count := range stats.EventsByKind {
+		switch kind {
+		case 1:
+			eventsByKind["posts"] = count
+		case 3:
+			eventsByKind["follows"] = count
+		case 4, 14:
+			// DMs (kind 4 and 14)
+			eventsByKind["dms"] = eventsByKind["dms"] + count
+		case 6:
+			eventsByKind["reposts"] = count
+		case 7:
+			eventsByKind["reactions"] = count
+		default:
+			otherCount += count
+		}
+	}
+	if otherCount > 0 {
+		eventsByKind["other"] = otherCount
+	}
+
 	respondJSON(w, http.StatusOK, map[string]interface{}{
-		"relay_connected": true,
-		"total_events":    stats.TotalEvents,
-		"total_pubkeys":   stats.TotalPubkeys,
-		"events_by_kind":  stats.EventsByKind,
-		"oldest_event":    stats.OldestEvent,
-		"newest_event":    stats.NewestEvent,
+		"total_events":      stats.TotalEvents,
+		"events_today":      eventsToday,
+		"storage_bytes":     storageBytes,
+		"whitelisted_count": whitelistCount,
+		"events_by_kind":    eventsByKind,
+		"uptime_seconds":    uptimeSeconds,
+		"relay_status":      relayStatus,
 	})
 }
 
@@ -37,11 +92,31 @@ func (h *Handler) GetRelayStatus(w http.ResponseWriter, r *http.Request) {
 	// TODO: Check actual relay process status
 	status := "unknown"
 	if relayConnected {
-		status = "running"
+		status = "online"
 	}
 
+	uptimeSeconds := int64(time.Since(h.startTime).Seconds())
+
 	respondJSON(w, http.StatusOK, map[string]interface{}{
-		"status":           status,
+		"status":             status,
 		"database_connected": relayConnected,
+		"uptime_seconds":     uptimeSeconds,
 	})
+}
+
+// GetRelayURLs returns the relay's local and Tor WebSocket URLs.
+func (h *Handler) GetRelayURLs(w http.ResponseWriter, r *http.Request) {
+	response := map[string]interface{}{
+		"local":         h.cfg.RelayURL,
+		"tor":           "",
+		"tor_available": false,
+	}
+
+	if h.cfg.TorAddress != "" {
+		// Format Tor URL - TOR_ADDRESS includes the port
+		response["tor"] = "ws://" + h.cfg.TorAddress
+		response["tor_available"] = true
+	}
+
+	respondJSON(w, http.StatusOK, response)
 }

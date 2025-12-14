@@ -193,3 +193,20 @@ func (d *DB) GetSchemaVersion() (int, error) {
 	}
 	return version, nil
 }
+
+// GetRelayDatabaseSize returns the size of the relay database file in bytes.
+func (d *DB) GetRelayDatabaseSize() (int64, error) {
+	if d.relayPath == "" {
+		return 0, nil
+	}
+
+	info, err := os.Stat(d.relayPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return 0, nil
+		}
+		return 0, fmt.Errorf("failed to stat relay database: %w", err)
+	}
+
+	return info.Size(), nil
+}

@@ -216,6 +216,28 @@ func (d *DB) GetRelayStats(ctx context.Context) (*RelayStats, error) {
 	return stats, nil
 }
 
+// GetEventsToday returns the count of events created today (since midnight UTC).
+func (d *DB) GetEventsToday(ctx context.Context) (int64, error) {
+	if d.RelayDB == nil {
+		return 0, fmt.Errorf("relay database not connected")
+	}
+
+	// Get the start of today (midnight UTC)
+	now := time.Now().UTC()
+	startOfDay := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+
+	var count int64
+	err := d.RelayDB.QueryRowContext(ctx,
+		"SELECT COUNT(*) FROM event WHERE created_at >= ?",
+		startOfDay.Unix(),
+	).Scan(&count)
+	if err != nil {
+		return 0, fmt.Errorf("failed to count today's events: %w", err)
+	}
+
+	return count, nil
+}
+
 // CountEventsByPubkey counts events for each pubkey.
 func (d *DB) CountEventsByPubkey(ctx context.Context, pubkeys []string) (map[string]int64, error) {
 	if d.RelayDB == nil {

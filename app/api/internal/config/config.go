@@ -19,6 +19,10 @@ type Config struct {
 	ConfigPath  string
 	RelayBinary string
 
+	// Relay URLs (provided by platform)
+	RelayURL   string // Local WebSocket URL (e.g., ws://umbrel.local:4848)
+	TorAddress string // Tor .onion address (e.g., abc123...onion:4848)
+
 	// Feature flags
 	Debug bool
 }
@@ -31,6 +35,8 @@ func Load() (*Config, error) {
 		AppDBPath:   getEnv("APP_DB_PATH", "data/roostr.db"),
 		ConfigPath:  getEnv("CONFIG_PATH", "data/config.toml"),
 		RelayBinary: getEnv("RELAY_BINARY", "/usr/bin/nostr-rs-relay"),
+		RelayURL:    getEnv("RELAY_URL", ""),   // e.g., ws://umbrel.local:4848
+		TorAddress:  getEnv("TOR_ADDRESS", ""), // e.g., abc123...onion:4848
 		Debug:       getEnv("DEBUG", "") == "true",
 	}
 

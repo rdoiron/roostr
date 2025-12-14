@@ -109,6 +109,26 @@ func (h *Handler) DeleteEvent(w http.ResponseWriter, r *http.Request) {
 	respondError(w, http.StatusNotImplemented, "Event deletion not yet implemented", "NOT_IMPLEMENTED")
 }
 
+// GetRecentEvents returns the 10 most recent events for the dashboard.
+func (h *Handler) GetRecentEvents(w http.ResponseWriter, r *http.Request) {
+	if !h.db.IsRelayDBConnected() {
+		respondJSON(w, http.StatusOK, map[string]interface{}{
+			"events": []interface{}{},
+		})
+		return
+	}
+
+	events, err := h.db.GetRecentEvents(r.Context(), 10)
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, "Failed to get recent events", "EVENTS_FETCH_FAILED")
+		return
+	}
+
+	respondJSON(w, http.StatusOK, map[string]interface{}{
+		"events": events,
+	})
+}
+
 // parseIntParam parses an integer query parameter with a default value.
 func parseIntParam(s string, defaultVal int) int {
 	if s == "" {
