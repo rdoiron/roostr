@@ -143,3 +143,14 @@ export const config = {
 	update: (data) => patch('/config', data),
 	reload: () => post('/config/reload', {})
 };
+
+export const storage = {
+	getStatus: () => get('/storage/status'),
+	getRetention: () => get('/storage/retention'),
+	updateRetention: (data) => put('/storage/retention', data),
+	cleanup: (data) => post('/storage/cleanup', data),
+	vacuum: () => post('/storage/vacuum', {}),
+	getDeletionRequests: (status) => get(`/storage/deletion-requests${status ? `?status=${status}` : ''}`),
+	getEstimate: (beforeDate) => get(`/storage/estimate?before_date=${encodeURIComponent(beforeDate)}`),
+	integrityCheck: () => post('/storage/integrity-check', {})
+};

@@ -1,6 +1,6 @@
 <script>
 	import { onMount } from 'svelte';
-	import { stats, relay, events } from '$lib/api/client.js';
+	import { stats, relay, events, storage } from '$lib/api/client.js';
 	import { relayStatus } from '$lib/stores';
 	import { formatUptime, formatBytes } from '$lib/utils/format.js';
 
@@ -12,6 +12,7 @@
 	import EventTypeCard from '$lib/components/dashboard/EventTypeCard.svelte';
 	import RecentActivityFeed from '$lib/components/dashboard/RecentActivityFeed.svelte';
 	import QuickActions from '$lib/components/dashboard/QuickActions.svelte';
+	import StorageCard from '$lib/components/dashboard/StorageCard.svelte';
 
 	let loading = $state(true);
 	let error = $state(null);
@@ -19,22 +20,25 @@
 	let dashboardData = $state({
 		stats: null,
 		urls: null,
-		recentEvents: []
+		recentEvents: [],
+		storage: null
 	});
 
 	const REFRESH_INTERVAL = 30000; // 30 seconds
 
 	async function loadDashboard() {
 		try {
-			const [statsRes, urlsRes, eventsRes] = await Promise.all([
+			const [statsRes, urlsRes, eventsRes, storageRes] = await Promise.all([
 				stats.getSummary(),
 				relay.getURLs(),
-				events.getRecent()
+				events.getRecent(),
+				storage.getStatus()
 			]);
 
 			dashboardData.stats = statsRes;
 			dashboardData.urls = urlsRes;
 			dashboardData.recentEvents = eventsRes.events || [];
+			dashboardData.storage = storageRes;
 
 			// Update global relay status
 			relayStatus.online = statsRes.relay_status === 'online';
@@ -117,13 +121,20 @@
 			/>
 			<StatCard
 				label="Storage Used"
-				value={formatBytes(dashboardData.stats?.storage_bytes ?? 0)}
+				value={formatBytes(dashboardData.storage?.total_size ?? 0)}
 			/>
 			<StatCard
 				label="Whitelisted Pubkeys"
 				value={dashboardData.stats?.whitelisted_count?.toString() ?? '0'}
 			/>
 		</div>
+
+		<!-- Storage Card with Progress Bar -->
+		<StorageCard
+			usedBytes={dashboardData.storage?.total_size ?? 0}
+			totalBytes={dashboardData.storage?.total_space ?? 0}
+			status={dashboardData.storage?.status ?? 'healthy'}
+		/>
 
 		<!-- Event Type Breakdown -->
 		<div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">

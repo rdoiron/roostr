@@ -159,14 +159,14 @@ This document tracks all development tasks. Check off items as they're completed
 - [x] STORAGE-API-008: Background retention job
 
 ### Storage UI
-- [ ] STORAGE-UI-001: Add storage card to dashboard
-- [ ] STORAGE-UI-002: Create storage management page
-- [ ] STORAGE-UI-003: Usage visualization (progress bar)
-- [ ] STORAGE-UI-004: Retention policy settings
-- [ ] STORAGE-UI-005: Manual cleanup interface
-- [ ] STORAGE-UI-006: NIP-09 deletion request list
-- [ ] STORAGE-UI-007: Database maintenance buttons
-- [ ] STORAGE-UI-008: Storage alerts/warnings
+- [x] STORAGE-UI-001: Add storage card to dashboard
+- [x] STORAGE-UI-002: Create storage management page
+- [x] STORAGE-UI-003: Usage visualization (progress bar)
+- [x] STORAGE-UI-004: Retention policy settings
+- [x] STORAGE-UI-005: Manual cleanup interface
+- [x] STORAGE-UI-006: NIP-09 deletion request list
+- [x] STORAGE-UI-007: Database maintenance buttons
+- [x] STORAGE-UI-008: Storage alerts/warnings
 
 ---
 
@@ -354,7 +354,7 @@ This document tracks all development tasks. Check off items as they're completed
 | 4. Access Control | 18 | 18 | 100% |
 | 5. Event Browser | 13 | 13 | 100% |
 | 6. Configuration | 10 | 10 | 100% |
-| 7. Storage | 16 | 8 | 50% |
+| 7. Storage | 16 | 16 | 100% |
 | 8. Export | 10 | 0 | 0% |
 | 9. Sync | 15 | 0 | 0% |
 | 10. Support | 6 | 0 | 0% |
@@ -363,12 +363,12 @@ This document tracks all development tasks. Check off items as they're completed
 | 13. Statistics | 8 | 0 | 0% |
 | 14. Packaging | 14 | 0 | 0% |
 | 15. Polish | 14 | 0 | 0% |
-| **TOTAL** | **202** | **93** | **46%** |
+| **TOTAL** | **202** | **101** | **50%** |
 
 ---
 
 ## Current Focus
 
-**Next Task:** STORAGE-UI-001: Add storage card to dashboard
+**Next Task:** EXPORT-API-001: GET /api/v1/events/export endpoint (streaming)
 
 See SPECIFICATION.md for full details on any feature.
