@@ -139,14 +139,14 @@ make package-startos  # Build Start9 package
 
 ```bash
 # API
-PORT=8080                    # API server port
+PORT=3001                    # API server port (default: 3001)
 RELAY_DB_PATH=/data/nostr.db # Path to relay's SQLite DB
 APP_DB_PATH=/data/roostr.db  # Path to app's SQLite DB
 CONFIG_PATH=/data/config.toml # Path to relay config
 RELAY_BINARY=/usr/bin/nostr-rs-relay
 
 # UI
-PUBLIC_API_URL=http://localhost:8080/api/v1
+PUBLIC_API_URL=http://localhost:3001/api/v1
 ```
 
 ## Database Notes
@@ -171,3 +171,13 @@ PUBLIC_API_URL=http://localhost:8080/api/v1
 ## Current Development Phase
 
 Check `docs/TASKS.md` for current progress and next tasks.
+
+## Git Commits
+
+- Do not include Claude Code branding or co-author lines in commits
+- Use descriptive commit messages following existing style
+
+## Local Development Notes
+
+- Port 8080 is unavailable on this machine; API defaults to port 3001
+- Vite dev server proxies `/api` requests to `localhost:3001`
