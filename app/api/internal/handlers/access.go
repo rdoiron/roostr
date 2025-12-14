@@ -42,9 +42,10 @@ func (h *Handler) SetAccessMode(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Validate mode
-	validModes := map[string]bool{"private": true, "paid": true, "public": true}
+	// Modes: open (anyone), whitelist (only allowed), paid (whitelist + paid), blacklist (block specific)
+	validModes := map[string]bool{"open": true, "whitelist": true, "paid": true, "blacklist": true}
 	if !validModes[req.Mode] {
-		respondError(w, http.StatusBadRequest, "Invalid access mode", "INVALID_MODE")
+		respondError(w, http.StatusBadRequest, "Invalid access mode. Must be: open, whitelist, paid, or blacklist", "INVALID_MODE")
 		return
 	}
 

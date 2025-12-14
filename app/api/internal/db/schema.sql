@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS app_state (
 INSERT OR IGNORE INTO app_state (key, value) VALUES
     ('setup_completed', 'false'),
     ('operator_pubkey', ''),
-    ('access_mode', 'private');  -- private, paid, public
+    ('access_mode', 'whitelist');  -- open, whitelist, paid, blacklist
 
 -- ============================================================================
 -- Whitelist Metadata

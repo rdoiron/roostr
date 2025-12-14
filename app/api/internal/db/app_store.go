@@ -55,14 +55,21 @@ func (d *DB) SetOperatorPubkey(ctx context.Context, pubkey string) error {
 	return d.SetAppState(ctx, "operator_pubkey", pubkey)
 }
 
-// GetAccessMode returns the current access mode (private, paid, public).
+// GetAccessMode returns the current access mode (open, whitelist, paid, blacklist).
 func (d *DB) GetAccessMode(ctx context.Context) (string, error) {
 	mode, err := d.GetAppState(ctx, "access_mode")
 	if err != nil {
 		return "", err
 	}
 	if mode == "" {
-		return "private", nil
+		return "whitelist", nil
+	}
+	// Migrate old mode names to new ones
+	switch mode {
+	case "private":
+		return "whitelist", nil
+	case "public":
+		return "open", nil
 	}
 	return mode, nil
 }

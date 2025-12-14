@@ -1,32 +1,213 @@
 <script>
-	import { onMount } from 'svelte';
-	import { get } from '$lib/api';
+	import { browser } from '$app/environment';
+	import { access } from '$lib/api/client.js';
+	import { notify } from '$lib/stores/app.svelte.js';
+	import AccessModeSelector from '$lib/components/access/AccessModeSelector.svelte';
+	import PubkeyCard from '$lib/components/access/PubkeyCard.svelte';
+	import AddPubkeyModal from '$lib/components/access/AddPubkeyModal.svelte';
+	import EditNicknameModal from '$lib/components/access/EditNicknameModal.svelte';
+	import ConfirmRemoveModal from '$lib/components/access/ConfirmRemoveModal.svelte';
+	import Button from '$lib/components/Button.svelte';
 
-	let mode = $state('private');
+	let mode = $state('whitelist');
 	let whitelist = $state([]);
+	let blacklist = $state([]);
 	let loading = $state(true);
 	let error = $state(null);
+	let initialized = $state(false);
 
-	onMount(async () => {
+	// Modal states
+	let showAddModal = $state(false);
+	let showEditModal = $state(false);
+	let showRemoveModal = $state(false);
+	let selectedEntry = $state(null);
+	let activeListType = $state('whitelist');
+
+	// Import state
+	let importing = $state(false);
+	let fileInput = $state(null);
+
+	async function loadData() {
 		try {
-			const [modeRes, listRes] = await Promise.all([
-				get('/access/mode'),
-				get('/access/whitelist')
+			const [modeRes, whitelistRes, blacklistRes] = await Promise.all([
+				access.getMode(),
+				access.getWhitelist(),
+				access.getBlacklist()
 			]);
 			mode = modeRes.mode;
-			whitelist = listRes.entries || [];
+			whitelist = whitelistRes.entries || [];
+			blacklist = blacklistRes.entries || [];
 		} catch (e) {
 			error = e.message;
 		} finally {
 			loading = false;
 		}
+	}
+
+	// Load data on mount (browser only)
+	$effect(() => {
+		if (browser && !initialized) {
+			initialized = true;
+			loadData();
+		}
 	});
+
+	function handleModeChange(newMode) {
+		mode = newMode;
+	}
+
+	// Whitelist actions
+	function openAddWhitelist() {
+		activeListType = 'whitelist';
+		showAddModal = true;
+	}
+
+	function openEditNickname(entry) {
+		selectedEntry = entry;
+		showEditModal = true;
+	}
+
+	function openRemoveWhitelist(entry) {
+		selectedEntry = entry;
+		activeListType = 'whitelist';
+		showRemoveModal = true;
+	}
+
+	// Blacklist actions
+	function openAddBlacklist() {
+		activeListType = 'blacklist';
+		showAddModal = true;
+	}
+
+	function openRemoveBlacklist(entry) {
+		selectedEntry = entry;
+		activeListType = 'blacklist';
+		showRemoveModal = true;
+	}
+
+	// Modal callbacks
+	function handleAddComplete() {
+		loadData();
+	}
+
+	function handleEditComplete() {
+		loadData();
+	}
+
+	function handleRemoveComplete() {
+		loadData();
+	}
+
+	function closeModals() {
+		showAddModal = false;
+		showEditModal = false;
+		showRemoveModal = false;
+		selectedEntry = null;
+	}
+
+	// Import/Export functionality
+	async function handleImport(e) {
+		const file = e.target.files?.[0];
+		if (!file) return;
+
+		importing = true;
+		const reader = new FileReader();
+
+		reader.onload = async (event) => {
+			try {
+				const content = event.target.result;
+				let entries = [];
+
+				// Try to parse as JSON first
+				try {
+					const json = JSON.parse(content);
+					if (Array.isArray(json)) {
+						entries = json;
+					} else if (json.entries) {
+						entries = json.entries;
+					}
+				} catch {
+					// Fallback to newline-separated npubs
+					entries = content.split('\n').filter((line) => line.trim()).map((line) => ({ npub: line.trim() }));
+				}
+
+				let added = 0;
+				let failed = 0;
+
+				for (const entry of entries) {
+					try {
+						const npub = entry.npub || entry;
+						if (typeof npub !== 'string' || !npub.startsWith('npub')) continue;
+
+						// Use the validate endpoint to get the pubkey
+						const validation = await fetch(`/api/v1/setup/validate-identity?input=${encodeURIComponent(npub)}`);
+						const result = await validation.json();
+
+						if (result.valid) {
+							await access.addToWhitelist({
+								pubkey: result.pubkey,
+								npub: result.npub,
+								nickname: entry.nickname || ''
+							});
+							added++;
+						} else {
+							failed++;
+						}
+					} catch {
+						failed++;
+					}
+				}
+
+				notify('success', `Imported ${added} entries${failed > 0 ? `, ${failed} failed` : ''}`);
+				loadData();
+			} catch (e) {
+				notify('error', 'Failed to parse import file');
+			} finally {
+				importing = false;
+				// Reset file input
+				if (fileInput) fileInput.value = '';
+			}
+		};
+
+		reader.onerror = () => {
+			notify('error', 'Failed to read file');
+			importing = false;
+		};
+
+		reader.readAsText(file);
+	}
+
+	function handleExport() {
+		const exportData = {
+			exported_at: new Date().toISOString(),
+			entries: whitelist.map((e) => ({
+				npub: e.npub,
+				pubkey: e.pubkey,
+				nickname: e.nickname || ''
+			}))
+		};
+
+		const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = `whitelist-${new Date().toISOString().split('T')[0]}.json`;
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+		URL.revokeObjectURL(url);
+		notify('success', 'Whitelist exported');
+	}
+
+	// Show list based on mode
+	const showWhitelist = $derived(mode === 'whitelist' || mode === 'paid');
+	const showBlacklist = $derived(mode === 'blacklist');
 </script>
 
 <div class="space-y-6">
 	<div>
 		<h1 class="text-2xl font-bold text-gray-900">Access Control</h1>
-		<p class="text-gray-600">Manage who can use your relay</p>
+		<p class="text-gray-600">Manage who can write to your relay</p>
 	</div>
 
 	{#if loading}
@@ -37,68 +218,183 @@
 		<div class="rounded-lg bg-red-50 p-4 text-red-700">
 			<p class="font-medium">Error loading access control</p>
 			<p class="text-sm">{error}</p>
+			<button onclick={loadData} class="mt-2 text-sm font-medium text-red-600 hover:text-red-500">
+				Try again
+			</button>
 		</div>
 	{:else}
-		<!-- Access mode -->
+		<!-- Access Mode Selector -->
 		<div class="rounded-lg bg-white p-6 shadow">
-			<h2 class="text-lg font-semibold text-gray-900">Access Mode</h2>
-			<div class="mt-4 space-y-3">
-				<label class="flex cursor-pointer items-start gap-3 rounded-lg border p-4 {mode === 'private' ? 'border-purple-500 bg-purple-50' : 'border-gray-200'}">
-					<input type="radio" name="mode" value="private" bind:group={mode} class="mt-1" />
-					<div>
-						<p class="font-medium text-gray-900">Private</p>
-						<p class="text-sm text-gray-500">Only whitelisted pubkeys can write</p>
-					</div>
-				</label>
-				<label class="flex cursor-pointer items-start gap-3 rounded-lg border p-4 {mode === 'paid' ? 'border-purple-500 bg-purple-50' : 'border-gray-200'}">
-					<input type="radio" name="mode" value="paid" bind:group={mode} class="mt-1" />
-					<div>
-						<p class="font-medium text-gray-900">Paid Access</p>
-						<p class="text-sm text-gray-500">Whitelist + anyone who pays via Lightning</p>
-					</div>
-				</label>
-				<label class="flex cursor-pointer items-start gap-3 rounded-lg border p-4 {mode === 'public' ? 'border-purple-500 bg-purple-50' : 'border-gray-200'}">
-					<input type="radio" name="mode" value="public" bind:group={mode} class="mt-1" />
-					<div>
-						<p class="font-medium text-gray-900">Public</p>
-						<p class="text-sm text-gray-500">Anyone can write (not recommended)</p>
-					</div>
-				</label>
-			</div>
+			<h2 class="text-lg font-semibold text-gray-900 mb-4">Access Mode</h2>
+			<AccessModeSelector {mode} onChange={handleModeChange} />
 		</div>
 
-		<!-- Whitelist -->
-		<div class="rounded-lg bg-white p-6 shadow">
-			<div class="flex items-center justify-between">
-				<h2 class="text-lg font-semibold text-gray-900">Whitelist</h2>
-				<button class="rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700">
-					Add Pubkey
-				</button>
-			</div>
-			<div class="mt-4">
+		<!-- Whitelist Section -->
+		{#if showWhitelist}
+			<div class="rounded-lg bg-white p-6 shadow">
+				<div class="flex items-center justify-between mb-4">
+					<div>
+						<h2 class="text-lg font-semibold text-gray-900">
+							Whitelisted Pubkeys
+							<span class="ml-2 text-sm font-normal text-gray-500">({whitelist.length})</span>
+						</h2>
+						{#if mode === 'paid'}
+							<p class="text-sm text-gray-500 mt-1">These users plus paid subscribers can write to your relay.</p>
+						{/if}
+					</div>
+					<Button variant="primary" onclick={openAddWhitelist}>
+						<svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+						</svg>
+						Add
+					</Button>
+				</div>
+
 				{#if whitelist.length === 0}
-					<p class="text-gray-500">No pubkeys whitelisted yet</p>
+					<div class="text-center py-8">
+						<div class="w-12 h-12 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-3">
+							<svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+							</svg>
+						</div>
+						<p class="text-gray-500">No pubkeys whitelisted yet</p>
+						<p class="text-sm text-gray-400 mt-1">Add pubkeys to allow them to write to your relay</p>
+					</div>
 				{:else}
 					<div class="space-y-2">
-						{#each whitelist as entry}
-							<div class="flex items-center justify-between rounded-lg bg-gray-50 p-3">
-								<div>
-									<p class="font-medium text-gray-900">
-										{entry.nickname || 'Unknown'}
-										{#if entry.is_operator}
-											<span class="ml-2 rounded bg-purple-100 px-2 py-0.5 text-xs text-purple-700">Operator</span>
-										{/if}
-									</p>
-									<p class="text-sm text-gray-500 font-mono">{entry.npub?.slice(0, 20)}...</p>
-								</div>
-								<div class="text-sm text-gray-500">
-									{entry.event_count ?? 0} events
-								</div>
-							</div>
+						{#each whitelist as entry (entry.pubkey)}
+							<PubkeyCard
+								{entry}
+								listType="whitelist"
+								onEdit={openEditNickname}
+								onRemove={openRemoveWhitelist}
+							/>
+						{/each}
+					</div>
+				{/if}
+
+				<!-- Import/Export -->
+				<div class="flex items-center space-x-3 mt-6 pt-4 border-t">
+					<input
+						type="file"
+						accept=".json,.txt"
+						onchange={handleImport}
+						bind:this={fileInput}
+						class="hidden"
+						id="import-input"
+					/>
+					<label
+						for="import-input"
+						class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer {importing ? 'opacity-50 pointer-events-none' : ''}"
+					>
+						{#if importing}
+							<div class="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-gray-600 border-t-transparent"></div>
+						{:else}
+							<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+							</svg>
+						{/if}
+						Import
+					</label>
+					<button
+						type="button"
+						onclick={handleExport}
+						disabled={whitelist.length === 0}
+						class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+					>
+						<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+						</svg>
+						Export
+					</button>
+				</div>
+			</div>
+		{/if}
+
+		<!-- Blacklist Section -->
+		{#if showBlacklist}
+			<div class="rounded-lg bg-white p-6 shadow">
+				<div class="flex items-center justify-between mb-4">
+					<div>
+						<h2 class="text-lg font-semibold text-gray-900">
+							Blacklisted Pubkeys
+							<span class="ml-2 text-sm font-normal text-gray-500">({blacklist.length})</span>
+						</h2>
+						<p class="text-sm text-gray-500 mt-1">These users are blocked from writing to your relay.</p>
+					</div>
+					<Button variant="primary" onclick={openAddBlacklist}>
+						<svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+						</svg>
+						Add
+					</Button>
+				</div>
+
+				{#if blacklist.length === 0}
+					<div class="text-center py-8">
+						<div class="w-12 h-12 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-3">
+							<svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+							</svg>
+						</div>
+						<p class="text-gray-500">No pubkeys blacklisted</p>
+						<p class="text-sm text-gray-400 mt-1">Add pubkeys to block them from your relay</p>
+					</div>
+				{:else}
+					<div class="space-y-2">
+						{#each blacklist as entry (entry.pubkey)}
+							<PubkeyCard
+								{entry}
+								listType="blacklist"
+								onRemove={openRemoveBlacklist}
+							/>
 						{/each}
 					</div>
 				{/if}
 			</div>
-		</div>
+		{/if}
+
+		<!-- Open mode info -->
+		{#if mode === 'open'}
+			<div class="rounded-lg bg-amber-50 border border-amber-200 p-4">
+				<div class="flex items-start space-x-3">
+					<svg class="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+					</svg>
+					<div>
+						<p class="font-medium text-amber-800">Open Mode Active</p>
+						<p class="text-sm text-amber-700 mt-1">
+							Anyone can write to your relay. This is not recommended for private relays as it may fill up your storage with unwanted content.
+						</p>
+					</div>
+				</div>
+			</div>
+		{/if}
 	{/if}
 </div>
+
+<!-- Modals -->
+{#if showAddModal}
+	<AddPubkeyModal
+		listType={activeListType}
+		onClose={closeModals}
+		onAdd={handleAddComplete}
+	/>
+{/if}
+
+{#if showEditModal && selectedEntry}
+	<EditNicknameModal
+		entry={selectedEntry}
+		onClose={closeModals}
+		onSave={handleEditComplete}
+	/>
+{/if}
+
+{#if showRemoveModal && selectedEntry}
+	<ConfirmRemoveModal
+		entry={selectedEntry}
+		listType={activeListType}
+		onClose={closeModals}
+		onConfirm={handleRemoveComplete}
+	/>
+{/if}

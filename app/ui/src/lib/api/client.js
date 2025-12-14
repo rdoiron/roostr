@@ -112,7 +112,11 @@ export const access = {
 	getWhitelist: () => get('/access/whitelist'),
 	addToWhitelist: (data) => post('/access/whitelist', data),
 	removeFromWhitelist: (pubkey) => del(`/access/whitelist/${pubkey}`),
-	updateWhitelist: (pubkey, data) => patch(`/access/whitelist/${pubkey}`, data)
+	updateWhitelist: (pubkey, data) => patch(`/access/whitelist/${pubkey}`, data),
+	getBlacklist: () => get('/access/blacklist'),
+	addToBlacklist: (data) => post('/access/blacklist', data),
+	removeFromBlacklist: (pubkey) => del(`/access/blacklist/${pubkey}`),
+	resolveNip05: (identifier) => get(`/nip05/${encodeURIComponent(identifier)}`)
 };
 
 export const stats = {

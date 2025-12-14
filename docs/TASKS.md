@@ -95,15 +95,15 @@ This document tracks all development tasks. Check off items as they're completed
 - [x] ACCESS-API-009: Blacklist CRUD endpoints
 
 ### Access Control UI
-- [ ] ACCESS-UI-001: Create access control page
-- [ ] ACCESS-UI-002: Access mode selector (radio buttons)
-- [ ] ACCESS-UI-003: Whitelist display with pubkey cards
-- [ ] ACCESS-UI-004: Add pubkey modal (npub/NIP-05 input)
-- [ ] ACCESS-UI-005: Pubkey validation and NIP-05 lookup
-- [ ] ACCESS-UI-006: Edit nickname functionality
-- [ ] ACCESS-UI-007: Remove pubkey with confirmation
-- [ ] ACCESS-UI-008: Bulk import/export buttons
-- [ ] ACCESS-UI-009: Event count per pubkey display
+- [x] ACCESS-UI-001: Create access control page
+- [x] ACCESS-UI-002: Access mode selector (radio buttons)
+- [x] ACCESS-UI-003: Whitelist display with pubkey cards
+- [x] ACCESS-UI-004: Add pubkey modal (npub/NIP-05 input)
+- [x] ACCESS-UI-005: Pubkey validation and NIP-05 lookup
+- [x] ACCESS-UI-006: Edit nickname functionality
+- [x] ACCESS-UI-007: Remove pubkey with confirmation
+- [x] ACCESS-UI-008: Bulk import/export buttons
+- [x] ACCESS-UI-009: Event count per pubkey display
 
 ---
 
@@ -351,7 +351,7 @@ This document tracks all development tasks. Check off items as they're completed
 | 1. Foundation | 17 | 17 | 100% |
 | 2. Setup Wizard | 13 | 13 | 100% |
 | 3. Dashboard | 14 | 14 | 100% |
-| 4. Access Control | 18 | 9 | 50% |
+| 4. Access Control | 18 | 18 | 100% |
 | 5. Event Browser | 13 | 0 | 0% |
 | 6. Configuration | 10 | 0 | 0% |
 | 7. Storage | 16 | 0 | 0% |
@@ -363,12 +363,12 @@ This document tracks all development tasks. Check off items as they're completed
 | 13. Statistics | 8 | 0 | 0% |
 | 14. Packaging | 14 | 0 | 0% |
 | 15. Polish | 14 | 0 | 0% |
-| **TOTAL** | **202** | **53** | **26%** |
+| **TOTAL** | **202** | **62** | **31%** |
 
 ---
 
 ## Current Focus
 
-**Next Task:** ACCESS-UI-001: Create access control page
+**Next Task:** EVENTS-API-001: GET /api/v1/events endpoint (paginated)
 
 See SPECIFICATION.md for full details on any feature.
