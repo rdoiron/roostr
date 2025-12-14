@@ -52,6 +52,11 @@ func (h *Handler) GetEvents(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Parse mentions filter (pubkey hex)
+	if mentions := query.Get("mentions"); mentions != "" {
+		filter.Mentions = mentions
+	}
+
 	events, err := h.db.GetEvents(r.Context(), filter)
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, "Failed to get events", "EVENTS_FETCH_FAILED")

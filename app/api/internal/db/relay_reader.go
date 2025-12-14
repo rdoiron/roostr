@@ -23,14 +23,15 @@ type Event struct {
 
 // EventFilter defines filters for querying events.
 type EventFilter struct {
-	IDs     []string  // Event IDs
-	Authors []string  // Pubkeys (hex)
-	Kinds   []int     // Event kinds
-	Since   time.Time // Events after this time
-	Until   time.Time // Events before this time
-	Limit   int       // Max results (default 50)
-	Offset  int       // Pagination offset
-	Search  string    // Content search (basic)
+	IDs      []string  // Event IDs
+	Authors  []string  // Pubkeys (hex)
+	Kinds    []int     // Event kinds
+	Since    time.Time // Events after this time
+	Until    time.Time // Events before this time
+	Limit    int       // Max results (default 50)
+	Offset   int       // Pagination offset
+	Search   string    // Content search (basic)
+	Mentions string    // Filter events mentioning this pubkey (hex)
 }
 
 // RelayStats holds aggregate statistics from the relay database.
@@ -121,6 +122,13 @@ func (d *DB) GetEvents(ctx context.Context, filter EventFilter) ([]Event, error)
 	if filter.Search != "" {
 		query += " AND content LIKE ?"
 		args = append(args, "%"+filter.Search+"%")
+	}
+
+	if filter.Mentions != "" {
+		// Filter events that have a "p" tag mentioning this pubkey
+		// Tags are stored as JSON: [["p","pubkey"],...]
+		query += " AND tags LIKE ?"
+		args = append(args, `%["p","`+filter.Mentions+`"%`)
 	}
 
 	// Order and pagination

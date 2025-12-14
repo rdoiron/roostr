@@ -117,14 +117,14 @@ This document tracks all development tasks. Check off items as they're completed
 - [x] EVENTS-API-005: Add search by content (basic)
 
 ### Event Browser UI
-- [ ] EVENTS-UI-001: Create event browser page
-- [ ] EVENTS-UI-002: Filter controls (kind, author, date)
-- [ ] EVENTS-UI-003: Event list with pagination
-- [ ] EVENTS-UI-004: Event card component (kind-specific rendering)
-- [ ] EVENTS-UI-005: Event detail modal (raw JSON view)
-- [ ] EVENTS-UI-006: Delete event with confirmation
-- [ ] EVENTS-UI-007: Deep link support (?id=xxx)
-- [ ] EVENTS-UI-008: "Mentions me" filter
+- [x] EVENTS-UI-001: Create event browser page
+- [x] EVENTS-UI-002: Filter controls (kind, author, date)
+- [x] EVENTS-UI-003: Event list with pagination
+- [x] EVENTS-UI-004: Event card component (kind-specific rendering)
+- [x] EVENTS-UI-005: Event detail modal (raw JSON view)
+- [x] EVENTS-UI-006: Delete event with confirmation
+- [x] EVENTS-UI-007: Deep link support (?id=xxx)
+- [x] EVENTS-UI-008: "Mentions me" filter
 
 ---
 
@@ -352,7 +352,7 @@ This document tracks all development tasks. Check off items as they're completed
 | 2. Setup Wizard | 13 | 13 | 100% |
 | 3. Dashboard | 14 | 14 | 100% |
 | 4. Access Control | 18 | 18 | 100% |
-| 5. Event Browser | 13 | 5 | 38% |
+| 5. Event Browser | 13 | 13 | 100% |
 | 6. Configuration | 10 | 0 | 0% |
 | 7. Storage | 16 | 0 | 0% |
 | 8. Export | 10 | 0 | 0% |
@@ -363,12 +363,12 @@ This document tracks all development tasks. Check off items as they're completed
 | 13. Statistics | 8 | 0 | 0% |
 | 14. Packaging | 14 | 0 | 0% |
 | 15. Polish | 14 | 0 | 0% |
-| **TOTAL** | **202** | **67** | **33%** |
+| **TOTAL** | **202** | **75** | **37%** |
 
 ---
 
 ## Current Focus
 
-**Next Task:** EVENTS-UI-001: Create event browser page
+**Next Task:** CONFIG-API-001: GET /api/v1/config endpoint
 
 See SPECIFICATION.md for full details on any feature.
