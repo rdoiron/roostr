@@ -575,6 +575,83 @@ func (d *DB) GetSyncJob(ctx context.Context, id int64) (*SyncJob, error) {
 }
 
 // ============================================================================
+// Deletion Requests
+// ============================================================================
+
+// DeletionRequest represents a queued event deletion request.
+type DeletionRequest struct {
+	ID             int64      `json:"id"`
+	EventID        string     `json:"event_id"`
+	AuthorPubkey   string     `json:"author_pubkey"`
+	TargetEventIDs []string   `json:"target_event_ids"`
+	Reason         string     `json:"reason,omitempty"`
+	Status         string     `json:"status"`
+	ReceivedAt     time.Time  `json:"received_at"`
+	ProcessedAt    *time.Time `json:"processed_at,omitempty"`
+	EventsDeleted  int64      `json:"events_deleted"`
+}
+
+// CreateDeletionRequest queues an event for deletion.
+// Returns the request ID.
+func (d *DB) CreateDeletionRequest(ctx context.Context, eventID, requestedBy, reason string) (int64, error) {
+	// Use a unique identifier for admin-initiated deletions
+	adminRequestID := fmt.Sprintf("admin-%d", time.Now().UnixNano())
+
+	// Store as JSON array for compatibility with NIP-09 format
+	targetIDs, _ := json.Marshal([]string{eventID})
+
+	result, err := d.AppDB.ExecContext(ctx, `
+		INSERT INTO deletion_requests (event_id, author_pubkey, target_event_ids, reason, status)
+		VALUES (?, ?, ?, ?, 'pending')
+	`, adminRequestID, requestedBy, string(targetIDs), nullString(reason))
+
+	if err != nil {
+		return 0, fmt.Errorf("failed to create deletion request: %w", err)
+	}
+
+	return result.LastInsertId()
+}
+
+// GetPendingDeletionRequests retrieves all pending deletion requests.
+func (d *DB) GetPendingDeletionRequests(ctx context.Context) ([]DeletionRequest, error) {
+	rows, err := d.AppDB.QueryContext(ctx, `
+		SELECT id, event_id, author_pubkey, target_event_ids, reason, status, received_at, processed_at, events_deleted
+		FROM deletion_requests
+		WHERE status = 'pending'
+		ORDER BY received_at ASC
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var requests []DeletionRequest
+	for rows.Next() {
+		var r DeletionRequest
+		var targetIDsJSON string
+		var reason sql.NullString
+		var receivedAt int64
+		var processedAt sql.NullInt64
+
+		err := rows.Scan(&r.ID, &r.EventID, &r.AuthorPubkey, &targetIDsJSON, &reason, &r.Status, &receivedAt, &processedAt, &r.EventsDeleted)
+		if err != nil {
+			return nil, err
+		}
+
+		json.Unmarshal([]byte(targetIDsJSON), &r.TargetEventIDs)
+		r.Reason = reason.String
+		r.ReceivedAt = time.Unix(receivedAt, 0)
+		if processedAt.Valid {
+			t := time.Unix(processedAt.Int64, 0)
+			r.ProcessedAt = &t
+		}
+		requests = append(requests, r)
+	}
+
+	return requests, rows.Err()
+}
+
+// ============================================================================
 // Audit Log
 // ============================================================================
 

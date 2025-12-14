@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 	"strconv"
 	"strings"
@@ -92,7 +93,7 @@ func (h *Handler) GetEvent(w http.ResponseWriter, r *http.Request) {
 	respondJSON(w, http.StatusOK, event)
 }
 
-// DeleteEvent deletes an event by ID (creates a deletion request).
+// DeleteEvent queues an event for deletion.
 func (h *Handler) DeleteEvent(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	if id == "" {
@@ -100,13 +101,47 @@ func (h *Handler) DeleteEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: Implement event deletion
-	// This should either:
-	// 1. Directly delete from relay DB (if we have write access)
-	// 2. Create a NIP-09 deletion event
-	// 3. Queue for manual admin deletion
+	// Verify event exists (good UX)
+	if h.db.IsRelayDBConnected() {
+		event, err := h.db.GetEvent(r.Context(), id)
+		if err != nil {
+			respondError(w, http.StatusInternalServerError, "Failed to verify event", "EVENT_VERIFY_FAILED")
+			return
+		}
+		if event == nil {
+			respondError(w, http.StatusNotFound, "Event not found", "EVENT_NOT_FOUND")
+			return
+		}
+	}
 
-	respondError(w, http.StatusNotImplemented, "Event deletion not yet implemented", "NOT_IMPLEMENTED")
+	// Parse optional reason from request body
+	var reqBody struct {
+		Reason string `json:"reason"`
+	}
+	json.NewDecoder(r.Body).Decode(&reqBody) // Ignore errors, reason is optional
+
+	// Get operator pubkey for audit
+	operatorPubkey, _ := h.db.GetAppState(r.Context(), "operator_pubkey")
+
+	// Queue deletion request
+	requestID, err := h.db.CreateDeletionRequest(r.Context(), id, operatorPubkey, reqBody.Reason)
+	if err != nil {
+		// Handle duplicate request
+		if strings.Contains(err.Error(), "UNIQUE constraint") {
+			respondError(w, http.StatusConflict, "Deletion already requested for this event", "DUPLICATE_REQUEST")
+			return
+		}
+		respondError(w, http.StatusInternalServerError, "Failed to queue deletion", "DELETION_QUEUE_FAILED")
+		return
+	}
+
+	// Return 202 Accepted
+	respondJSON(w, http.StatusAccepted, map[string]interface{}{
+		"message":    "Deletion request queued",
+		"request_id": requestID,
+		"event_id":   id,
+		"status":     "pending",
+	})
 }
 
 // GetRecentEvents returns the 10 most recent events for the dashboard.

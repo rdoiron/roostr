@@ -110,11 +110,11 @@ This document tracks all development tasks. Check off items as they're completed
 ## Phase 5: Event Browser
 
 ### Event Browser API
-- [ ] EVENTS-API-001: GET /api/v1/events endpoint (paginated)
-- [ ] EVENTS-API-002: Add filtering (kind, author, date range)
-- [ ] EVENTS-API-003: GET /api/v1/events/:id endpoint
-- [ ] EVENTS-API-004: DELETE /api/v1/events/:id endpoint
-- [ ] EVENTS-API-005: Add search by content (basic)
+- [x] EVENTS-API-001: GET /api/v1/events endpoint (paginated)
+- [x] EVENTS-API-002: Add filtering (kind, author, date range)
+- [x] EVENTS-API-003: GET /api/v1/events/:id endpoint
+- [x] EVENTS-API-004: DELETE /api/v1/events/:id endpoint
+- [x] EVENTS-API-005: Add search by content (basic)
 
 ### Event Browser UI
 - [ ] EVENTS-UI-001: Create event browser page
@@ -352,7 +352,7 @@ This document tracks all development tasks. Check off items as they're completed
 | 2. Setup Wizard | 13 | 13 | 100% |
 | 3. Dashboard | 14 | 14 | 100% |
 | 4. Access Control | 18 | 18 | 100% |
-| 5. Event Browser | 13 | 0 | 0% |
+| 5. Event Browser | 13 | 5 | 38% |
 | 6. Configuration | 10 | 0 | 0% |
 | 7. Storage | 16 | 0 | 0% |
 | 8. Export | 10 | 0 | 0% |
@@ -363,12 +363,12 @@ This document tracks all development tasks. Check off items as they're completed
 | 13. Statistics | 8 | 0 | 0% |
 | 14. Packaging | 14 | 0 | 0% |
 | 15. Polish | 14 | 0 | 0% |
-| **TOTAL** | **202** | **62** | **31%** |
+| **TOTAL** | **202** | **67** | **33%** |
 
 ---
 
 ## Current Focus
 
-**Next Task:** EVENTS-API-001: GET /api/v1/events endpoint (paginated)
+**Next Task:** EVENTS-UI-001: Create event browser page
 
 See SPECIFICATION.md for full details on any feature.
