@@ -135,7 +135,10 @@ export const events = {
 
 export const relay = {
 	getStatus: () => get('/relay/status'),
-	getURLs: () => get('/relay/urls')
+	getURLs: () => get('/relay/urls'),
+	reload: () => post('/relay/reload', {}),
+	restart: () => post('/relay/restart', {}),
+	getLogs: (limit = 100) => get(`/relay/logs?limit=${limit}`)
 };
 
 export const config = {

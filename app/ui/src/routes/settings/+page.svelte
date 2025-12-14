@@ -1,6 +1,5 @@
 <script>
-	import { onMount } from 'svelte';
-	import { config } from '$lib/api/client.js';
+	import { config, relay } from '$lib/api/client.js';
 	import { notify } from '$lib/stores/app.svelte.js';
 	import Loading from '$lib/components/Loading.svelte';
 	import Error from '$lib/components/Error.svelte';
@@ -39,6 +38,17 @@
 
 	// Validation errors
 	let errors = $state({});
+
+	// Relay control state
+	let relayStatus = $state(null);
+	let relayLoading = $state(true);
+	let reloading = $state(false);
+	let restarting = $state(false);
+	let logs = $state([]);
+	let logsLoading = $state(false);
+	let showLogs = $state(false);
+	let streaming = $state(false);
+	let eventSource = $state(null);
 
 	// Load configuration
 	async function loadConfig() {
@@ -217,6 +227,174 @@
 		notify('info', 'Settings reset to defaults. Click Save to apply.');
 	}
 
+	// Load relay status
+	async function loadRelayStatus() {
+		relayLoading = true;
+		try {
+			relayStatus = await relay.getStatus();
+		} catch (e) {
+			relayStatus = { status: 'unknown', error: e.message };
+		} finally {
+			relayLoading = false;
+		}
+	}
+
+	// Handle reload config
+	async function handleReload() {
+		reloading = true;
+		try {
+			await relay.reload();
+			notify('success', 'Relay configuration reloaded');
+			await loadRelayStatus();
+		} catch (e) {
+			notify('error', e.message || 'Failed to reload configuration');
+		} finally {
+			reloading = false;
+		}
+	}
+
+	// Handle restart relay
+	async function handleRestart() {
+		if (!confirm('Restart the relay? This will briefly disconnect all clients.')) {
+			return;
+		}
+
+		restarting = true;
+		try {
+			await relay.restart();
+			notify('info', 'Relay restart initiated...');
+
+			// Poll for status a few times to see if relay comes back
+			let attempts = 0;
+			const maxAttempts = 10;
+			const pollInterval = setInterval(async () => {
+				attempts++;
+				try {
+					const status = await relay.getStatus();
+					relayStatus = status;
+					if (status.status === 'running') {
+						clearInterval(pollInterval);
+						restarting = false;
+						notify('success', 'Relay restarted successfully');
+					} else if (attempts >= maxAttempts) {
+						clearInterval(pollInterval);
+						restarting = false;
+						notify('warning', 'Relay restart taking longer than expected');
+					}
+				} catch {
+					if (attempts >= maxAttempts) {
+						clearInterval(pollInterval);
+						restarting = false;
+						notify('warning', 'Could not verify relay status');
+					}
+				}
+			}, 1000);
+		} catch (e) {
+			notify('error', e.message || 'Failed to restart relay');
+			restarting = false;
+		}
+	}
+
+	// Load relay logs
+	async function loadLogs() {
+		logsLoading = true;
+		try {
+			const result = await relay.getLogs(showLogs ? 100 : 5);
+			logs = result.logs || [];
+		} catch {
+			logs = [];
+		} finally {
+			logsLoading = false;
+		}
+	}
+
+	// Start SSE log streaming
+	function startLogStream() {
+		if (eventSource) return;
+
+		eventSource = new EventSource('/api/v1/relay/logs/stream');
+		streaming = true;
+
+		eventSource.addEventListener('connected', () => {
+			// Stream connected
+		});
+
+		eventSource.addEventListener('log', (e) => {
+			try {
+				const entry = JSON.parse(e.data);
+				logs = [entry, ...logs].slice(0, 100);
+			} catch {
+				// Ignore parse errors
+			}
+		});
+
+		eventSource.addEventListener('error', () => {
+			stopLogStream();
+		});
+
+		eventSource.onerror = () => {
+			stopLogStream();
+		};
+	}
+
+	// Stop SSE log streaming
+	function stopLogStream() {
+		if (eventSource) {
+			eventSource.close();
+			eventSource = null;
+		}
+		streaming = false;
+	}
+
+	// Toggle log streaming
+	function toggleStreaming() {
+		if (streaming) {
+			stopLogStream();
+		} else {
+			startLogStream();
+		}
+	}
+
+	// Format uptime for display
+	function formatUptime(seconds) {
+		if (!seconds || seconds <= 0) return 'N/A';
+		const days = Math.floor(seconds / 86400);
+		const hours = Math.floor((seconds % 86400) / 3600);
+		const minutes = Math.floor((seconds % 3600) / 60);
+
+		const parts = [];
+		if (days > 0) parts.push(`${days}d`);
+		if (hours > 0) parts.push(`${hours}h`);
+		if (minutes > 0 || parts.length === 0) parts.push(`${minutes}m`);
+		return parts.join(' ');
+	}
+
+	// Format timestamp for log display
+	function formatLogTime(timestamp) {
+		if (!timestamp) return '';
+		try {
+			const date = new Date(timestamp);
+			return date.toLocaleTimeString('en-US', { hour12: false });
+		} catch {
+			return timestamp;
+		}
+	}
+
+	// Get log level color class
+	function getLogLevelClass(level) {
+		switch (level?.toUpperCase()) {
+			case 'ERROR':
+				return 'text-red-600';
+			case 'WARN':
+			case 'WARNING':
+				return 'text-amber-600';
+			case 'DEBUG':
+				return 'text-gray-400';
+			default:
+				return 'text-gray-600';
+		}
+	}
+
 	// Format bytes for display
 	function formatBytes(bytes) {
 		if (bytes < 1024) return `${bytes} B`;
@@ -224,8 +402,24 @@
 		return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 	}
 
-	onMount(() => {
-		loadConfig();
+	let initialized = $state(false);
+
+	$effect(() => {
+		if (!initialized) {
+			initialized = true;
+			loadConfig();
+			loadRelayStatus();
+			loadLogs();
+		}
+	});
+
+	// Cleanup SSE connection on unmount
+	$effect(() => {
+		return () => {
+			if (eventSource) {
+				eventSource.close();
+			}
+		};
 	});
 </script>
 
@@ -559,6 +753,175 @@
 							{/if}
 						</div>
 					{/if}
+				</div>
+			</div>
+		</div>
+
+		<!-- Relay Control Section -->
+		<div class="rounded-lg bg-white p-6 shadow">
+			<h2 class="text-lg font-semibold text-gray-900">Relay Control</h2>
+			<p class="mt-1 text-sm text-gray-500">
+				Monitor and control the relay process
+			</p>
+
+			<div class="mt-4 space-y-4">
+				<!-- Status Grid -->
+				{#if relayLoading}
+					<div class="flex items-center gap-2 text-gray-500">
+						<svg class="animate-spin h-4 w-4" viewBox="0 0 24 24">
+							<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+							<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+						</svg>
+						<span class="text-sm">Loading relay status...</span>
+					</div>
+				{:else if relayStatus}
+					<div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+						<div>
+							<span class="text-xs text-gray-500">Status</span>
+							<div class="mt-1 flex items-center gap-2">
+								{#if relayStatus.status === 'running'}
+									<span class="h-2 w-2 rounded-full bg-green-500"></span>
+									<span class="text-sm font-medium text-green-700">Running</span>
+								{:else if relayStatus.status === 'restarting'}
+									<span class="h-2 w-2 rounded-full bg-yellow-500 animate-pulse"></span>
+									<span class="text-sm font-medium text-yellow-700">Restarting...</span>
+								{:else if relayStatus.status === 'stopped'}
+									<span class="h-2 w-2 rounded-full bg-red-500"></span>
+									<span class="text-sm font-medium text-red-700">Stopped</span>
+								{:else}
+									<span class="h-2 w-2 rounded-full bg-gray-400"></span>
+									<span class="text-sm font-medium text-gray-600">Unknown</span>
+								{/if}
+							</div>
+						</div>
+						<div>
+							<span class="text-xs text-gray-500">PID</span>
+							<p class="mt-1 text-sm font-medium text-gray-900">
+								{relayStatus.pid || 'N/A'}
+							</p>
+						</div>
+						<div>
+							<span class="text-xs text-gray-500">Memory</span>
+							<p class="mt-1 text-sm font-medium text-gray-900">
+								{relayStatus.memory_bytes ? formatBytes(relayStatus.memory_bytes) : 'N/A'}
+							</p>
+						</div>
+						<div>
+							<span class="text-xs text-gray-500">Uptime</span>
+							<p class="mt-1 text-sm font-medium text-gray-900">
+								{formatUptime(relayStatus.uptime_seconds)}
+							</p>
+						</div>
+					</div>
+				{/if}
+
+				<!-- Control Buttons -->
+				<div class="flex flex-wrap gap-3">
+					<button
+						type="button"
+						onclick={handleReload}
+						disabled={reloading || restarting}
+						class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 flex items-center gap-2"
+					>
+						{#if reloading}
+							<svg class="animate-spin h-4 w-4" viewBox="0 0 24 24">
+								<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+								<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+							</svg>
+							Reloading...
+						{:else}
+							<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+							</svg>
+							Reload Config
+						{/if}
+					</button>
+					<button
+						type="button"
+						onclick={handleRestart}
+						disabled={reloading || restarting}
+						class="rounded-lg border border-red-300 bg-white px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 flex items-center gap-2"
+					>
+						{#if restarting}
+							<svg class="animate-spin h-4 w-4" viewBox="0 0 24 24">
+								<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+								<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+							</svg>
+							Restarting...
+						{:else}
+							<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+							</svg>
+							Restart Relay
+						{/if}
+					</button>
+				</div>
+
+				<!-- Info text -->
+				<p class="text-xs text-gray-500 flex items-start gap-1">
+					<svg class="h-4 w-4 flex-shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+					</svg>
+					<span>Reload applies config changes without dropping connections. Restart briefly disconnects all clients.</span>
+				</p>
+
+				<!-- Log Viewer -->
+				<div class="border-t border-gray-200 pt-4">
+					<div class="flex items-center justify-between mb-2">
+						<span class="text-sm font-medium text-gray-700">Recent Logs</span>
+						<div class="flex items-center gap-2">
+							<!-- Live toggle -->
+							<button
+								type="button"
+								onclick={toggleStreaming}
+								class="flex items-center gap-1 rounded px-2 py-1 text-xs font-medium {streaming ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}"
+							>
+								{#if streaming}
+									<span class="h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
+									Live
+								{:else}
+									<span class="h-2 w-2 rounded-full bg-gray-400"></span>
+									Live
+								{/if}
+							</button>
+							<!-- Expand toggle -->
+							<button
+								type="button"
+								onclick={() => { showLogs = !showLogs; if (!streaming) loadLogs(); }}
+								class="flex items-center gap-1 rounded px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200"
+							>
+								{showLogs ? 'Collapse' : 'Expand'}
+								<svg class="h-3 w-3 transition-transform {showLogs ? 'rotate-180' : ''}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+								</svg>
+							</button>
+						</div>
+					</div>
+
+					<div class="rounded-lg border border-gray-200 bg-gray-50 overflow-hidden">
+						{#if logsLoading && logs.length === 0}
+							<div class="p-3 text-center text-sm text-gray-500">Loading logs...</div>
+						{:else if logs.length === 0}
+							<div class="p-3 text-center text-sm text-gray-500">No logs available</div>
+						{:else}
+							<div class="max-h-{showLogs ? '80' : '40'} overflow-y-auto" style="max-height: {showLogs ? '320px' : '160px'}">
+								<div class="divide-y divide-gray-200">
+									{#each (showLogs ? logs : logs.slice(0, 5)) as log}
+										<div class="px-3 py-1.5 text-xs font-mono flex gap-2">
+											<span class="text-gray-400 flex-shrink-0">{formatLogTime(log.timestamp)}</span>
+											<span class="flex-shrink-0 w-12 {getLogLevelClass(log.level)}">{log.level}</span>
+											<span class="text-gray-700 truncate">{log.message}</span>
+										</div>
+									{/each}
+								</div>
+							</div>
+							{#if !showLogs && logs.length > 5}
+								<div class="px-3 py-1.5 text-xs text-gray-500 bg-gray-100 border-t border-gray-200">
+									Showing {Math.min(5, logs.length)} of {logs.length} entries
+								</div>
+							{/if}
+						{/if}
+					</div>
 				</div>
 			</div>
 		</div>

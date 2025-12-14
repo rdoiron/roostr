@@ -274,11 +274,11 @@ This document tracks all development tasks. Check off items as they're completed
 - [x] RELAY-API-005: SSE /api/v1/relay/logs/stream (uses SSE, no external deps)
 
 ### Relay Control UI
-- [ ] RELAY-UI-001: Relay control section in settings
-- [ ] RELAY-UI-002: Status display (PID, memory, uptime)
-- [ ] RELAY-UI-003: Reload/restart buttons
-- [ ] RELAY-UI-004: Log viewer
-- [ ] RELAY-UI-005: Real-time log streaming
+- [x] RELAY-UI-001: Relay control section in settings
+- [x] RELAY-UI-002: Status display (PID, memory, uptime)
+- [x] RELAY-UI-003: Reload/restart buttons
+- [x] RELAY-UI-004: Log viewer
+- [x] RELAY-UI-005: Real-time log streaming
 
 ---
 
@@ -359,16 +359,16 @@ This document tracks all development tasks. Check off items as they're completed
 | 9. Sync | 15 | 15 | 100% |
 | 10. Support | 6 | 6 | 100% |
 | 11. Paid Access | 27 | 27 | 100% |
-| 12. Relay Controls | 10 | 5 | 50% |
+| 12. Relay Controls | 10 | 10 | 100% |
 | 13. Statistics | 8 | 0 | 0% |
 | 14. Packaging | 14 | 0 | 0% |
 | 15. Polish | 14 | 0 | 0% |
-| **TOTAL** | **205** | **164** | **80%** |
+| **TOTAL** | **205** | **169** | **82%** |
 
 ---
 
 ## Current Focus
 
-**Next Task:** RELAY-UI-001: Relay control section in settings
+**Next Task:** STATS-API-001: GET /api/v1/stats/events-over-time endpoint
 
 See SPECIFICATION.md for full details on any feature.
