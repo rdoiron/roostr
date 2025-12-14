@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -141,4 +142,196 @@ func (h *Handler) GetRelayURLs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondJSON(w, http.StatusOK, response)
+}
+
+// GetEventsOverTime returns event counts grouped by date for charting.
+// STATS-API-001: GET /api/v1/stats/events-over-time
+func (h *Handler) GetEventsOverTime(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	// Parse time_range query parameter first
+	timeRange := r.URL.Query().Get("time_range")
+	if timeRange == "" {
+		timeRange = "7days"
+	}
+
+	if !h.db.IsRelayDBConnected() {
+		respondJSON(w, http.StatusOK, map[string]interface{}{
+			"data":       []interface{}{},
+			"time_range": timeRange,
+			"total":      0,
+		})
+		return
+	}
+
+	since, until := parseTimeRange(timeRange)
+
+	data, err := h.db.GetEventsOverTime(ctx, since, until)
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, "Failed to get events over time", "STATS_FAILED")
+		return
+	}
+
+	// Calculate total
+	var total int64
+	for _, d := range data {
+		total += d.Count
+	}
+
+	respondJSON(w, http.StatusOK, map[string]interface{}{
+		"data":       data,
+		"time_range": timeRange,
+		"total":      total,
+	})
+}
+
+// GetEventsByKind returns event distribution by kind for charting.
+// STATS-API-002: GET /api/v1/stats/events-by-kind
+func (h *Handler) GetEventsByKind(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	// Parse time_range query parameter first
+	timeRange := r.URL.Query().Get("time_range")
+	if timeRange == "" {
+		timeRange = "alltime"
+	}
+
+	if !h.db.IsRelayDBConnected() {
+		respondJSON(w, http.StatusOK, map[string]interface{}{
+			"kinds":      []interface{}{},
+			"time_range": timeRange,
+			"total":      0,
+		})
+		return
+	}
+
+	since, until := parseTimeRange(timeRange)
+
+	kindCounts, err := h.db.GetEventsByKindInRange(ctx, since, until)
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, "Failed to get events by kind", "STATS_FAILED")
+		return
+	}
+
+	// Calculate total
+	var total int64
+	for _, count := range kindCounts {
+		total += count
+	}
+
+	// Build response with labels and percentages
+	type kindInfo struct {
+		Kind    int     `json:"kind"`
+		Label   string  `json:"label"`
+		Count   int64   `json:"count"`
+		Percent float64 `json:"percent"`
+	}
+
+	var kinds []kindInfo
+	for kind, count := range kindCounts {
+		label := getKindLabel(kind)
+		percent := 0.0
+		if total > 0 {
+			percent = float64(count) / float64(total) * 100
+		}
+		kinds = append(kinds, kindInfo{
+			Kind:    kind,
+			Label:   label,
+			Count:   count,
+			Percent: percent,
+		})
+	}
+
+	respondJSON(w, http.StatusOK, map[string]interface{}{
+		"kinds":      kinds,
+		"time_range": timeRange,
+		"total":      total,
+	})
+}
+
+// GetTopAuthors returns the most active pubkeys by event count.
+// STATS-API-003: GET /api/v1/stats/top-authors
+func (h *Handler) GetTopAuthors(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	// Parse limit query parameter first
+	limit := 10
+	if limitStr := r.URL.Query().Get("limit"); limitStr != "" {
+		if parsed, err := strconv.Atoi(limitStr); err == nil && parsed > 0 {
+			limit = parsed
+			if limit > 100 {
+				limit = 100
+			}
+		}
+	}
+
+	// Parse time_range query parameter
+	timeRange := r.URL.Query().Get("time_range")
+	if timeRange == "" {
+		timeRange = "alltime"
+	}
+
+	if !h.db.IsRelayDBConnected() {
+		respondJSON(w, http.StatusOK, map[string]interface{}{
+			"authors":    []interface{}{},
+			"time_range": timeRange,
+			"limit":      limit,
+		})
+		return
+	}
+
+	since, until := parseTimeRange(timeRange)
+
+	authors, err := h.db.GetTopAuthorsInRange(ctx, limit, since, until)
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, "Failed to get top authors", "STATS_FAILED")
+		return
+	}
+
+	respondJSON(w, http.StatusOK, map[string]interface{}{
+		"authors":    authors,
+		"time_range": timeRange,
+		"limit":      limit,
+	})
+}
+
+// parseTimeRange converts a time range string to since/until timestamps.
+func parseTimeRange(rangeStr string) (since, until time.Time) {
+	now := time.Now().UTC()
+	until = now
+
+	switch rangeStr {
+	case "today":
+		since = time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+	case "7days":
+		since = now.AddDate(0, 0, -7)
+	case "30days":
+		since = now.AddDate(0, 0, -30)
+	case "alltime":
+		since = time.Time{} // Zero value - no filter
+	default:
+		since = now.AddDate(0, 0, -7) // Default to 7 days
+	}
+
+	return since, until
+}
+
+// getKindLabel returns a human-friendly label for a Nostr event kind.
+func getKindLabel(kind int) string {
+	switch kind {
+	case 0:
+		return "profiles"
+	case 1:
+		return "posts"
+	case 3:
+		return "follows"
+	case 4, 14:
+		return "dms"
+	case 6:
+		return "reposts"
+	case 7:
+		return "reactions"
+	default:
+		return "other"
+	}
 }

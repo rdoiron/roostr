@@ -285,9 +285,9 @@ This document tracks all development tasks. Check off items as they're completed
 ## Phase 13: Statistics & Charts
 
 ### Statistics API
-- [ ] STATS-API-001: GET /api/v1/stats/events-over-time endpoint
-- [ ] STATS-API-002: GET /api/v1/stats/events-by-kind endpoint
-- [ ] STATS-API-003: GET /api/v1/stats/top-authors endpoint
+- [x] STATS-API-001: GET /api/v1/stats/events-over-time endpoint
+- [x] STATS-API-002: GET /api/v1/stats/events-by-kind endpoint
+- [x] STATS-API-003: GET /api/v1/stats/top-authors endpoint
 
 ### Statistics UI
 - [ ] STATS-UI-001: Create statistics page
@@ -360,15 +360,15 @@ This document tracks all development tasks. Check off items as they're completed
 | 10. Support | 6 | 6 | 100% |
 | 11. Paid Access | 27 | 27 | 100% |
 | 12. Relay Controls | 10 | 10 | 100% |
-| 13. Statistics | 8 | 0 | 0% |
+| 13. Statistics | 8 | 3 | 38% |
 | 14. Packaging | 14 | 0 | 0% |
 | 15. Polish | 14 | 0 | 0% |
-| **TOTAL** | **205** | **169** | **82%** |
+| **TOTAL** | **205** | **172** | **84%** |
 
 ---
 
 ## Current Focus
 
-**Next Task:** STATS-API-001: GET /api/v1/stats/events-over-time endpoint
+**Next Task:** STATS-UI-001: Create statistics page
 
 See SPECIFICATION.md for full details on any feature.

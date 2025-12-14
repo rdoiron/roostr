@@ -428,6 +428,149 @@ func parseEvent(idBytes, pubkeyBytes []byte, createdAt int64, kind int, tagsJSON
 	}, nil
 }
 
+// DateCount represents event count for a specific date.
+type DateCount struct {
+	Date  string `json:"date"`
+	Count int64  `json:"count"`
+}
+
+// AuthorCount represents event count for a specific author.
+type AuthorCount struct {
+	Pubkey     string `json:"pubkey"`
+	EventCount int64  `json:"event_count"`
+}
+
+// GetEventsOverTime returns event counts grouped by date within a time range.
+func (d *DB) GetEventsOverTime(ctx context.Context, since, until time.Time) ([]DateCount, error) {
+	if d.RelayDB == nil {
+		return nil, fmt.Errorf("relay database not connected")
+	}
+
+	query := `
+		SELECT DATE(datetime(created_at, 'unixepoch')) as date, COUNT(*) as count
+		FROM event
+		WHERE 1=1
+	`
+	args := []interface{}{}
+
+	if !since.IsZero() {
+		query += " AND created_at >= ?"
+		args = append(args, since.Unix())
+	}
+	if !until.IsZero() {
+		query += " AND created_at <= ?"
+		args = append(args, until.Unix())
+	}
+
+	query += " GROUP BY date ORDER BY date"
+
+	rows, err := d.RelayDB.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query events over time: %w", err)
+	}
+	defer rows.Close()
+
+	var results []DateCount
+	for rows.Next() {
+		var dc DateCount
+		if err := rows.Scan(&dc.Date, &dc.Count); err != nil {
+			return nil, err
+		}
+		results = append(results, dc)
+	}
+
+	return results, rows.Err()
+}
+
+// GetEventsByKindInRange returns event counts by kind within a time range.
+func (d *DB) GetEventsByKindInRange(ctx context.Context, since, until time.Time) (map[int]int64, error) {
+	if d.RelayDB == nil {
+		return nil, fmt.Errorf("relay database not connected")
+	}
+
+	query := `SELECT kind, COUNT(*) as count FROM event WHERE 1=1`
+	args := []interface{}{}
+
+	if !since.IsZero() {
+		query += " AND created_at >= ?"
+		args = append(args, since.Unix())
+	}
+	if !until.IsZero() {
+		query += " AND created_at <= ?"
+		args = append(args, until.Unix())
+	}
+
+	query += " GROUP BY kind ORDER BY count DESC"
+
+	rows, err := d.RelayDB.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query events by kind: %w", err)
+	}
+	defer rows.Close()
+
+	results := make(map[int]int64)
+	for rows.Next() {
+		var kind int
+		var count int64
+		if err := rows.Scan(&kind, &count); err != nil {
+			return nil, err
+		}
+		results[kind] = count
+	}
+
+	return results, rows.Err()
+}
+
+// GetTopAuthorsInRange returns the top authors by event count within a time range.
+func (d *DB) GetTopAuthorsInRange(ctx context.Context, limit int, since, until time.Time) ([]AuthorCount, error) {
+	if d.RelayDB == nil {
+		return nil, fmt.Errorf("relay database not connected")
+	}
+
+	if limit <= 0 {
+		limit = 10
+	}
+	if limit > 100 {
+		limit = 100
+	}
+
+	query := `SELECT pubkey, COUNT(*) as count FROM event WHERE 1=1`
+	args := []interface{}{}
+
+	if !since.IsZero() {
+		query += " AND created_at >= ?"
+		args = append(args, since.Unix())
+	}
+	if !until.IsZero() {
+		query += " AND created_at <= ?"
+		args = append(args, until.Unix())
+	}
+
+	query += " GROUP BY pubkey ORDER BY count DESC LIMIT ?"
+	args = append(args, limit)
+
+	rows, err := d.RelayDB.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query top authors: %w", err)
+	}
+	defer rows.Close()
+
+	var authors []AuthorCount
+	for rows.Next() {
+		var pubkeyBytes []byte
+		var count int64
+		if err := rows.Scan(&pubkeyBytes, &count); err != nil {
+			return nil, err
+		}
+		authors = append(authors, AuthorCount{
+			Pubkey:     hex.EncodeToString(pubkeyBytes),
+			EventCount: count,
+		})
+	}
+
+	return authors, rows.Err()
+}
+
 // CountEvents counts events matching the filter (for export progress tracking).
 func (d *DB) CountEvents(ctx context.Context, filter EventFilter) (int64, error) {
 	if d.RelayDB == nil {
