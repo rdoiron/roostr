@@ -27,6 +27,7 @@ type InfoConfig struct {
 	Description string `toml:"description"`
 	Pubkey      string `toml:"pubkey"`
 	Contact     string `toml:"contact"`
+	RelayIcon   string `toml:"relay_icon,omitempty"`
 }
 
 // DatabaseConfig contains database settings.
@@ -42,10 +43,12 @@ type NetworkConfig struct {
 
 // LimitsConfig contains rate limiting settings.
 type LimitsConfig struct {
-	MessagesPerSec    int `toml:"messages_per_sec"`
+	MessagesPerSec      int `toml:"messages_per_sec"`
 	SubscriptionsPerMin int `toml:"subscriptions_per_min"`
-	MaxEventBytes     int `toml:"max_event_bytes"`
-	MaxWSMessageBytes int `toml:"max_ws_message_bytes"`
+	MaxEventBytes       int `toml:"max_event_bytes"`
+	MaxWSMessageBytes   int `toml:"max_ws_message_bytes"`
+	MaxSubsPerConn      int `toml:"max_subs_per_conn,omitempty"`
+	MinPowDifficulty    int `toml:"min_pow_difficulty,omitempty"`
 }
 
 // AuthorizationConfig contains access control settings.

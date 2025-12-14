@@ -131,10 +131,10 @@ This document tracks all development tasks. Check off items as they're completed
 ## Phase 6: Configuration
 
 ### Configuration API
-- [ ] CONFIG-API-001: GET /api/v1/config endpoint
-- [ ] CONFIG-API-002: PATCH /api/v1/config endpoint
-- [ ] CONFIG-API-003: POST /api/v1/config/reload endpoint
-- [ ] CONFIG-API-004: Validate config before saving
+- [x] CONFIG-API-001: GET /api/v1/config endpoint
+- [x] CONFIG-API-002: PATCH /api/v1/config endpoint
+- [x] CONFIG-API-003: POST /api/v1/config/reload endpoint
+- [x] CONFIG-API-004: Validate config before saving
 
 ### Configuration UI
 - [ ] CONFIG-UI-001: Create configuration page
@@ -353,7 +353,7 @@ This document tracks all development tasks. Check off items as they're completed
 | 3. Dashboard | 14 | 14 | 100% |
 | 4. Access Control | 18 | 18 | 100% |
 | 5. Event Browser | 13 | 13 | 100% |
-| 6. Configuration | 10 | 0 | 0% |
+| 6. Configuration | 10 | 4 | 40% |
 | 7. Storage | 16 | 0 | 0% |
 | 8. Export | 10 | 0 | 0% |
 | 9. Sync | 15 | 0 | 0% |
@@ -363,12 +363,12 @@ This document tracks all development tasks. Check off items as they're completed
 | 13. Statistics | 8 | 0 | 0% |
 | 14. Packaging | 14 | 0 | 0% |
 | 15. Polish | 14 | 0 | 0% |
-| **TOTAL** | **202** | **75** | **37%** |
+| **TOTAL** | **202** | **79** | **39%** |
 
 ---
 
 ## Current Focus
 
-**Next Task:** CONFIG-API-001: GET /api/v1/config endpoint
+**Next Task:** CONFIG-UI-001: Create configuration page
 
 See SPECIFICATION.md for full details on any feature.

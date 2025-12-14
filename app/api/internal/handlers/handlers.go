@@ -71,6 +71,11 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/v1/events/{id}", h.GetEvent)
 	mux.HandleFunc("DELETE /api/v1/events/{id}", h.DeleteEvent)
 
+	// Configuration endpoints
+	mux.HandleFunc("GET /api/v1/config", h.GetConfig)
+	mux.HandleFunc("PATCH /api/v1/config", h.UpdateConfig)
+	mux.HandleFunc("POST /api/v1/config/reload", h.ReloadConfig)
+
 	// Serve static files for the UI (SPA fallback)
 	mux.HandleFunc("/", h.ServeUI)
 }
