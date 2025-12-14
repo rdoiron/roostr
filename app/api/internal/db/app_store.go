@@ -956,6 +956,261 @@ func (d *DB) AddAuditLog(ctx context.Context, action string, details interface{}
 }
 
 // ============================================================================
+// Pending Invoices
+// ============================================================================
+
+// PendingInvoice represents an unpaid Lightning invoice for relay access.
+type PendingInvoice struct {
+	ID             int64      `json:"id"`
+	PaymentHash    string     `json:"payment_hash"`
+	Pubkey         string     `json:"pubkey"`
+	Npub           string     `json:"npub"`
+	TierID         string     `json:"tier_id"`
+	AmountSats     int64      `json:"amount_sats"`
+	PaymentRequest string     `json:"payment_request"`
+	Memo           string     `json:"memo,omitempty"`
+	Status         string     `json:"status"`
+	CreatedAt      time.Time  `json:"created_at"`
+	ExpiresAt      time.Time  `json:"expires_at"`
+	PaidAt         *time.Time `json:"paid_at,omitempty"`
+}
+
+// CreatePendingInvoice creates a new pending invoice.
+func (d *DB) CreatePendingInvoice(ctx context.Context, invoice *PendingInvoice) error {
+	_, err := d.AppDB.ExecContext(ctx, `
+		INSERT INTO pending_invoices (payment_hash, pubkey, npub, tier_id, amount_sats, payment_request, memo, status, expires_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?)
+	`, invoice.PaymentHash, invoice.Pubkey, invoice.Npub, invoice.TierID, invoice.AmountSats, invoice.PaymentRequest, nullString(invoice.Memo), invoice.ExpiresAt.Unix())
+	return err
+}
+
+// GetPendingInvoice retrieves a pending invoice by payment hash.
+func (d *DB) GetPendingInvoice(ctx context.Context, paymentHash string) (*PendingInvoice, error) {
+	var inv PendingInvoice
+	var memo sql.NullString
+	var createdAt, expiresAt int64
+	var paidAt sql.NullInt64
+
+	err := d.AppDB.QueryRowContext(ctx, `
+		SELECT id, payment_hash, pubkey, npub, tier_id, amount_sats, payment_request, memo, status, created_at, expires_at, paid_at
+		FROM pending_invoices WHERE payment_hash = ?
+	`, paymentHash).Scan(&inv.ID, &inv.PaymentHash, &inv.Pubkey, &inv.Npub, &inv.TierID, &inv.AmountSats, &inv.PaymentRequest, &memo, &inv.Status, &createdAt, &expiresAt, &paidAt)
+
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	inv.Memo = memo.String
+	inv.CreatedAt = time.Unix(createdAt, 0)
+	inv.ExpiresAt = time.Unix(expiresAt, 0)
+	if paidAt.Valid {
+		t := time.Unix(paidAt.Int64, 0)
+		inv.PaidAt = &t
+	}
+
+	return &inv, nil
+}
+
+// GetPendingInvoicesByPubkey retrieves all pending invoices for a pubkey.
+func (d *DB) GetPendingInvoicesByPubkey(ctx context.Context, pubkey string) ([]PendingInvoice, error) {
+	rows, err := d.AppDB.QueryContext(ctx, `
+		SELECT id, payment_hash, pubkey, npub, tier_id, amount_sats, payment_request, memo, status, created_at, expires_at, paid_at
+		FROM pending_invoices WHERE pubkey = ? ORDER BY created_at DESC
+	`, pubkey)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var invoices []PendingInvoice
+	for rows.Next() {
+		var inv PendingInvoice
+		var memo sql.NullString
+		var createdAt, expiresAt int64
+		var paidAt sql.NullInt64
+
+		err := rows.Scan(&inv.ID, &inv.PaymentHash, &inv.Pubkey, &inv.Npub, &inv.TierID, &inv.AmountSats, &inv.PaymentRequest, &memo, &inv.Status, &createdAt, &expiresAt, &paidAt)
+		if err != nil {
+			return nil, err
+		}
+
+		inv.Memo = memo.String
+		inv.CreatedAt = time.Unix(createdAt, 0)
+		inv.ExpiresAt = time.Unix(expiresAt, 0)
+		if paidAt.Valid {
+			t := time.Unix(paidAt.Int64, 0)
+			inv.PaidAt = &t
+		}
+		invoices = append(invoices, inv)
+	}
+
+	return invoices, rows.Err()
+}
+
+// UpdatePendingInvoiceStatus updates the status of a pending invoice.
+func (d *DB) UpdatePendingInvoiceStatus(ctx context.Context, paymentHash, status string) error {
+	var paidAt interface{}
+	if status == "paid" {
+		paidAt = time.Now().Unix()
+	}
+
+	_, err := d.AppDB.ExecContext(ctx, `
+		UPDATE pending_invoices SET status = ?, paid_at = ? WHERE payment_hash = ?
+	`, status, paidAt, paymentHash)
+	return err
+}
+
+// GetPendingInvoicesAwaitingPayment retrieves all invoices that are still pending and not expired.
+func (d *DB) GetPendingInvoicesAwaitingPayment(ctx context.Context) ([]PendingInvoice, error) {
+	rows, err := d.AppDB.QueryContext(ctx, `
+		SELECT id, payment_hash, pubkey, npub, tier_id, amount_sats, payment_request, memo, status, created_at, expires_at, paid_at
+		FROM pending_invoices
+		WHERE status = 'pending' AND expires_at > strftime('%s', 'now')
+		ORDER BY created_at DESC
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var invoices []PendingInvoice
+	for rows.Next() {
+		var inv PendingInvoice
+		var memo sql.NullString
+		var createdAt, expiresAt int64
+		var paidAt sql.NullInt64
+
+		err := rows.Scan(&inv.ID, &inv.PaymentHash, &inv.Pubkey, &inv.Npub, &inv.TierID, &inv.AmountSats, &inv.PaymentRequest, &memo, &inv.Status, &createdAt, &expiresAt, &paidAt)
+		if err != nil {
+			return nil, err
+		}
+
+		inv.Memo = memo.String
+		inv.CreatedAt = time.Unix(createdAt, 0)
+		inv.ExpiresAt = time.Unix(expiresAt, 0)
+		if paidAt.Valid {
+			t := time.Unix(paidAt.Int64, 0)
+			inv.PaidAt = &t
+		}
+		invoices = append(invoices, inv)
+	}
+
+	return invoices, rows.Err()
+}
+
+// ExpirePendingInvoices marks expired invoices as expired.
+func (d *DB) ExpirePendingInvoices(ctx context.Context) (int64, error) {
+	result, err := d.AppDB.ExecContext(ctx, `
+		UPDATE pending_invoices SET status = 'expired'
+		WHERE status = 'pending' AND expires_at < strftime('%s', 'now')
+	`)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
+// ============================================================================
+// Lightning Configuration
+// ============================================================================
+
+// LightningConfig represents the Lightning node configuration.
+type LightningConfig struct {
+	NodeType       string     `json:"node_type"`        // 'lnd' or 'cln'
+	Endpoint       string     `json:"endpoint"`         // e.g., "umbrel.local:8080"
+	Macaroon       string     `json:"macaroon"`         // hex-encoded macaroon
+	Cert           string     `json:"cert,omitempty"`   // optional TLS cert
+	Enabled        bool       `json:"enabled"`
+	LastVerifiedAt *time.Time `json:"last_verified_at,omitempty"`
+	UpdatedAt      time.Time  `json:"updated_at"`
+}
+
+// GetLightningConfig retrieves the Lightning node configuration.
+func (d *DB) GetLightningConfig(ctx context.Context) (*LightningConfig, error) {
+	var cfg LightningConfig
+	var endpoint, macaroon, cert sql.NullString
+	var enabled int
+	var lastVerifiedAt, updatedAt sql.NullInt64
+
+	err := d.AppDB.QueryRowContext(ctx, `
+		SELECT node_type, endpoint, macaroon, cert, enabled, last_verified_at, updated_at
+		FROM lightning_config WHERE id = 1
+	`).Scan(&cfg.NodeType, &endpoint, &macaroon, &cert, &enabled, &lastVerifiedAt, &updatedAt)
+
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	cfg.Endpoint = endpoint.String
+	cfg.Macaroon = macaroon.String
+	cfg.Cert = cert.String
+	cfg.Enabled = enabled == 1
+	if lastVerifiedAt.Valid {
+		t := time.Unix(lastVerifiedAt.Int64, 0)
+		cfg.LastVerifiedAt = &t
+	}
+	if updatedAt.Valid {
+		cfg.UpdatedAt = time.Unix(updatedAt.Int64, 0)
+	}
+
+	return &cfg, nil
+}
+
+// SaveLightningConfig saves or updates the Lightning node configuration.
+func (d *DB) SaveLightningConfig(ctx context.Context, cfg *LightningConfig) error {
+	var lastVerifiedAt interface{}
+	if cfg.LastVerifiedAt != nil {
+		lastVerifiedAt = cfg.LastVerifiedAt.Unix()
+	}
+
+	enabled := 0
+	if cfg.Enabled {
+		enabled = 1
+	}
+
+	_, err := d.AppDB.ExecContext(ctx, `
+		INSERT INTO lightning_config (id, node_type, endpoint, macaroon, cert, enabled, last_verified_at, updated_at)
+		VALUES (1, ?, ?, ?, ?, ?, ?, strftime('%s', 'now'))
+		ON CONFLICT(id) DO UPDATE SET
+			node_type = excluded.node_type,
+			endpoint = excluded.endpoint,
+			macaroon = excluded.macaroon,
+			cert = excluded.cert,
+			enabled = excluded.enabled,
+			last_verified_at = excluded.last_verified_at,
+			updated_at = excluded.updated_at
+	`, cfg.NodeType, nullString(cfg.Endpoint), nullString(cfg.Macaroon), nullString(cfg.Cert), enabled, lastVerifiedAt)
+	return err
+}
+
+// SetLightningEnabled enables or disables the Lightning integration.
+func (d *DB) SetLightningEnabled(ctx context.Context, enabled bool) error {
+	enabledInt := 0
+	if enabled {
+		enabledInt = 1
+	}
+
+	_, err := d.AppDB.ExecContext(ctx, `
+		UPDATE lightning_config SET enabled = ?, updated_at = strftime('%s', 'now') WHERE id = 1
+	`, enabledInt)
+	return err
+}
+
+// SetLightningVerified updates the last verified timestamp.
+func (d *DB) SetLightningVerified(ctx context.Context) error {
+	_, err := d.AppDB.ExecContext(ctx, `
+		UPDATE lightning_config SET last_verified_at = strftime('%s', 'now'), updated_at = strftime('%s', 'now') WHERE id = 1
+	`)
+	return err
+}
+
+// ============================================================================
 // Helpers
 // ============================================================================
 

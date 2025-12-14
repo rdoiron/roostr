@@ -11,6 +11,7 @@ type Services struct {
 	Deletion  *DeletionService
 	Retention *RetentionService
 	Sync      *SyncService
+	Lightning *LightningService
 }
 
 // New creates a new Services instance with all services initialized.
@@ -18,11 +19,13 @@ func New(database *db.DB) *Services {
 	deletion := NewDeletionService(database)
 	retention := NewRetentionService(database, deletion)
 	sync := NewSyncService(database)
+	lightning := NewLightningService(database)
 
 	return &Services{
 		Deletion:  deletion,
 		Retention: retention,
 		Sync:      sync,
+		Lightning: lightning,
 	}
 }
 

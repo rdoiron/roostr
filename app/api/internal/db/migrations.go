@@ -17,12 +17,33 @@ type Migration struct {
 // Add new migrations to this list as the schema evolves.
 var Migrations = []Migration{
 	// Version 1 is the initial schema, applied via schema.sql
-	// Future migrations go here:
-	// {
-	// 	Version: 2,
-	// 	Name:    "add_some_column",
-	// 	Up:      `ALTER TABLE some_table ADD COLUMN new_column TEXT;`,
-	// },
+	{
+		Version: 2,
+		Name:    "add_pending_invoices",
+		Up: `
+-- Pending invoices for paid relay access
+CREATE TABLE IF NOT EXISTS pending_invoices (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    payment_hash TEXT NOT NULL UNIQUE,    -- hex-encoded payment hash
+    pubkey TEXT NOT NULL,                 -- hex format of the user's pubkey
+    npub TEXT NOT NULL,                   -- bech32 format for display
+    tier_id TEXT NOT NULL,                -- references pricing_tiers.id
+    amount_sats INTEGER NOT NULL,         -- amount in satoshis
+    payment_request TEXT NOT NULL,        -- BOLT11 invoice string
+    memo TEXT,                            -- invoice memo/description
+    status TEXT NOT NULL DEFAULT 'pending',  -- pending, paid, expired, cancelled
+    created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+    expires_at INTEGER NOT NULL,          -- when the invoice expires
+    paid_at INTEGER,                      -- when payment was confirmed
+    FOREIGN KEY (tier_id) REFERENCES pricing_tiers(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_pending_invoices_pubkey ON pending_invoices(pubkey);
+CREATE INDEX IF NOT EXISTS idx_pending_invoices_status ON pending_invoices(status);
+CREATE INDEX IF NOT EXISTS idx_pending_invoices_payment_hash ON pending_invoices(payment_hash);
+CREATE INDEX IF NOT EXISTS idx_pending_invoices_expires ON pending_invoices(expires_at);
+`,
+	},
 }
 
 // Migrate runs all pending migrations.

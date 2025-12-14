@@ -226,9 +226,9 @@ This document tracks all development tasks. Check off items as they're completed
 ## Phase 11: Paid Relay Access
 
 ### Lightning Integration
-- [ ] LN-001: LND connection manager
-- [ ] LN-002: Auto-detect Umbrel LND
-- [ ] LN-003: Invoice generation
+- [x] LN-001: LND connection manager
+- [x] LN-002: Auto-detect Umbrel LND
+- [x] LN-003: Invoice generation
 - [ ] LN-004: Payment verification
 - [ ] LN-005: Invoice subscription/polling
 
@@ -238,13 +238,13 @@ This document tracks all development tasks. Check off items as they're completed
 - [ ] PAID-API-003: GET /api/v1/access/paid-users endpoint
 - [ ] PAID-API-004: DELETE /api/v1/access/paid-users/:pubkey endpoint
 - [ ] PAID-API-005: GET /api/v1/access/revenue endpoint
-- [ ] PAID-API-006: GET /api/v1/lightning/status endpoint
-- [ ] PAID-API-007: PUT /api/v1/lightning/config endpoint
+- [x] PAID-API-006: GET /api/v1/lightning/status endpoint
+- [x] PAID-API-007: PUT /api/v1/lightning/config endpoint
 
 ### Public Signup API
-- [ ] SIGNUP-API-001: GET /public/relay-info endpoint
-- [ ] SIGNUP-API-002: POST /public/create-invoice endpoint
-- [ ] SIGNUP-API-003: GET /public/invoice-status/:hash endpoint
+- [x] SIGNUP-API-001: GET /public/relay-info endpoint
+- [x] SIGNUP-API-002: POST /public/create-invoice endpoint
+- [x] SIGNUP-API-003: GET /public/invoice-status/:hash endpoint
 - [ ] SIGNUP-API-004: Auto-whitelist on payment
 
 ### Paid Access UI
@@ -358,17 +358,17 @@ This document tracks all development tasks. Check off items as they're completed
 | 8. Export | 10 | 10 | 100% |
 | 9. Sync | 15 | 15 | 100% |
 | 10. Support | 6 | 6 | 100% |
-| 11. Paid Access | 24 | 0 | 0% |
+| 11. Paid Access | 24 | 8 | 33% |
 | 12. Relay Controls | 10 | 0 | 0% |
 | 13. Statistics | 8 | 0 | 0% |
 | 14. Packaging | 14 | 0 | 0% |
 | 15. Polish | 14 | 0 | 0% |
-| **TOTAL** | **202** | **132** | **65%** |
+| **TOTAL** | **202** | **140** | **69%** |
 
 ---
 
 ## Current Focus
 
-**Next Task:** LN-001: LND connection manager
+**Next Task:** LN-004: Payment verification
 
 See SPECIFICATION.md for full details on any feature.
