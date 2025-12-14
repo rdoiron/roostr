@@ -85,22 +85,44 @@ func (h *Handler) GetStatsSummary(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// GetRelayStatus returns the current status of the relay.
+// GetRelayStatus returns the current status of the relay with detailed process information.
 func (h *Handler) GetRelayStatus(w http.ResponseWriter, r *http.Request) {
 	relayConnected := h.db.IsRelayDBConnected()
+	apiUptimeSeconds := int64(time.Since(h.startTime).Seconds())
 
-	// TODO: Check actual relay process status
-	status := "unknown"
-	if relayConnected {
-		status = "online"
+	// Determine relay status
+	var status string
+	var pid int
+	var memoryBytes int64
+	var relayUptimeSeconds int64
+
+	if h.relay != nil {
+		if h.relay.IsRestarting() {
+			status = "restarting"
+		} else if h.relay.IsRunning() {
+			status = "running"
+			pid = h.relay.GetPID()
+			memoryBytes = h.relay.GetMemoryUsage()
+			relayUptimeSeconds = h.relay.GetProcessUptime()
+		} else {
+			status = "stopped"
+		}
+	} else {
+		// No relay manager - fall back to database connection check
+		if relayConnected {
+			status = "running"
+		} else {
+			status = "unknown"
+		}
 	}
-
-	uptimeSeconds := int64(time.Since(h.startTime).Seconds())
 
 	respondJSON(w, http.StatusOK, map[string]interface{}{
 		"status":             status,
+		"pid":                pid,
+		"memory_bytes":       memoryBytes,
+		"uptime_seconds":     relayUptimeSeconds,
 		"database_connected": relayConnected,
-		"uptime_seconds":     uptimeSeconds,
+		"api_uptime_seconds": apiUptimeSeconds,
 	})
 }
 

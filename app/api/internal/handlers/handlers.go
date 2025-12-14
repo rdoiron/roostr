@@ -51,6 +51,12 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/v1/relay/urls", h.GetRelayURLs)
 	mux.HandleFunc("GET /api/v1/events/recent", h.GetRecentEvents)
 
+	// Relay control endpoints
+	mux.HandleFunc("POST /api/v1/relay/reload", h.ReloadRelay)
+	mux.HandleFunc("POST /api/v1/relay/restart", h.RestartRelay)
+	mux.HandleFunc("GET /api/v1/relay/logs", h.GetRelayLogs)
+	mux.HandleFunc("GET /api/v1/relay/logs/stream", h.StreamRelayLogs)
+
 	// Access control endpoints
 	mux.HandleFunc("GET /api/v1/access/mode", h.GetAccessMode)
 	mux.HandleFunc("PUT /api/v1/access/mode", h.SetAccessMode)

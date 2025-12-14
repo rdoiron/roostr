@@ -267,11 +267,11 @@ This document tracks all development tasks. Check off items as they're completed
 ## Phase 12: Relay Controls
 
 ### Relay Control API
-- [ ] RELAY-API-001: GET /api/v1/relay/status (detailed)
-- [ ] RELAY-API-002: POST /api/v1/relay/reload endpoint
-- [ ] RELAY-API-003: POST /api/v1/relay/restart endpoint
-- [ ] RELAY-API-004: GET /api/v1/relay/logs endpoint
-- [ ] RELAY-API-005: WebSocket /api/v1/relay/logs/stream
+- [x] RELAY-API-001: GET /api/v1/relay/status (detailed)
+- [x] RELAY-API-002: POST /api/v1/relay/reload endpoint
+- [x] RELAY-API-003: POST /api/v1/relay/restart endpoint
+- [x] RELAY-API-004: GET /api/v1/relay/logs endpoint
+- [x] RELAY-API-005: SSE /api/v1/relay/logs/stream (uses SSE, no external deps)
 
 ### Relay Control UI
 - [ ] RELAY-UI-001: Relay control section in settings
@@ -359,16 +359,16 @@ This document tracks all development tasks. Check off items as they're completed
 | 9. Sync | 15 | 15 | 100% |
 | 10. Support | 6 | 6 | 100% |
 | 11. Paid Access | 27 | 27 | 100% |
-| 12. Relay Controls | 10 | 0 | 0% |
+| 12. Relay Controls | 10 | 5 | 50% |
 | 13. Statistics | 8 | 0 | 0% |
 | 14. Packaging | 14 | 0 | 0% |
 | 15. Polish | 14 | 0 | 0% |
-| **TOTAL** | **205** | **159** | **78%** |
+| **TOTAL** | **205** | **164** | **80%** |
 
 ---
 
 ## Current Focus
 
-**Next Task:** RELAY-API-001: GET /api/v1/relay/status (detailed)
+**Next Task:** RELAY-UI-001: Relay control section in settings
 
 See SPECIFICATION.md for full details on any feature.
