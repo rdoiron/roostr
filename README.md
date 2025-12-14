@@ -42,7 +42,7 @@ make dev
 ## Tech Stack
 
 - **Frontend**: Svelte 5 + SvelteKit + Tailwind CSS
-- **Backend**: Go
+- **Backend**: Go 1.22+ (with SQLite and TOML libraries)
 - **Relay**: nostr-rs-relay
 - **Database**: SQLite
 

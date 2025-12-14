@@ -84,15 +84,15 @@ This document tracks all development tasks. Check off items as they're completed
 ## Phase 4: Access Control
 
 ### Access Control API
-- [ ] ACCESS-API-001: GET /api/v1/access/mode endpoint
-- [ ] ACCESS-API-002: PUT /api/v1/access/mode endpoint
-- [ ] ACCESS-API-003: GET /api/v1/access/whitelist endpoint
-- [ ] ACCESS-API-004: POST /api/v1/access/whitelist endpoint
-- [ ] ACCESS-API-005: DELETE /api/v1/access/whitelist/:pubkey endpoint
-- [ ] ACCESS-API-006: Implement config.toml reader/writer
-- [ ] ACCESS-API-007: Add relay config reload (SIGHUP)
-- [ ] ACCESS-API-008: GET /api/v1/nip05/:identifier resolution
-- [ ] ACCESS-API-009: Blacklist CRUD endpoints
+- [x] ACCESS-API-001: GET /api/v1/access/mode endpoint
+- [x] ACCESS-API-002: PUT /api/v1/access/mode endpoint
+- [x] ACCESS-API-003: GET /api/v1/access/whitelist endpoint
+- [x] ACCESS-API-004: POST /api/v1/access/whitelist endpoint
+- [x] ACCESS-API-005: DELETE /api/v1/access/whitelist/:pubkey endpoint
+- [x] ACCESS-API-006: Implement config.toml reader/writer
+- [x] ACCESS-API-007: Add relay config reload (SIGHUP)
+- [x] ACCESS-API-008: GET /api/v1/nip05/:identifier resolution
+- [x] ACCESS-API-009: Blacklist CRUD endpoints
 
 ### Access Control UI
 - [ ] ACCESS-UI-001: Create access control page
@@ -351,7 +351,7 @@ This document tracks all development tasks. Check off items as they're completed
 | 1. Foundation | 17 | 17 | 100% |
 | 2. Setup Wizard | 13 | 13 | 100% |
 | 3. Dashboard | 14 | 14 | 100% |
-| 4. Access Control | 18 | 0 | 0% |
+| 4. Access Control | 18 | 9 | 50% |
 | 5. Event Browser | 13 | 0 | 0% |
 | 6. Configuration | 10 | 0 | 0% |
 | 7. Storage | 16 | 0 | 0% |
@@ -363,12 +363,12 @@ This document tracks all development tasks. Check off items as they're completed
 | 13. Statistics | 8 | 0 | 0% |
 | 14. Packaging | 14 | 0 | 0% |
 | 15. Polish | 14 | 0 | 0% |
-| **TOTAL** | **202** | **44** | **22%** |
+| **TOTAL** | **202** | **53** | **26%** |
 
 ---
 
 ## Current Focus
 
-**Next Task:** ACCESS-API-001: GET /api/v1/access/mode endpoint
+**Next Task:** ACCESS-UI-001: Create access control page
 
 See SPECIFICATION.md for full details on any feature.

@@ -12,6 +12,7 @@ import (
 	"github.com/roostr/roostr/app/api/internal/config"
 	"github.com/roostr/roostr/app/api/internal/db"
 	"github.com/roostr/roostr/app/api/internal/handlers"
+	"github.com/roostr/roostr/app/api/internal/relay"
 )
 
 func main() {
@@ -36,8 +37,26 @@ func main() {
 		log.Printf("Warning: Migration failed: %v", err)
 	}
 
+	// Initialize config manager for relay config.toml
+	var configMgr *relay.ConfigManager
+	if cfg.ConfigPath != "" {
+		configMgr = relay.NewConfigManager(cfg.ConfigPath)
+		log.Printf("Config manager initialized for: %s", cfg.ConfigPath)
+	}
+
+	// Initialize relay manager
+	var relayMgr *relay.Relay
+	if cfg.RelayBinary != "" {
+		relayMgr = relay.New(cfg.RelayBinary, cfg.ConfigPath)
+		if relayMgr.IsRunning() {
+			log.Println("Relay process detected as running")
+		} else {
+			log.Println("Relay process not detected (will sync config but not reload)")
+		}
+	}
+
 	// Create handler with dependencies
-	h := handlers.New(database, cfg)
+	h := handlers.New(database, cfg, configMgr, relayMgr)
 
 	// Set up router
 	mux := http.NewServeMux()

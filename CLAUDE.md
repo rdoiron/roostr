@@ -23,10 +23,17 @@ Target platforms: Umbrel App Store and Start9 StartOS.
 | Component | Technology |
 |-----------|------------|
 | Frontend | Svelte 5 + SvelteKit + Tailwind CSS |
-| Backend | Go 1.21+ (standard library preferred) |
+| Backend | Go 1.22+ |
 | Relay | nostr-rs-relay (Rust, external process) |
 | Database | SQLite (relay DB read-only, app DB read-write) |
 | Packaging | Docker Compose (Umbrel), .s9pk (Start9) |
+
+### Go Dependencies
+
+| Package | Purpose |
+|---------|---------|
+| `github.com/mattn/go-sqlite3` | SQLite database driver |
+| `github.com/BurntSushi/toml` | TOML config file parsing for relay config.toml |
 
 ## Project Structure
 

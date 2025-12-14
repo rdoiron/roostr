@@ -8,20 +8,25 @@ import (
 
 	"github.com/roostr/roostr/app/api/internal/config"
 	"github.com/roostr/roostr/app/api/internal/db"
+	"github.com/roostr/roostr/app/api/internal/relay"
 )
 
 // Handler holds dependencies for HTTP handlers.
 type Handler struct {
 	db        *db.DB
 	cfg       *config.Config
+	configMgr *relay.ConfigManager
+	relay     *relay.Relay
 	startTime time.Time // Server start time for uptime calculation
 }
 
 // New creates a new Handler instance with dependencies.
-func New(database *db.DB, cfg *config.Config) *Handler {
+func New(database *db.DB, cfg *config.Config, configMgr *relay.ConfigManager, relayMgr *relay.Relay) *Handler {
 	return &Handler{
 		db:        database,
 		cfg:       cfg,
+		configMgr: configMgr,
+		relay:     relayMgr,
 		startTime: time.Now(),
 	}
 }
@@ -46,10 +51,20 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	// Access control endpoints
 	mux.HandleFunc("GET /api/v1/access/mode", h.GetAccessMode)
 	mux.HandleFunc("PUT /api/v1/access/mode", h.SetAccessMode)
+
+	// Whitelist endpoints
 	mux.HandleFunc("GET /api/v1/access/whitelist", h.GetWhitelist)
 	mux.HandleFunc("POST /api/v1/access/whitelist", h.AddToWhitelist)
 	mux.HandleFunc("DELETE /api/v1/access/whitelist/{pubkey}", h.RemoveFromWhitelist)
 	mux.HandleFunc("PATCH /api/v1/access/whitelist/{pubkey}", h.UpdateWhitelistEntry)
+
+	// Blacklist endpoints
+	mux.HandleFunc("GET /api/v1/access/blacklist", h.GetBlacklist)
+	mux.HandleFunc("POST /api/v1/access/blacklist", h.AddToBlacklist)
+	mux.HandleFunc("DELETE /api/v1/access/blacklist/{pubkey}", h.RemoveFromBlacklist)
+
+	// NIP-05 resolution endpoint
+	mux.HandleFunc("GET /api/v1/nip05/{identifier}", h.ResolveNIP05)
 
 	// Event browser endpoints
 	mux.HandleFunc("GET /api/v1/events", h.GetEvents)
