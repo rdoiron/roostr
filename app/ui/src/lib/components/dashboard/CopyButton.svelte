@@ -1,15 +1,24 @@
 <script>
+	import { onMount } from 'svelte';
 	import { notify } from '$lib/stores';
 
 	let { text = '' } = $props();
 	let copied = $state(false);
+	let resetTimer = null;
+
+	onMount(() => {
+		return () => {
+			if (resetTimer) clearTimeout(resetTimer);
+		};
+	});
 
 	async function copy() {
 		try {
 			await navigator.clipboard.writeText(text);
 			copied = true;
 			notify('success', 'Copied to clipboard');
-			setTimeout(() => {
+			if (resetTimer) clearTimeout(resetTimer);
+			resetTimer = setTimeout(() => {
 				copied = false;
 			}, 2000);
 		} catch {

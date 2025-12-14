@@ -1,4 +1,5 @@
 <script>
+	import { onMount } from 'svelte';
 	import { setup } from '$lib/api/client.js';
 
 	let { identity = '', onChange } = $props();
@@ -6,7 +7,13 @@
 	let inputValue = $state(identity);
 	let validating = $state(false);
 	let validationResult = $state(null);
-	let debounceTimer = $state(null);
+	let debounceTimer = null;
+
+	onMount(() => {
+		return () => {
+			if (debounceTimer) clearTimeout(debounceTimer);
+		};
+	});
 
 	// Debounced validation
 	function handleInput(e) {
