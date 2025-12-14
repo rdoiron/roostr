@@ -185,3 +185,7 @@ export const sync = {
 	},
 	getRelays: () => get('/sync/relays')
 };
+
+export const support = {
+	getConfig: () => get('/support/config')
+};

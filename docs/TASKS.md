@@ -214,12 +214,12 @@ This document tracks all development tasks. Check off items as they're completed
 ## Phase 10: Support & Donations
 
 ### Support UI
-- [ ] SUPPORT-UI-001: Create support page
-- [ ] SUPPORT-UI-002: Lightning address display with QR
-- [ ] SUPPORT-UI-003: Bitcoin address display with QR
-- [ ] SUPPORT-UI-004: WebLN integration (tip button)
-- [ ] SUPPORT-UI-005: Help links section
-- [ ] SUPPORT-UI-006: About section with version
+- [x] SUPPORT-UI-001: Create support page
+- [x] SUPPORT-UI-002: Lightning address display with QR
+- [x] SUPPORT-UI-003: Bitcoin address display with QR
+- [x] SUPPORT-UI-004: WebLN integration (tip button)
+- [x] SUPPORT-UI-005: Help links section
+- [x] SUPPORT-UI-006: About section with version
 
 ---
 
@@ -357,18 +357,18 @@ This document tracks all development tasks. Check off items as they're completed
 | 7. Storage | 16 | 16 | 100% |
 | 8. Export | 10 | 10 | 100% |
 | 9. Sync | 15 | 15 | 100% |
-| 10. Support | 6 | 0 | 0% |
+| 10. Support | 6 | 6 | 100% |
 | 11. Paid Access | 24 | 0 | 0% |
 | 12. Relay Controls | 10 | 0 | 0% |
 | 13. Statistics | 8 | 0 | 0% |
 | 14. Packaging | 14 | 0 | 0% |
 | 15. Polish | 14 | 0 | 0% |
-| **TOTAL** | **202** | **126** | **62%** |
+| **TOTAL** | **202** | **132** | **65%** |
 
 ---
 
 ## Current Focus
 
-**Next Task:** SUPPORT-UI-001: Create support page
+**Next Task:** LN-001: LND connection manager
 
 See SPECIFICATION.md for full details on any feature.

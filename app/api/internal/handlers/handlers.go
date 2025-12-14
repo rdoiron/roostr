@@ -98,6 +98,9 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/v1/sync/history", h.GetSyncHistory)
 	mux.HandleFunc("GET /api/v1/sync/relays", h.GetDefaultRelays)
 
+	// Support endpoints
+	mux.HandleFunc("GET /api/v1/support/config", h.GetSupportConfig)
+
 	// Serve static files for the UI (SPA fallback)
 	mux.HandleFunc("/", h.ServeUI)
 }
