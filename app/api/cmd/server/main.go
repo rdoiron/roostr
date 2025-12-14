@@ -63,7 +63,7 @@ func main() {
 	log.Println("Background services started")
 
 	// Create handler with dependencies
-	h := handlers.New(database, cfg, configMgr, relayMgr)
+	h := handlers.New(database, cfg, configMgr, relayMgr, svc)
 
 	// Set up router
 	mux := http.NewServeMux()

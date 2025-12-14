@@ -9,6 +9,7 @@ import (
 	"github.com/roostr/roostr/app/api/internal/config"
 	"github.com/roostr/roostr/app/api/internal/db"
 	"github.com/roostr/roostr/app/api/internal/relay"
+	"github.com/roostr/roostr/app/api/internal/services"
 )
 
 // Handler holds dependencies for HTTP handlers.
@@ -17,16 +18,18 @@ type Handler struct {
 	cfg       *config.Config
 	configMgr *relay.ConfigManager
 	relay     *relay.Relay
+	services  *services.Services
 	startTime time.Time // Server start time for uptime calculation
 }
 
 // New creates a new Handler instance with dependencies.
-func New(database *db.DB, cfg *config.Config, configMgr *relay.ConfigManager, relayMgr *relay.Relay) *Handler {
+func New(database *db.DB, cfg *config.Config, configMgr *relay.ConfigManager, relayMgr *relay.Relay, svc *services.Services) *Handler {
 	return &Handler{
 		db:        database,
 		cfg:       cfg,
 		configMgr: configMgr,
 		relay:     relayMgr,
+		services:  svc,
 		startTime: time.Now(),
 	}
 }
@@ -87,6 +90,13 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/v1/storage/deletion-requests", h.GetDeletionRequests)
 	mux.HandleFunc("GET /api/v1/storage/estimate", h.GetStorageEstimate)
 	mux.HandleFunc("POST /api/v1/storage/integrity-check", h.RunIntegrityCheck)
+
+	// Sync endpoints
+	mux.HandleFunc("POST /api/v1/sync/start", h.StartSync)
+	mux.HandleFunc("GET /api/v1/sync/status", h.GetSyncStatus)
+	mux.HandleFunc("POST /api/v1/sync/cancel", h.CancelSync)
+	mux.HandleFunc("GET /api/v1/sync/history", h.GetSyncHistory)
+	mux.HandleFunc("GET /api/v1/sync/relays", h.GetDefaultRelays)
 
 	// Serve static files for the UI (SPA fallback)
 	mux.HandleFunc("/", h.ServeUI)

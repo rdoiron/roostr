@@ -191,13 +191,13 @@ This document tracks all development tasks. Check off items as they're completed
 ## Phase 9: Sync from Public Relays
 
 ### Sync API
-- [ ] SYNC-API-001: POST /api/v1/sync/start endpoint
-- [ ] SYNC-API-002: GET /api/v1/sync/status endpoint
-- [ ] SYNC-API-003: POST /api/v1/sync/cancel endpoint
-- [ ] SYNC-API-004: Implement Nostr client for fetching
-- [ ] SYNC-API-005: Background sync job with progress
-- [ ] SYNC-API-006: Duplicate detection and skip
-- [ ] SYNC-API-007: GET /api/v1/sync/history endpoint
+- [x] SYNC-API-001: POST /api/v1/sync/start endpoint
+- [x] SYNC-API-002: GET /api/v1/sync/status endpoint
+- [x] SYNC-API-003: POST /api/v1/sync/cancel endpoint
+- [x] SYNC-API-004: Implement Nostr client for fetching
+- [x] SYNC-API-005: Background sync job with progress
+- [x] SYNC-API-006: Duplicate detection and skip
+- [x] SYNC-API-007: GET /api/v1/sync/history endpoint
 
 ### Sync UI
 - [ ] SYNC-UI-001: Add sync button to dashboard
@@ -356,19 +356,19 @@ This document tracks all development tasks. Check off items as they're completed
 | 6. Configuration | 10 | 10 | 100% |
 | 7. Storage | 16 | 16 | 100% |
 | 8. Export | 10 | 10 | 100% |
-| 9. Sync | 15 | 0 | 0% |
+| 9. Sync | 15 | 7 | 47% |
 | 10. Support | 6 | 0 | 0% |
 | 11. Paid Access | 24 | 0 | 0% |
 | 12. Relay Controls | 10 | 0 | 0% |
 | 13. Statistics | 8 | 0 | 0% |
 | 14. Packaging | 14 | 0 | 0% |
 | 15. Polish | 14 | 0 | 0% |
-| **TOTAL** | **202** | **111** | **55%** |
+| **TOTAL** | **202** | **118** | **58%** |
 
 ---
 
 ## Current Focus
 
-**Next Task:** SYNC-API-001: POST /api/v1/sync/start endpoint
+**Next Task:** SYNC-UI-001: Add sync button to dashboard
 
 See SPECIFICATION.md for full details on any feature.

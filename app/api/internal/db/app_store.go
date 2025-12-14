@@ -574,6 +574,101 @@ func (d *DB) GetSyncJob(ctx context.Context, id int64) (*SyncJob, error) {
 	return &job, nil
 }
 
+// GetSyncJobs retrieves sync jobs, optionally filtered by status.
+// If status is empty, returns all jobs. Orders by started_at DESC.
+func (d *DB) GetSyncJobs(ctx context.Context, status string, limit, offset int) ([]SyncJob, error) {
+	if limit <= 0 {
+		limit = 20
+	}
+	if limit > 100 {
+		limit = 100
+	}
+
+	query := `
+		SELECT id, status, pubkeys, relays, event_kinds, since_timestamp, started_at, completed_at,
+		       events_fetched, events_stored, events_skipped, error_message
+		FROM sync_jobs
+	`
+	args := []interface{}{}
+
+	if status != "" {
+		query += " WHERE status = ?"
+		args = append(args, status)
+	}
+
+	query += " ORDER BY started_at DESC LIMIT ? OFFSET ?"
+	args = append(args, limit, offset)
+
+	rows, err := d.AppDB.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query sync jobs: %w", err)
+	}
+	defer rows.Close()
+
+	var jobs []SyncJob
+	for rows.Next() {
+		var job SyncJob
+		var pubkeysJSON, relaysJSON string
+		var kindsJSON sql.NullString
+		var startedAt, completedAt, sinceTimestamp sql.NullInt64
+		var errorMsg sql.NullString
+
+		err := rows.Scan(&job.ID, &job.Status, &pubkeysJSON, &relaysJSON, &kindsJSON, &sinceTimestamp,
+			&startedAt, &completedAt, &job.EventsFetched, &job.EventsStored, &job.EventsSkipped, &errorMsg)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan sync job: %w", err)
+		}
+
+		json.Unmarshal([]byte(pubkeysJSON), &job.Pubkeys)
+		json.Unmarshal([]byte(relaysJSON), &job.Relays)
+		if kindsJSON.Valid {
+			json.Unmarshal([]byte(kindsJSON.String), &job.EventKinds)
+		}
+		if sinceTimestamp.Valid {
+			t := time.Unix(sinceTimestamp.Int64, 0)
+			job.SinceTimestamp = &t
+		}
+		if startedAt.Valid {
+			job.StartedAt = time.Unix(startedAt.Int64, 0)
+		}
+		if completedAt.Valid {
+			t := time.Unix(completedAt.Int64, 0)
+			job.CompletedAt = &t
+		}
+		job.ErrorMessage = errorMsg.String
+
+		jobs = append(jobs, job)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating sync jobs: %w", err)
+	}
+
+	return jobs, nil
+}
+
+// GetRunningSyncJob returns the currently running sync job, if any.
+func (d *DB) GetRunningSyncJob(ctx context.Context) (*SyncJob, error) {
+	jobs, err := d.GetSyncJobs(ctx, "running", 1, 0)
+	if err != nil {
+		return nil, err
+	}
+	if len(jobs) == 0 {
+		return nil, nil
+	}
+	return &jobs[0], nil
+}
+
+// CancelSyncJob marks a sync job as cancelled.
+func (d *DB) CancelSyncJob(ctx context.Context, id int64) error {
+	_, err := d.AppDB.ExecContext(ctx, `
+		UPDATE sync_jobs
+		SET status = 'cancelled', completed_at = strftime('%s', 'now')
+		WHERE id = ? AND status = 'running'
+	`, id)
+	return err
+}
+
 // ============================================================================
 // Deletion Requests
 // ============================================================================

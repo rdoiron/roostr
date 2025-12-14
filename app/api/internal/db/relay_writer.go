@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -191,4 +192,49 @@ func (w *RelayWriter) GetPageInfo(ctx context.Context) (pageCount int64, freePag
 	}
 
 	return pageCount, freePages, pageSize, nil
+}
+
+// InsertEvent inserts a Nostr event into the relay database.
+// Uses INSERT OR IGNORE to handle duplicates gracefully.
+// Returns true if the event was inserted (new), false if it already existed.
+func (w *RelayWriter) InsertEvent(ctx context.Context, event *Event) (bool, error) {
+	// Convert hex ID to bytes
+	idBytes, err := hex.DecodeString(event.ID)
+	if err != nil {
+		return false, fmt.Errorf("invalid event ID: %w", err)
+	}
+
+	// Convert hex pubkey to bytes
+	pubkeyBytes, err := hex.DecodeString(event.Pubkey)
+	if err != nil {
+		return false, fmt.Errorf("invalid pubkey: %w", err)
+	}
+
+	// Convert hex signature to bytes
+	sigBytes, err := hex.DecodeString(event.Sig)
+	if err != nil {
+		return false, fmt.Errorf("invalid signature: %w", err)
+	}
+
+	// Serialize tags to JSON
+	tagsJSON, err := json.Marshal(event.Tags)
+	if err != nil {
+		return false, fmt.Errorf("failed to serialize tags: %w", err)
+	}
+
+	// Insert with OR IGNORE for duplicate handling
+	result, err := w.db.ExecContext(ctx, `
+		INSERT OR IGNORE INTO event (id, pubkey, created_at, kind, tags, content, sig)
+		VALUES (?, ?, ?, ?, ?, ?, ?)
+	`, idBytes, pubkeyBytes, event.CreatedAt.Unix(), event.Kind, string(tagsJSON), event.Content, sigBytes)
+	if err != nil {
+		return false, fmt.Errorf("failed to insert event: %w", err)
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return false, fmt.Errorf("failed to get affected rows: %w", err)
+	}
+
+	return rows > 0, nil
 }
