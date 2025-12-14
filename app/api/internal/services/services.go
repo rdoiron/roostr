@@ -14,6 +14,7 @@ type Services struct {
 	Sync           *SyncService
 	Lightning      *LightningService
 	InvoiceMonitor *InvoiceMonitorService
+	Expiry         *ExpiryService
 }
 
 // New creates a new Services instance with all services initialized.
@@ -25,6 +26,7 @@ func New(database *db.DB, configMgr *relay.ConfigManager, relayCtl *relay.Relay)
 	sync := NewSyncService(database)
 	lightning := NewLightningService(database)
 	invoiceMonitor := NewInvoiceMonitorService(database, lightning, configMgr, relayCtl)
+	expiry := NewExpiryService(database, configMgr, relayCtl)
 
 	return &Services{
 		Deletion:       deletion,
@@ -32,6 +34,7 @@ func New(database *db.DB, configMgr *relay.ConfigManager, relayCtl *relay.Relay)
 		Sync:           sync,
 		Lightning:      lightning,
 		InvoiceMonitor: invoiceMonitor,
+		Expiry:         expiry,
 	}
 }
 
@@ -39,10 +42,12 @@ func New(database *db.DB, configMgr *relay.ConfigManager, relayCtl *relay.Relay)
 func (s *Services) Start() {
 	s.Retention.Start()
 	s.InvoiceMonitor.Start()
+	s.Expiry.Start()
 }
 
 // Stop stops all background services gracefully.
 func (s *Services) Stop() {
+	s.Expiry.Stop()
 	s.InvoiceMonitor.Stop()
 	s.Retention.Stop()
 }
