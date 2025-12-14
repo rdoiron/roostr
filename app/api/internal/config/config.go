@@ -26,7 +26,7 @@ type Config struct {
 // Load reads configuration from environment variables with sensible defaults.
 func Load() (*Config, error) {
 	cfg := &Config{
-		Port:        getEnv("PORT", "8080"),
+		Port:        getEnv("PORT", "3001"),
 		RelayDBPath: getEnv("RELAY_DB_PATH", "data/nostr.db"),
 		AppDBPath:   getEnv("APP_DB_PATH", "data/roostr.db"),
 		ConfigPath:  getEnv("CONFIG_PATH", "data/config.toml"),
