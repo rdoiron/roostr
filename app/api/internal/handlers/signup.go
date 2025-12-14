@@ -66,11 +66,11 @@ func (h *Handler) GetRelayInfo(w http.ResponseWriter, r *http.Request) {
 	lnConfigured := h.services.Lightning.IsConfigured()
 
 	respondJSON(w, http.StatusOK, map[string]interface{}{
-		"paid_access_enabled":   true,
-		"lightning_configured":  lnConfigured,
-		"relay_name":            relayName,
-		"relay_description":     relayDescription,
-		"pricing_tiers":         enabledTiers,
+		"paid_access_enabled":  true,
+		"lightning_configured": lnConfigured,
+		"name":                 relayName,
+		"description":          relayDescription,
+		"tiers":                enabledTiers,
 	})
 }
 
