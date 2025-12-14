@@ -69,15 +69,15 @@ This document tracks all development tasks. Check off items as they're completed
 - [x] DASH-API-005: Implement Tor URL detection
 
 ### Dashboard UI
-- [ ] DASH-UI-001: Create dashboard page layout
-- [ ] DASH-UI-002: Relay status card (online/offline, uptime)
-- [ ] DASH-UI-003: URL display with copy buttons
-- [ ] DASH-UI-004: QR code generation for URLs
-- [ ] DASH-UI-005: Stats cards (total events, storage, pubkeys)
-- [ ] DASH-UI-006: Event type breakdown cards
-- [ ] DASH-UI-007: Recent activity feed (clickable)
-- [ ] DASH-UI-008: Quick action buttons
-- [ ] DASH-UI-009: Auto-refresh for live stats
+- [x] DASH-UI-001: Create dashboard page layout
+- [x] DASH-UI-002: Relay status card (online/offline, uptime)
+- [x] DASH-UI-003: URL display with copy buttons
+- [x] DASH-UI-004: QR code generation for URLs
+- [x] DASH-UI-005: Stats cards (total events, storage, pubkeys)
+- [x] DASH-UI-006: Event type breakdown cards
+- [x] DASH-UI-007: Recent activity feed (clickable)
+- [x] DASH-UI-008: Quick action buttons
+- [x] DASH-UI-009: Auto-refresh for live stats
 
 ---
 
@@ -350,7 +350,7 @@ This document tracks all development tasks. Check off items as they're completed
 |-------|-------|-----------|----------|
 | 1. Foundation | 17 | 17 | 100% |
 | 2. Setup Wizard | 13 | 13 | 100% |
-| 3. Dashboard | 14 | 5 | 36% |
+| 3. Dashboard | 14 | 14 | 100% |
 | 4. Access Control | 18 | 0 | 0% |
 | 5. Event Browser | 13 | 0 | 0% |
 | 6. Configuration | 10 | 0 | 0% |
@@ -363,12 +363,12 @@ This document tracks all development tasks. Check off items as they're completed
 | 13. Statistics | 8 | 0 | 0% |
 | 14. Packaging | 14 | 0 | 0% |
 | 15. Polish | 14 | 0 | 0% |
-| **TOTAL** | **202** | **35** | **17%** |
+| **TOTAL** | **202** | **44** | **22%** |
 
 ---
 
 ## Current Focus
 
-**Next Task:** DASH-UI-001: Create dashboard page layout
+**Next Task:** ACCESS-API-001: GET /api/v1/access/mode endpoint
 
 See SPECIFICATION.md for full details on any feature.

@@ -1,25 +1,48 @@
 <script>
-	import { onMount } from 'svelte';
-	import { get } from '$lib/api';
+	import { onMount, onDestroy } from 'svelte';
+	import { stats, relay, events } from '$lib/api/client.js';
 	import { relayStatus } from '$lib/stores';
+	import { formatUptime, formatBytes } from '$lib/utils/format.js';
 
-	let stats = $state(null);
+	import Loading from '$lib/components/Loading.svelte';
+	import Error from '$lib/components/Error.svelte';
+	import StatCard from '$lib/components/dashboard/StatCard.svelte';
+	import StatusIndicator from '$lib/components/dashboard/StatusIndicator.svelte';
+	import RelayURLCard from '$lib/components/dashboard/RelayURLCard.svelte';
+	import EventTypeCard from '$lib/components/dashboard/EventTypeCard.svelte';
+	import RecentActivityFeed from '$lib/components/dashboard/RecentActivityFeed.svelte';
+	import QuickActions from '$lib/components/dashboard/QuickActions.svelte';
+
 	let loading = $state(true);
 	let error = $state(null);
 
-	onMount(async () => {
+	let dashboardData = $state({
+		stats: null,
+		urls: null,
+		recentEvents: []
+	});
+
+	let refreshInterval = $state(null);
+	const REFRESH_INTERVAL = 30000; // 30 seconds
+
+	async function loadDashboard() {
 		try {
-			const [healthRes, statsRes] = await Promise.all([
-				get('/health'),
-				get('/stats/summary')
+			const [statsRes, urlsRes, eventsRes] = await Promise.all([
+				stats.getSummary(),
+				relay.getURLs(),
+				events.getRecent()
 			]);
 
-			relayStatus.online = healthRes.status === 'ok';
+			dashboardData.stats = statsRes;
+			dashboardData.urls = urlsRes;
+			dashboardData.recentEvents = eventsRes.events || [];
+
+			// Update global relay status
+			relayStatus.online = statsRes.relay_status === 'online';
+			relayStatus.uptime = statsRes.uptime_seconds;
 			relayStatus.loading = false;
 
-			if (statsRes.relay_connected) {
-				stats = statsRes;
-			}
+			error = null;
 		} catch (e) {
 			error = e.message;
 			relayStatus.online = false;
@@ -27,10 +50,30 @@
 			loading = false;
 			relayStatus.loading = false;
 		}
+	}
+
+	onMount(() => {
+		loadDashboard();
+		// Auto-refresh every 30 seconds
+		refreshInterval = setInterval(loadDashboard, REFRESH_INTERVAL);
 	});
+
+	onDestroy(() => {
+		if (refreshInterval) {
+			clearInterval(refreshInterval);
+		}
+	});
+
+	// Derived values
+	let statusType = $derived(
+		dashboardData.stats?.relay_status === 'online' ? 'online' : 'offline'
+	);
+
+	let eventsByKind = $derived(dashboardData.stats?.events_by_kind || {});
 </script>
 
 <div class="space-y-6">
+	<!-- Page Header -->
 	<div>
 		<h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
 		<p class="text-gray-600">Your private Nostr relay at a glance</p>
@@ -38,68 +81,66 @@
 
 	{#if loading}
 		<div class="flex items-center justify-center py-12">
-			<div class="h-8 w-8 animate-spin rounded-full border-4 border-purple-600 border-t-transparent"></div>
+			<Loading text="Loading dashboard..." />
 		</div>
 	{:else if error}
-		<div class="rounded-lg bg-red-50 p-4 text-red-700">
-			<p class="font-medium">Error loading dashboard</p>
-			<p class="text-sm">{error}</p>
-		</div>
+		<Error title="Error loading dashboard" message={error} onRetry={loadDashboard} />
 	{:else}
-		<!-- Stats cards -->
-		<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-			<div class="rounded-lg bg-white p-6 shadow">
-				<p class="text-sm font-medium text-gray-500">Total Events</p>
-				<p class="mt-1 text-3xl font-bold text-gray-900">
-					{stats?.total_events?.toLocaleString() ?? '—'}
-				</p>
-			</div>
-			<div class="rounded-lg bg-white p-6 shadow">
-				<p class="text-sm font-medium text-gray-500">Unique Authors</p>
-				<p class="mt-1 text-3xl font-bold text-gray-900">
-					{stats?.total_pubkeys?.toLocaleString() ?? '—'}
-				</p>
-			</div>
-			<div class="rounded-lg bg-white p-6 shadow">
-				<p class="text-sm font-medium text-gray-500">Relay Status</p>
-				<p class="mt-1 text-3xl font-bold {relayStatus.online ? 'text-green-600' : 'text-red-600'}">
-					{relayStatus.online ? 'Online' : 'Offline'}
-				</p>
-			</div>
-			<div class="rounded-lg bg-white p-6 shadow">
-				<p class="text-sm font-medium text-gray-500">Database</p>
-				<p class="mt-1 text-3xl font-bold {stats?.relay_connected ? 'text-green-600' : 'text-yellow-600'}">
-					{stats?.relay_connected ? 'Connected' : 'Waiting'}
-				</p>
-			</div>
-		</div>
-
-		<!-- Relay URLs -->
+		<!-- Relay Status Card -->
 		<div class="rounded-lg bg-white p-6 shadow">
-			<h2 class="text-lg font-semibold text-gray-900">Relay URLs</h2>
-			<p class="mt-1 text-sm text-gray-500">Add these to your Nostr client</p>
-			<div class="mt-4 space-y-3">
-				<div class="flex items-center gap-3 rounded-lg bg-gray-50 p-3">
-					<code class="flex-1 text-sm text-gray-700">ws://localhost:7000</code>
-					<button class="text-purple-600 hover:text-purple-700">Copy</button>
+			<div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+				<div class="flex items-center gap-4">
+					<h2 class="text-lg font-semibold text-gray-900">Relay Status</h2>
+					<StatusIndicator status={statusType} />
+				</div>
+				<div class="text-sm text-gray-500">
+					Uptime: <span class="font-medium text-gray-900"
+						>{formatUptime(dashboardData.stats?.uptime_seconds || 0)}</span
+					>
 				</div>
 			</div>
-		</div>
 
-		<!-- Quick actions -->
-		<div class="rounded-lg bg-white p-6 shadow">
-			<h2 class="text-lg font-semibold text-gray-900">Quick Actions</h2>
-			<div class="mt-4 flex flex-wrap gap-3">
-				<a href="/access" class="rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700">
-					Manage Access
-				</a>
-				<a href="/events" class="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200">
-					Browse Events
-				</a>
-				<button class="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200">
-					Sync from Public Relays
-				</button>
+			<div class="space-y-3">
+				{#if dashboardData.urls?.local}
+					<RelayURLCard label="Local Network" url={dashboardData.urls.local} />
+				{/if}
+				{#if dashboardData.urls?.tor_available && dashboardData.urls?.tor}
+					<RelayURLCard label="Tor (Remote Access)" url={dashboardData.urls.tor} />
+				{/if}
 			</div>
 		</div>
+
+		<!-- Primary Stats Cards -->
+		<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+			<StatCard
+				label="Total Events"
+				value={dashboardData.stats?.total_events?.toLocaleString() ?? '0'}
+				subtext="+{dashboardData.stats?.events_today ?? 0} today"
+			/>
+			<StatCard
+				label="Storage Used"
+				value={formatBytes(dashboardData.stats?.storage_bytes ?? 0)}
+			/>
+			<StatCard
+				label="Whitelisted Pubkeys"
+				value={dashboardData.stats?.whitelisted_count?.toString() ?? '0'}
+			/>
+		</div>
+
+		<!-- Event Type Breakdown -->
+		<div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+			<EventTypeCard label="Posts" count={eventsByKind.posts ?? 0} icon="post" />
+			<EventTypeCard label="Reactions" count={eventsByKind.reactions ?? 0} icon="reaction" />
+			<EventTypeCard label="DMs" count={eventsByKind.dms ?? 0} icon="dm" />
+			<EventTypeCard label="Reposts" count={eventsByKind.reposts ?? 0} icon="repost" />
+			<EventTypeCard label="Follows" count={eventsByKind.follows ?? 0} icon="follow" />
+			<EventTypeCard label="Other" count={eventsByKind.other ?? 0} icon="other" />
+		</div>
+
+		<!-- Recent Activity Feed -->
+		<RecentActivityFeed events={dashboardData.recentEvents} />
+
+		<!-- Quick Actions -->
+		<QuickActions />
 	{/if}
 </div>

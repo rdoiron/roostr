@@ -125,9 +125,11 @@ export const events = {
 		return get(`/events${query ? '?' + query : ''}`);
 	},
 	get: (id) => get(`/events/${id}`),
-	delete: (id) => del(`/events/${id}`)
+	delete: (id) => del(`/events/${id}`),
+	getRecent: () => get('/events/recent')
 };
 
 export const relay = {
-	getStatus: () => get('/relay/status')
+	getStatus: () => get('/relay/status'),
+	getURLs: () => get('/relay/urls')
 };
