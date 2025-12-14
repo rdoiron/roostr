@@ -1269,14 +1269,14 @@ type LightningConfig struct {
 // GetLightningConfig retrieves the Lightning node configuration.
 func (d *DB) GetLightningConfig(ctx context.Context) (*LightningConfig, error) {
 	var cfg LightningConfig
-	var endpoint, macaroon, cert sql.NullString
+	var nodeType, endpoint, macaroon, cert sql.NullString
 	var enabled int
 	var lastVerifiedAt, updatedAt sql.NullInt64
 
 	err := d.AppDB.QueryRowContext(ctx, `
 		SELECT node_type, endpoint, macaroon, cert, enabled, last_verified_at, updated_at
 		FROM lightning_config WHERE id = 1
-	`).Scan(&cfg.NodeType, &endpoint, &macaroon, &cert, &enabled, &lastVerifiedAt, &updatedAt)
+	`).Scan(&nodeType, &endpoint, &macaroon, &cert, &enabled, &lastVerifiedAt, &updatedAt)
 
 	if err == sql.ErrNoRows {
 		return nil, nil
@@ -1285,6 +1285,7 @@ func (d *DB) GetLightningConfig(ctx context.Context) (*LightningConfig, error) {
 		return nil, err
 	}
 
+	cfg.NodeType = nodeType.String
 	cfg.Endpoint = endpoint.String
 	cfg.Macaroon = macaroon.String
 	cfg.Cert = cert.String

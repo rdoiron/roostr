@@ -189,3 +189,47 @@ export const sync = {
 export const support = {
 	getConfig: () => get('/support/config')
 };
+
+export const pricing = {
+	get: () => get('/access/pricing'),
+	update: (tiers) => put('/access/pricing', { tiers })
+};
+
+export const lightning = {
+	getStatus: () => get('/lightning/status'),
+	updateConfig: (config) => put('/lightning/config', config),
+	test: (config) => post('/lightning/test', config),
+	detect: () => post('/lightning/detect', {})
+};
+
+export const paidUsers = {
+	list: (params = {}) => {
+		const query = new URLSearchParams(params).toString();
+		return get(`/access/paid-users${query ? '?' + query : ''}`);
+	},
+	revoke: (pubkey) => del(`/access/paid-users/${pubkey}`),
+	getRevenue: () => get('/access/revenue')
+};
+
+// Public signup API (no /api/v1 prefix)
+export const signup = {
+	getRelayInfo: async () => {
+		const res = await fetch('/public/relay-info');
+		if (!res.ok) throw await parseError(res);
+		return res.json();
+	},
+	createInvoice: async (data) => {
+		const res = await fetch('/public/create-invoice', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(data)
+		});
+		if (!res.ok) throw await parseError(res);
+		return res.json();
+	},
+	checkInvoice: async (hash) => {
+		const res = await fetch(`/public/invoice-status/${hash}`);
+		if (!res.ok) throw await parseError(res);
+		return res.json();
+	}
+};

@@ -248,14 +248,14 @@ This document tracks all development tasks. Check off items as they're completed
 - [x] SIGNUP-API-004: Auto-whitelist on payment
 
 ### Paid Access UI
-- [ ] PAID-UI-001: Pricing configuration section
-- [ ] PAID-UI-002: Lightning node connection UI
-- [ ] PAID-UI-003: Paid users list
-- [ ] PAID-UI-004: Revenue summary
-- [ ] PAID-UI-005: Public signup page
-- [ ] PAID-UI-006: Plan selection cards
-- [ ] PAID-UI-007: Invoice display with QR
-- [ ] PAID-UI-008: Payment confirmation screen
+- [x] PAID-UI-001: Pricing configuration section
+- [x] PAID-UI-002: Lightning node connection UI
+- [x] PAID-UI-003: Paid users list
+- [x] PAID-UI-004: Revenue summary
+- [x] PAID-UI-005: Public signup page
+- [x] PAID-UI-006: Plan selection cards
+- [x] PAID-UI-007: Invoice display with QR
+- [x] PAID-UI-008: Payment confirmation screen
 
 ### Subscription Management
 - [ ] SUB-001: Expiry tracking
@@ -358,17 +358,17 @@ This document tracks all development tasks. Check off items as they're completed
 | 8. Export | 10 | 10 | 100% |
 | 9. Sync | 15 | 15 | 100% |
 | 10. Support | 6 | 6 | 100% |
-| 11. Paid Access | 24 | 16 | 67% |
+| 11. Paid Access | 24 | 24 | 100% |
 | 12. Relay Controls | 10 | 0 | 0% |
 | 13. Statistics | 8 | 0 | 0% |
 | 14. Packaging | 14 | 0 | 0% |
 | 15. Polish | 14 | 0 | 0% |
-| **TOTAL** | **202** | **148** | **73%** |
+| **TOTAL** | **202** | **156** | **77%** |
 
 ---
 
 ## Current Focus
 
-**Next Task:** PAID-UI-001: Pricing configuration section
+**Next Task:** SUB-001: Expiry tracking (Subscription Management)
 
 See SPECIFICATION.md for full details on any feature.

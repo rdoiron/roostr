@@ -1,17 +1,26 @@
 <script>
 	import { browser } from '$app/environment';
-	import { access } from '$lib/api/client.js';
+	import { access, pricing, lightning, paidUsers } from '$lib/api/client.js';
 	import { notify } from '$lib/stores/app.svelte.js';
 	import AccessModeSelector from '$lib/components/access/AccessModeSelector.svelte';
 	import PubkeyCard from '$lib/components/access/PubkeyCard.svelte';
 	import AddPubkeyModal from '$lib/components/access/AddPubkeyModal.svelte';
 	import EditNicknameModal from '$lib/components/access/EditNicknameModal.svelte';
 	import ConfirmRemoveModal from '$lib/components/access/ConfirmRemoveModal.svelte';
+	import PricingSection from '$lib/components/access/PricingSection.svelte';
+	import LightningSection from '$lib/components/access/LightningSection.svelte';
+	import PaidUsersSection from '$lib/components/access/PaidUsersSection.svelte';
+	import RevenueCard from '$lib/components/access/RevenueCard.svelte';
 	import Button from '$lib/components/Button.svelte';
 
 	let mode = $state('whitelist');
 	let whitelist = $state([]);
 	let blacklist = $state([]);
+	let pricingTiers = $state([]);
+	let lightningStatus = $state(null);
+	let paidUsersList = $state([]);
+	let paidUsersTotal = $state(0);
+	let revenueData = $state(null);
 	let loading = $state(true);
 	let error = $state(null);
 	let initialized = $state(false);
@@ -37,10 +46,48 @@
 			mode = modeRes.mode;
 			whitelist = whitelistRes.entries || [];
 			blacklist = blacklistRes.entries || [];
+
+			// Load paid access data if mode is "paid"
+			if (mode === 'paid') {
+				await loadPaidAccessData();
+			}
 		} catch (e) {
 			error = e.message;
 		} finally {
 			loading = false;
+		}
+	}
+
+	async function loadPaidAccessData() {
+		// Load each resource independently so one failure doesn't block others
+		try {
+			const pricingRes = await pricing.get();
+			pricingTiers = pricingRes.tiers || [];
+		} catch (e) {
+			console.error('Failed to load pricing:', e);
+		}
+
+		try {
+			const lightningRes = await lightning.getStatus();
+			lightningStatus = lightningRes;
+		} catch (e) {
+			// Lightning not configured is expected, set a default status
+			lightningStatus = { connected: false, error: e.message };
+		}
+
+		try {
+			const paidUsersRes = await paidUsers.list({ limit: 100 });
+			paidUsersList = paidUsersRes.users || [];
+			paidUsersTotal = paidUsersRes.total || 0;
+		} catch (e) {
+			console.error('Failed to load paid users:', e);
+		}
+
+		try {
+			const revenueRes = await paidUsers.getRevenue();
+			revenueData = revenueRes;
+		} catch (e) {
+			console.error('Failed to load revenue:', e);
 		}
 	}
 
@@ -52,8 +99,12 @@
 		}
 	});
 
-	function handleModeChange(newMode) {
+	async function handleModeChange(newMode) {
 		mode = newMode;
+		// Load paid access data when switching to paid mode
+		if (newMode === 'paid' && pricingTiers.length === 0) {
+			await loadPaidAccessData();
+		}
 	}
 
 	// Whitelist actions
@@ -228,6 +279,21 @@
 			<h2 class="text-lg font-semibold text-gray-900 mb-4">Access Mode</h2>
 			<AccessModeSelector {mode} onChange={handleModeChange} />
 		</div>
+
+		<!-- Paid Access Sections (only when mode is "paid") -->
+		{#if mode === 'paid'}
+			<!-- Lightning Node Configuration -->
+			<LightningSection status={lightningStatus} onUpdate={loadPaidAccessData} />
+
+			<!-- Pricing Configuration -->
+			<PricingSection tiers={pricingTiers} onUpdate={loadPaidAccessData} />
+
+			<!-- Revenue Summary -->
+			<RevenueCard revenue={revenueData} />
+
+			<!-- Paid Users -->
+			<PaidUsersSection users={paidUsersList} total={paidUsersTotal} onUpdate={loadPaidAccessData} />
+		{/if}
 
 		<!-- Whitelist Section -->
 		{#if showWhitelist}
