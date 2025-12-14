@@ -68,6 +68,7 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 
 	// Event browser endpoints
 	mux.HandleFunc("GET /api/v1/events", h.GetEvents)
+	mux.HandleFunc("GET /api/v1/events/export", h.ExportEvents)
 	mux.HandleFunc("GET /api/v1/events/{id}", h.GetEvent)
 	mux.HandleFunc("DELETE /api/v1/events/{id}", h.DeleteEvent)
 

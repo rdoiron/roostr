@@ -173,10 +173,10 @@ This document tracks all development tasks. Check off items as they're completed
 ## Phase 8: Export & Backup
 
 ### Export API
-- [ ] EXPORT-API-001: GET /api/v1/events/export endpoint (streaming)
-- [ ] EXPORT-API-002: Add format parameter (ndjson, json)
-- [ ] EXPORT-API-003: Add filters (kinds, date range)
-- [ ] EXPORT-API-004: Add progress tracking for large exports
+- [x] EXPORT-API-001: GET /api/v1/events/export endpoint (streaming)
+- [x] EXPORT-API-002: Add format parameter (ndjson, json)
+- [x] EXPORT-API-003: Add filters (kinds, date range)
+- [x] EXPORT-API-004: Add progress tracking for large exports
 
 ### Export UI
 - [ ] EXPORT-UI-001: Create export page/modal
@@ -355,7 +355,7 @@ This document tracks all development tasks. Check off items as they're completed
 | 5. Event Browser | 13 | 13 | 100% |
 | 6. Configuration | 10 | 10 | 100% |
 | 7. Storage | 16 | 16 | 100% |
-| 8. Export | 10 | 0 | 0% |
+| 8. Export | 10 | 4 | 40% |
 | 9. Sync | 15 | 0 | 0% |
 | 10. Support | 6 | 0 | 0% |
 | 11. Paid Access | 24 | 0 | 0% |
@@ -363,12 +363,12 @@ This document tracks all development tasks. Check off items as they're completed
 | 13. Statistics | 8 | 0 | 0% |
 | 14. Packaging | 14 | 0 | 0% |
 | 15. Polish | 14 | 0 | 0% |
-| **TOTAL** | **202** | **101** | **50%** |
+| **TOTAL** | **202** | **105** | **52%** |
 
 ---
 
 ## Current Focus
 
-**Next Task:** EXPORT-API-001: GET /api/v1/events/export endpoint (streaming)
+**Next Task:** EXPORT-UI-001: Create export page/modal
 
 See SPECIFICATION.md for full details on any feature.

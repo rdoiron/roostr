@@ -12,13 +12,25 @@ import (
 
 // Event represents a Nostr event from the relay database.
 type Event struct {
-	ID        string    `json:"id"`
-	Pubkey    string    `json:"pubkey"`
-	CreatedAt time.Time `json:"created_at"`
-	Kind      int       `json:"kind"`
+	ID        string     `json:"id"`
+	Pubkey    string     `json:"pubkey"`
+	CreatedAt time.Time  `json:"created_at"`
+	Kind      int        `json:"kind"`
 	Tags      [][]string `json:"tags"`
-	Content   string    `json:"content"`
-	Sig       string    `json:"sig"`
+	Content   string     `json:"content"`
+	Sig       string     `json:"sig"`
+}
+
+// ExportEvent represents a Nostr event for export with Unix timestamp.
+// This matches the standard Nostr event format expected by other clients.
+type ExportEvent struct {
+	ID        string     `json:"id"`
+	Pubkey    string     `json:"pubkey"`
+	CreatedAt int64      `json:"created_at"` // Unix timestamp for Nostr compatibility
+	Kind      int        `json:"kind"`
+	Tags      [][]string `json:"tags"`
+	Content   string     `json:"content"`
+	Sig       string     `json:"sig"`
 }
 
 // EventFilter defines filters for querying events.
@@ -414,4 +426,124 @@ func parseEvent(idBytes, pubkeyBytes []byte, createdAt int64, kind int, tagsJSON
 		Content:   content,
 		Sig:       hex.EncodeToString(sigBytes),
 	}, nil
+}
+
+// CountEvents counts events matching the filter (for export progress tracking).
+func (d *DB) CountEvents(ctx context.Context, filter EventFilter) (int64, error) {
+	if d.RelayDB == nil {
+		return 0, fmt.Errorf("relay database not connected")
+	}
+
+	// Build count query with same WHERE clauses as GetEvents
+	query := `SELECT COUNT(*) FROM event WHERE 1=1`
+	args := []interface{}{}
+
+	if len(filter.Kinds) > 0 {
+		placeholders := make([]string, len(filter.Kinds))
+		for i, kind := range filter.Kinds {
+			placeholders[i] = "?"
+			args = append(args, kind)
+		}
+		query += fmt.Sprintf(" AND kind IN (%s)", strings.Join(placeholders, ","))
+	}
+
+	if !filter.Since.IsZero() {
+		query += " AND created_at >= ?"
+		args = append(args, filter.Since.Unix())
+	}
+
+	if !filter.Until.IsZero() {
+		query += " AND created_at <= ?"
+		args = append(args, filter.Until.Unix())
+	}
+
+	var count int64
+	err := d.RelayDB.QueryRowContext(ctx, query, args...).Scan(&count)
+	if err != nil {
+		return 0, fmt.Errorf("failed to count events: %w", err)
+	}
+
+	return count, nil
+}
+
+// StreamEvents streams events matching the filter to the callback function.
+// Used for exports to avoid loading all events into memory.
+func (d *DB) StreamEvents(ctx context.Context, filter EventFilter, callback func(ExportEvent) error) error {
+	if d.RelayDB == nil {
+		return fmt.Errorf("relay database not connected")
+	}
+
+	// Build query (same WHERE clauses as GetEvents, but no LIMIT for full export)
+	query := `SELECT id, pubkey, created_at, kind, tags, content, sig FROM event WHERE 1=1`
+	args := []interface{}{}
+
+	if len(filter.Kinds) > 0 {
+		placeholders := make([]string, len(filter.Kinds))
+		for i, kind := range filter.Kinds {
+			placeholders[i] = "?"
+			args = append(args, kind)
+		}
+		query += fmt.Sprintf(" AND kind IN (%s)", strings.Join(placeholders, ","))
+	}
+
+	if !filter.Since.IsZero() {
+		query += " AND created_at >= ?"
+		args = append(args, filter.Since.Unix())
+	}
+
+	if !filter.Until.IsZero() {
+		query += " AND created_at <= ?"
+		args = append(args, filter.Until.Unix())
+	}
+
+	// Order by created_at for consistent export ordering
+	query += " ORDER BY created_at ASC"
+
+	rows, err := d.RelayDB.QueryContext(ctx, query, args...)
+	if err != nil {
+		return fmt.Errorf("failed to query events: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		// Check for context cancellation
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+		}
+
+		var idBytes, pubkeyBytes, sigBytes []byte
+		var createdAt int64
+		var kind int
+		var tagsJSON, content string
+
+		err := rows.Scan(&idBytes, &pubkeyBytes, &createdAt, &kind, &tagsJSON, &content, &sigBytes)
+		if err != nil {
+			return fmt.Errorf("failed to scan event: %w", err)
+		}
+
+		var tags [][]string
+		if tagsJSON != "" {
+			if err := json.Unmarshal([]byte(tagsJSON), &tags); err != nil {
+				tags = [][]string{}
+			}
+		}
+
+		event := ExportEvent{
+			ID:        hex.EncodeToString(idBytes),
+			Pubkey:    hex.EncodeToString(pubkeyBytes),
+			CreatedAt: createdAt,
+			Kind:      kind,
+			Tags:      tags,
+			Content:   content,
+			Sig:       hex.EncodeToString(sigBytes),
+		}
+
+		if err := callback(event); err != nil {
+			return err
+		}
+	}
+
+	return rows.Err()
 }
