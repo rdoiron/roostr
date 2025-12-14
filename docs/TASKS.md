@@ -229,8 +229,8 @@ This document tracks all development tasks. Check off items as they're completed
 - [x] LN-001: LND connection manager
 - [x] LN-002: Auto-detect Umbrel LND
 - [x] LN-003: Invoice generation
-- [ ] LN-004: Payment verification
-- [ ] LN-005: Invoice subscription/polling
+- [x] LN-004: Payment verification
+- [x] LN-005: Invoice subscription/polling
 
 ### Paid Access API
 - [ ] PAID-API-001: GET /api/v1/access/pricing endpoint
@@ -245,7 +245,7 @@ This document tracks all development tasks. Check off items as they're completed
 - [x] SIGNUP-API-001: GET /public/relay-info endpoint
 - [x] SIGNUP-API-002: POST /public/create-invoice endpoint
 - [x] SIGNUP-API-003: GET /public/invoice-status/:hash endpoint
-- [ ] SIGNUP-API-004: Auto-whitelist on payment
+- [x] SIGNUP-API-004: Auto-whitelist on payment
 
 ### Paid Access UI
 - [ ] PAID-UI-001: Pricing configuration section
@@ -358,17 +358,17 @@ This document tracks all development tasks. Check off items as they're completed
 | 8. Export | 10 | 10 | 100% |
 | 9. Sync | 15 | 15 | 100% |
 | 10. Support | 6 | 6 | 100% |
-| 11. Paid Access | 24 | 8 | 33% |
+| 11. Paid Access | 24 | 11 | 46% |
 | 12. Relay Controls | 10 | 0 | 0% |
 | 13. Statistics | 8 | 0 | 0% |
 | 14. Packaging | 14 | 0 | 0% |
 | 15. Polish | 14 | 0 | 0% |
-| **TOTAL** | **202** | **140** | **69%** |
+| **TOTAL** | **202** | **143** | **71%** |
 
 ---
 
 ## Current Focus
 
-**Next Task:** LN-004: Payment verification
+**Next Task:** PAID-API-001: GET /api/v1/access/pricing endpoint
 
 See SPECIFICATION.md for full details on any feature.

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/roostr/roostr/app/api/internal/nostr"
@@ -203,12 +204,25 @@ func (h *Handler) GetInvoiceStatus(w http.ResponseWriter, r *http.Request) {
 	if h.services.Lightning.IsConfigured() {
 		lndInvoice, err := h.services.Lightning.CheckInvoice(ctx, paymentHash)
 		if err == nil && lndInvoice.Settled {
-			// Invoice was paid! This will be processed by LN-004 (payment verification)
-			// For now, just return the status
+			// Invoice was paid! Process the payment (auto-whitelist)
+			if err := h.services.InvoiceMonitor.ProcessPayment(ctx, paymentHash); err != nil {
+				// Log the error but still return success to the client
+				// The background service will retry if needed
+				log.Printf("Warning: failed to process payment from status check: %v", err)
+			}
+
+			// Re-fetch to get the updated paid_at timestamp
+			updatedInvoice, _ := h.db.GetPendingInvoice(ctx, paymentHash)
+			var paidAt int64
+			if updatedInvoice != nil && updatedInvoice.PaidAt != nil {
+				paidAt = updatedInvoice.PaidAt.Unix()
+			}
+
 			respondJSON(w, http.StatusOK, map[string]interface{}{
 				"status":       "paid",
 				"payment_hash": paymentHash,
-				"message":      "Payment received, processing access...",
+				"paid_at":      paidAt,
+				"message":      "Payment confirmed! You now have access to the relay.",
 			})
 			return
 		}

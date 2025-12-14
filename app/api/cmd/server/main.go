@@ -56,8 +56,8 @@ func main() {
 		}
 	}
 
-	// Initialize services
-	svc := services.New(database)
+	// Initialize services (pass configMgr and relayMgr for invoice monitor to sync whitelist)
+	svc := services.New(database, configMgr, relayMgr)
 	svc.Start()
 	defer svc.Stop()
 	log.Println("Background services started")

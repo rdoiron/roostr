@@ -486,6 +486,78 @@ func (s *LightningService) GetPendingInvoice(ctx context.Context, paymentHash st
 	return s.db.GetPendingInvoice(ctx, paymentHash)
 }
 
+// InvoiceCallback is called when an invoice update is received.
+type InvoiceCallback func(paymentHash string, settled bool)
+
+// SubscribeInvoices subscribes to LND invoice updates via the streaming REST API.
+// The callback is called for each invoice update. This method blocks until the
+// context is cancelled or an error occurs.
+func (s *LightningService) SubscribeInvoices(ctx context.Context, callback InvoiceCallback) error {
+	cfg := s.GetConfig()
+	if cfg == nil {
+		return ErrLNDNotConfigured
+	}
+
+	url := fmt.Sprintf("https://%s/v1/invoices/subscribe", cfg.Host)
+
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Grpc-Metadata-macaroon", cfg.MacaroonHex)
+
+	resp, err := s.client.Do(req)
+	if err != nil {
+		return fmt.Errorf("%w: %v", ErrLNDConnectionFailed, err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusUnauthorized {
+		return ErrLNDAuthFailed
+	}
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("%w: %s", ErrLNDConnectionFailed, string(body))
+	}
+
+	// LND streaming API returns newline-delimited JSON
+	decoder := json.NewDecoder(resp.Body)
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+		}
+
+		var update struct {
+			Result struct {
+				RHash   string `json:"r_hash"` // base64 encoded
+				Settled bool   `json:"settled"`
+			} `json:"result"`
+		}
+
+		if err := decoder.Decode(&update); err != nil {
+			if ctx.Err() != nil {
+				return ctx.Err()
+			}
+			if err == io.EOF {
+				return fmt.Errorf("LND stream closed unexpectedly")
+			}
+			return fmt.Errorf("failed to decode invoice update: %w", err)
+		}
+
+		// Convert r_hash from base64 to hex
+		rHashBytes, err := base64.StdEncoding.DecodeString(update.Result.RHash)
+		if err != nil {
+			continue // Skip malformed updates
+		}
+		paymentHash := hex.EncodeToString(rHashBytes)
+
+		callback(paymentHash, update.Result.Settled)
+	}
+}
+
 // doRequest performs an HTTP request to the LND REST API.
 func (s *LightningService) doRequest(ctx context.Context, cfg *LNDConfig, method, path string, body interface{}) (*http.Response, error) {
 	url := fmt.Sprintf("https://%s%s", cfg.Host, path)

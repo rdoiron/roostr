@@ -407,6 +407,15 @@ func (d *DB) GetExpiredPaidUsers(ctx context.Context) ([]PaidUser, error) {
 	return users, rows.Err()
 }
 
+// AddPaymentHistory records a payment in the payment history table.
+func (d *DB) AddPaymentHistory(ctx context.Context, pubkey, paymentHash, tier string, amountSats int64, invoice string) error {
+	_, err := d.AppDB.ExecContext(ctx, `
+		INSERT INTO payment_history (pubkey, payment_hash, tier, amount_sats, invoice)
+		VALUES (?, ?, ?, ?, ?)
+	`, pubkey, paymentHash, tier, amountSats, invoice)
+	return err
+}
+
 // ============================================================================
 // Pricing Tiers
 // ============================================================================
