@@ -172,3 +172,16 @@ export const exportApi = {
 		return `${API_BASE}/events/export${query.toString() ? '?' + query.toString() : ''}`;
 	}
 };
+
+export const sync = {
+	start: (data) => post('/sync/start', data),
+	getStatus: (id) => get(`/sync/status${id ? `?id=${id}` : ''}`),
+	cancel: () => post('/sync/cancel', {}),
+	getHistory: (params = {}) => {
+		const query = new URLSearchParams();
+		if (params.limit) query.set('limit', params.limit.toString());
+		if (params.offset) query.set('offset', params.offset.toString());
+		return get(`/sync/history${query.toString() ? '?' + query.toString() : ''}`);
+	},
+	getRelays: () => get('/sync/relays')
+};

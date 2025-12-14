@@ -200,14 +200,14 @@ This document tracks all development tasks. Check off items as they're completed
 - [x] SYNC-API-007: GET /api/v1/sync/history endpoint
 
 ### Sync UI
-- [ ] SYNC-UI-001: Add sync button to dashboard
-- [ ] SYNC-UI-002: Create sync configuration modal
-- [ ] SYNC-UI-003: Pubkey selection (from whitelist)
-- [ ] SYNC-UI-004: Relay selection (defaults + custom)
-- [ ] SYNC-UI-005: Event type selection
-- [ ] SYNC-UI-006: Sync progress display
-- [ ] SYNC-UI-007: Sync complete summary
-- [ ] SYNC-UI-008: Background sync indicator
+- [x] SYNC-UI-001: Add sync button to dashboard
+- [x] SYNC-UI-002: Create sync configuration modal
+- [x] SYNC-UI-003: Pubkey selection (from whitelist)
+- [x] SYNC-UI-004: Relay selection (defaults + custom)
+- [x] SYNC-UI-005: Event type selection
+- [x] SYNC-UI-006: Sync progress display
+- [x] SYNC-UI-007: Sync complete summary
+- [x] SYNC-UI-008: Background sync indicator
 
 ---
 
@@ -356,19 +356,19 @@ This document tracks all development tasks. Check off items as they're completed
 | 6. Configuration | 10 | 10 | 100% |
 | 7. Storage | 16 | 16 | 100% |
 | 8. Export | 10 | 10 | 100% |
-| 9. Sync | 15 | 7 | 47% |
+| 9. Sync | 15 | 15 | 100% |
 | 10. Support | 6 | 0 | 0% |
 | 11. Paid Access | 24 | 0 | 0% |
 | 12. Relay Controls | 10 | 0 | 0% |
 | 13. Statistics | 8 | 0 | 0% |
 | 14. Packaging | 14 | 0 | 0% |
 | 15. Polish | 14 | 0 | 0% |
-| **TOTAL** | **202** | **118** | **58%** |
+| **TOTAL** | **202** | **126** | **62%** |
 
 ---
 
 ## Current Focus
 
-**Next Task:** SYNC-UI-001: Add sync button to dashboard
+**Next Task:** SUPPORT-UI-001: Create support page
 
 See SPECIFICATION.md for full details on any feature.

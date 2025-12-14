@@ -17,6 +17,14 @@ export const setupState = $state({
 	loading: true
 });
 
+// Sync status for cross-component communication
+export const syncStatus = $state({
+	running: false,
+	jobId: null,
+	progress: null,
+	lastSyncTime: null
+});
+
 // User notifications
 export const notifications = $state([]);
 
