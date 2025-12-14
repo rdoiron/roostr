@@ -34,7 +34,8 @@ type LimitsUpdate struct {
 
 // AuthorizationUpdate contains optional authorization field updates.
 type AuthorizationUpdate struct {
-	NIP42Auth *bool `json:"nip42_auth,omitempty"`
+	NIP42Auth          *bool  `json:"nip42_auth,omitempty"`
+	EventKindAllowlist *[]int `json:"event_kind_allowlist,omitempty"`
 }
 
 // GetConfig returns the current relay configuration.
@@ -66,7 +67,8 @@ func (h *Handler) GetConfig(w http.ResponseWriter, r *http.Request) {
 			"min_pow_difficulty":   cfg.Limits.MinPowDifficulty,
 		},
 		"authorization": map[string]interface{}{
-			"nip42_auth": cfg.Authorization.NIP42Auth,
+			"nip42_auth":           cfg.Authorization.NIP42Auth,
+			"event_kind_allowlist": cfg.Authorization.EventKindAllowlist,
 		},
 	})
 }
@@ -136,6 +138,9 @@ func (h *Handler) UpdateConfig(w http.ResponseWriter, r *http.Request) {
 		if req.Authorization.NIP42Auth != nil {
 			cfg.Authorization.NIP42Auth = *req.Authorization.NIP42Auth
 		}
+		if req.Authorization.EventKindAllowlist != nil {
+			cfg.Authorization.EventKindAllowlist = *req.Authorization.EventKindAllowlist
+		}
 	}
 
 	// Write updated config
@@ -176,7 +181,8 @@ func (h *Handler) UpdateConfig(w http.ResponseWriter, r *http.Request) {
 				"min_pow_difficulty":   cfg.Limits.MinPowDifficulty,
 			},
 			"authorization": map[string]interface{}{
-				"nip42_auth": cfg.Authorization.NIP42Auth,
+				"nip42_auth":           cfg.Authorization.NIP42Auth,
+				"event_kind_allowlist": cfg.Authorization.EventKindAllowlist,
 			},
 		},
 	})
@@ -252,6 +258,17 @@ func validateConfigUpdate(req *UpdateConfigRequest) error {
 		if req.Limits.MinPowDifficulty != nil {
 			if *req.Limits.MinPowDifficulty < 0 || *req.Limits.MinPowDifficulty > 32 {
 				return fmt.Errorf("min_pow_difficulty must be between 0 and 32")
+			}
+		}
+	}
+
+	if req.Authorization != nil {
+		// EventKindAllowlist: all values must be non-negative
+		if req.Authorization.EventKindAllowlist != nil {
+			for _, kind := range *req.Authorization.EventKindAllowlist {
+				if kind < 0 {
+					return fmt.Errorf("event kinds must be non-negative integers")
+				}
 			}
 		}
 	}

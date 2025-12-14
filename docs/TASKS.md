@@ -137,12 +137,12 @@ This document tracks all development tasks. Check off items as they're completed
 - [x] CONFIG-API-004: Validate config before saving
 
 ### Configuration UI
-- [ ] CONFIG-UI-001: Create configuration page
-- [ ] CONFIG-UI-002: Relay identity section (name, description, contact)
-- [ ] CONFIG-UI-003: Limits section (rate limits, max sizes)
-- [ ] CONFIG-UI-004: Event policies section (accepted kinds, PoW)
-- [ ] CONFIG-UI-005: Save with validation feedback
-- [ ] CONFIG-UI-006: Reset to defaults option
+- [x] CONFIG-UI-001: Create configuration page
+- [x] CONFIG-UI-002: Relay identity section (name, description, contact)
+- [x] CONFIG-UI-003: Limits section (rate limits, max sizes)
+- [x] CONFIG-UI-004: Event policies section (accepted kinds, PoW)
+- [x] CONFIG-UI-005: Save with validation feedback
+- [x] CONFIG-UI-006: Reset to defaults option
 
 ---
 
@@ -353,7 +353,7 @@ This document tracks all development tasks. Check off items as they're completed
 | 3. Dashboard | 14 | 14 | 100% |
 | 4. Access Control | 18 | 18 | 100% |
 | 5. Event Browser | 13 | 13 | 100% |
-| 6. Configuration | 10 | 4 | 40% |
+| 6. Configuration | 10 | 10 | 100% |
 | 7. Storage | 16 | 0 | 0% |
 | 8. Export | 10 | 0 | 0% |
 | 9. Sync | 15 | 0 | 0% |
@@ -363,12 +363,12 @@ This document tracks all development tasks. Check off items as they're completed
 | 13. Statistics | 8 | 0 | 0% |
 | 14. Packaging | 14 | 0 | 0% |
 | 15. Polish | 14 | 0 | 0% |
-| **TOTAL** | **202** | **79** | **39%** |
+| **TOTAL** | **202** | **85** | **42%** |
 
 ---
 
 ## Current Focus
 
-**Next Task:** CONFIG-UI-001: Create configuration page
+**Next Task:** STORAGE-API-001: GET /api/v1/storage/status endpoint
 
 See SPECIFICATION.md for full details on any feature.

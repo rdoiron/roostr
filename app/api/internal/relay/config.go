@@ -53,9 +53,10 @@ type LimitsConfig struct {
 
 // AuthorizationConfig contains access control settings.
 type AuthorizationConfig struct {
-	NIP42Auth        bool     `toml:"nip42_auth"`
-	PubkeyWhitelist  []string `toml:"pubkey_whitelist"`
-	PubkeyBlacklist  []string `toml:"pubkey_blacklist,omitempty"`
+	NIP42Auth          bool     `toml:"nip42_auth"`
+	PubkeyWhitelist    []string `toml:"pubkey_whitelist"`
+	PubkeyBlacklist    []string `toml:"pubkey_blacklist,omitempty"`
+	EventKindAllowlist []int    `toml:"event_kind_allowlist,omitempty"`
 }
 
 // LoggingConfig contains logging settings.

@@ -137,3 +137,9 @@ export const relay = {
 	getStatus: () => get('/relay/status'),
 	getURLs: () => get('/relay/urls')
 };
+
+export const config = {
+	get: () => get('/config'),
+	update: (data) => patch('/config', data),
+	reload: () => post('/config/reload', {})
+};
