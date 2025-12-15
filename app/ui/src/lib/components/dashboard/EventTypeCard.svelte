@@ -1,4 +1,6 @@
 <script>
+	import { formatCompactNumber } from '$lib/utils/format.js';
+
 	let { label = '', count = 0, icon = 'other' } = $props();
 
 	const icons = {
@@ -26,9 +28,11 @@
 				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={iconPath} />
 			</svg>
 		</div>
-		<div>
+		<div class="min-w-0">
 			<p class="text-sm text-gray-500">{label}</p>
-			<p class="text-xl font-bold text-gray-900">{count.toLocaleString()}</p>
+			<p class="text-xl font-bold text-gray-900" title={count.toLocaleString()}>
+				{formatCompactNumber(count)}
+			</p>
 		</div>
 	</div>
 </div>

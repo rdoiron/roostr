@@ -93,3 +93,15 @@ export function truncatePubkey(pubkey) {
 	if (!pubkey || pubkey.length < 16) return pubkey || '';
 	return pubkey.slice(0, 8) + '...' + pubkey.slice(-4);
 }
+
+/**
+ * Format a number into compact form (e.g., 1.2K, 3.5M).
+ * @param {number} num - Number to format
+ * @returns {string} Compact formatted string
+ */
+export function formatCompactNumber(num) {
+	if (!num || num < 1000) return (num || 0).toString();
+	if (num < 1000000) return (num / 1000).toFixed(num < 10000 ? 1 : 0) + 'K';
+	if (num < 1000000000) return (num / 1000000).toFixed(num < 10000000 ? 1 : 0) + 'M';
+	return (num / 1000000000).toFixed(1) + 'B';
+}

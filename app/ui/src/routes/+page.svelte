@@ -2,7 +2,7 @@
 	import { browser } from '$app/environment';
 	import { stats, relay, events, storage } from '$lib/api/client.js';
 	import { relayStatus } from '$lib/stores';
-	import { formatUptime, formatBytes } from '$lib/utils/format.js';
+	import { formatUptime, formatBytes, formatCompactNumber } from '$lib/utils/format.js';
 
 	import Loading from '$lib/components/Loading.svelte';
 	import Error from '$lib/components/Error.svelte';
@@ -122,8 +122,9 @@
 		<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 			<StatCard
 				label="Total Events"
-				value={dashboardData.stats?.total_events?.toLocaleString() ?? '0'}
-				subtext="+{dashboardData.stats?.events_today ?? 0} today"
+				value={formatCompactNumber(dashboardData.stats?.total_events ?? 0)}
+				tooltip={(dashboardData.stats?.total_events ?? 0).toLocaleString()}
+				subtext="+{formatCompactNumber(dashboardData.stats?.events_today ?? 0)} today"
 			/>
 			<StatCard
 				label="Storage Used"
@@ -131,7 +132,8 @@
 			/>
 			<StatCard
 				label="Whitelisted Pubkeys"
-				value={dashboardData.stats?.whitelisted_count?.toString() ?? '0'}
+				value={formatCompactNumber(dashboardData.stats?.whitelisted_count ?? 0)}
+				tooltip={(dashboardData.stats?.whitelisted_count ?? 0).toLocaleString()}
 			/>
 		</div>
 
@@ -143,7 +145,7 @@
 		/>
 
 		<!-- Event Type Breakdown -->
-		<div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+		<div class="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
 			<EventTypeCard label="Posts" count={eventsByKind.posts ?? 0} icon="post" />
 			<EventTypeCard label="Reactions" count={eventsByKind.reactions ?? 0} icon="reaction" />
 			<EventTypeCard label="DMs" count={eventsByKind.dms ?? 0} icon="dm" />
