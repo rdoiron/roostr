@@ -1,22 +1,57 @@
-# Umbrel Docker Compose
+# Umbrel Docker Compose for Roostr
 # This file is used when deploying to Umbrel
 
 version: '3.8'
 
 services:
+  # Umbrel app proxy handles authentication and routing
+  app_proxy:
+    environment:
+      APP_HOST: roostr_app_1
+      APP_PORT: 8080
+    image: getumbrel/app-proxy:v1.0.1
+    restart: on-failure
+    depends_on:
+      - app
+
+  # Main Roostr application (API + UI + embedded relay)
   app:
     build:
       context: ../..
       dockerfile: platforms/umbrel/Dockerfile
     restart: on-failure
+    stop_grace_period: 30s
     ports:
-      - "${APP_ROOSTR_PORT}:8080"
-      - "${APP_ROOSTR_RELAY_PORT}:7000"
+      # Expose relay WebSocket port for direct client connections
+      - "${APP_ROOSTR_RELAY_PORT:-7000}:7000"
     environment:
-      PORT: 8080
+      # API configuration
+      PORT: "8080"
+      RELAY_PORT: "7000"
       RELAY_DB_PATH: /data/nostr.db
       APP_DB_PATH: /data/roostr.db
       CONFIG_PATH: /data/config.toml
-      RELAY_BINARY: /usr/bin/nostr-rs-relay
+      RELAY_BINARY: /usr/local/bin/nostr-rs-relay
+      STATIC_DIR: /app/ui
+      # Relay URL for internal communication
+      RELAY_URL: ws://localhost:7000
+      # Tor address (provided by Umbrel)
+      TOR_ADDRESS: ${APP_HIDDEN_SERVICE:-}
+      # Lightning integration (optional - if user has LND installed)
+      LND_HOST: ${APP_LIGHTNING_NODE_IP:-}
+      LND_REST_PORT: ${APP_LIGHTNING_NODE_REST_PORT:-8080}
+      LND_MACAROON_PATH: /lnd/data/chain/bitcoin/mainnet/admin.macaroon
+      # Relay logging
+      RUST_LOG: info,nostr_rs_relay=info
     volumes:
+      # Persistent data directory
       - ${APP_DATA_DIR}/data:/data
+      # Lightning node data (read-only, for macaroon access)
+      - ${APP_LIGHTNING_NODE_DATA_DIR:-/tmp/empty}:/lnd:ro
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    user: "1000:1000"

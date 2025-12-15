@@ -23,6 +23,9 @@ type Config struct {
 	RelayURL   string // Local WebSocket URL (e.g., ws://umbrel.local:4848)
 	TorAddress string // Tor .onion address (e.g., abc123...onion:4848)
 
+	// UI settings
+	StaticDir string // Directory containing built UI static files
+
 	// Feature flags
 	Debug bool
 }
@@ -37,6 +40,7 @@ func Load() (*Config, error) {
 		RelayBinary: getEnv("RELAY_BINARY", "/usr/bin/nostr-rs-relay"),
 		RelayURL:    getEnv("RELAY_URL", ""),   // e.g., ws://umbrel.local:4848
 		TorAddress:  getEnv("TOR_ADDRESS", ""), // e.g., abc123...onion:4848
+		StaticDir:   getEnv("STATIC_DIR", ""),  // Directory with built UI files
 		Debug:       getEnv("DEBUG", "") == "true",
 	}
 

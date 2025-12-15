@@ -3,21 +3,60 @@
 
 manifestVersion: 1
 id: roostr
-name: Roostr
-tagline: Your Private Roost on Nostr
 category: social
+name: Roostr
 version: "0.1.0"
-port: 8080
+tagline: Your Private Roost on Nostr
 description: >-
   Roostr is a web-based admin interface for managing your private Nostr relay.
-  It wraps nostr-rs-relay and provides dashboard, whitelist management,
-  event browsing, sync from public relays, and paid relay access via Lightning.
+  It wraps nostr-rs-relay and provides a beautiful dashboard for monitoring
+  and controlling your relay.
+
+
+  Features:
+
+  - Dashboard with relay status and real-time statistics
+
+  - Whitelist/blacklist management for access control
+
+  - Event browser with filtering and search
+
+  - Sync from public relays to import your Nostr history
+
+  - Paid relay access via Lightning Network
+
+  - Export/backup functionality for your events
+
+  - Storage management with NIP-09 deletion support
+
+
+  Perfect for personal backup of your Nostr activity, a family relay for
+  sharing with loved ones, or running a paid relay to earn sats.
+
+
+  Add your relay URL to any Nostr client (Damus, Amethyst, Primal) to start
+  backing up your events to your own server.
 developer: Roostr
 website: https://github.com/roostr/roostr
 repo: https://github.com/roostr/roostr
 support: https://github.com/roostr/roostr/issues
+port: 8080
 dependencies: []
 releaseNotes: >-
-  Initial release.
+  Initial release of Roostr - Your Private Roost on Nostr.
+
+  Features:
+  - Dashboard with relay stats and status
+  - Whitelist/blacklist management
+  - Event browser with filtering
+  - Sync from public relays
+  - Export functionality
+  - Storage management
+  - Lightning payments for paid relay access
+gallery:
+  - 1.jpg
+  - 2.jpg
+  - 3.jpg
+path: ""
 submitter: Roostr
 submission: https://github.com/getumbrel/umbrel-apps/pull/XXX

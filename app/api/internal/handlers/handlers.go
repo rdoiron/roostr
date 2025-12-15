@@ -4,6 +4,7 @@ package handlers
 
 import (
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/roostr/roostr/app/api/internal/config"
@@ -140,11 +141,16 @@ func (h *Handler) ServeUI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Serve static files from the UI build directory
-	// In production, this would serve from a static file server
-	// For now, just return a placeholder
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(`<!DOCTYPE html>
+	// For public API routes that weren't matched, return 404
+	if len(r.URL.Path) > 7 && r.URL.Path[:7] == "/public" {
+		http.NotFound(w, r)
+		return
+	}
+
+	// If static directory is not configured, show placeholder
+	if h.cfg.StaticDir == "" {
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(`<!DOCTYPE html>
 <html>
 <head><title>Roostr</title></head>
 <body>
@@ -153,4 +159,31 @@ func (h *Handler) ServeUI(w http.ResponseWriter, r *http.Request) {
 <p>API is available at <a href="/api/v1/health">/api/v1/health</a></p>
 </body>
 </html>`))
+		return
+	}
+
+	// Serve static files from the configured directory
+	h.serveStaticFile(w, r)
+}
+
+// serveStaticFile serves a static file or falls back to index.html for SPA routing.
+func (h *Handler) serveStaticFile(w http.ResponseWriter, r *http.Request) {
+	// Clean the path to prevent directory traversal
+	path := r.URL.Path
+	if path == "/" {
+		path = "/index.html"
+	}
+
+	// Try to serve the requested file
+	filePath := h.cfg.StaticDir + path
+
+	// Check if the file exists
+	info, err := os.Stat(filePath)
+	if err != nil || info.IsDir() {
+		// File doesn't exist or is a directory - serve index.html for SPA routing
+		filePath = h.cfg.StaticDir + "/index.html"
+	}
+
+	// Serve the file
+	http.ServeFile(w, r, filePath)
 }

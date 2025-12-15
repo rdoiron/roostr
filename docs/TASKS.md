@@ -301,10 +301,10 @@ This document tracks all development tasks. Check off items as they're completed
 ## Phase 14: Platform Packaging
 
 ### Umbrel Package
-- [ ] UMBREL-001: Create docker-compose.yml
-- [ ] UMBREL-002: Create umbrel-app.yml manifest
-- [ ] UMBREL-003: Create exports.sh
-- [ ] UMBREL-004: Add app icon
+- [x] UMBREL-001: Create docker-compose.yml
+- [x] UMBREL-002: Create umbrel-app.yml manifest
+- [x] UMBREL-003: Create exports.sh
+- [x] UMBREL-004: Add app icon
 - [ ] UMBREL-005: Test on Umbrel
 - [ ] UMBREL-006: Submit to Umbrel App Store
 
@@ -361,14 +361,14 @@ This document tracks all development tasks. Check off items as they're completed
 | 11. Paid Access | 27 | 27 | 100% |
 | 12. Relay Controls | 10 | 10 | 100% |
 | 13. Statistics | 8 | 8 | 100% |
-| 14. Packaging | 14 | 0 | 0% |
+| 14. Packaging | 14 | 4 | 29% |
 | 15. Polish | 14 | 0 | 0% |
-| **TOTAL** | **205** | **177** | **86%** |
+| **TOTAL** | **205** | **181** | **88%** |
 
 ---
 
 ## Current Focus
 
-**Next Task:** UMBREL-001: Create docker-compose.yml
+**Next Task:** UMBREL-005: Test on Umbrel
 
 See SPECIFICATION.md for full details on any feature.
