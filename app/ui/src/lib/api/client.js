@@ -120,7 +120,11 @@ export const access = {
 };
 
 export const stats = {
-	getSummary: () => get('/stats/summary')
+	getSummary: () => get('/stats/summary'),
+	getEventsOverTime: (timeRange = '7days') => get(`/stats/events-over-time?time_range=${timeRange}`),
+	getEventsByKind: (timeRange = 'alltime') => get(`/stats/events-by-kind?time_range=${timeRange}`),
+	getTopAuthors: (timeRange = 'alltime', limit = 10) =>
+		get(`/stats/top-authors?time_range=${timeRange}&limit=${limit}`)
 };
 
 export const events = {

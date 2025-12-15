@@ -290,11 +290,11 @@ This document tracks all development tasks. Check off items as they're completed
 - [x] STATS-API-003: GET /api/v1/stats/top-authors endpoint
 
 ### Statistics UI
-- [ ] STATS-UI-001: Create statistics page
-- [ ] STATS-UI-002: Time range selector
-- [ ] STATS-UI-003: Events over time chart
-- [ ] STATS-UI-004: Events by kind chart
-- [ ] STATS-UI-005: Top authors list
+- [x] STATS-UI-001: Create statistics page
+- [x] STATS-UI-002: Time range selector
+- [x] STATS-UI-003: Events over time chart
+- [x] STATS-UI-004: Events by kind chart
+- [x] STATS-UI-005: Top authors list
 
 ---
 
@@ -360,15 +360,15 @@ This document tracks all development tasks. Check off items as they're completed
 | 10. Support | 6 | 6 | 100% |
 | 11. Paid Access | 27 | 27 | 100% |
 | 12. Relay Controls | 10 | 10 | 100% |
-| 13. Statistics | 8 | 3 | 38% |
+| 13. Statistics | 8 | 8 | 100% |
 | 14. Packaging | 14 | 0 | 0% |
 | 15. Polish | 14 | 0 | 0% |
-| **TOTAL** | **205** | **172** | **84%** |
+| **TOTAL** | **205** | **177** | **86%** |
 
 ---
 
 ## Current Focus
 
-**Next Task:** STATS-UI-001: Create statistics page
+**Next Task:** UMBREL-001: Create docker-compose.yml
 
 See SPECIFICATION.md for full details on any feature.
