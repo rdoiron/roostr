@@ -216,12 +216,26 @@ func (h *Handler) CompleteSetup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Store relay name and description if provided
-	if req.RelayName != "" {
-		h.db.SetAppState(ctx, "relay_name", req.RelayName)
-	}
-	if req.RelayDesc != "" {
-		h.db.SetAppState(ctx, "relay_description", req.RelayDesc)
+	// Update relay config with name, description, and operator contact
+	if h.configMgr != nil {
+		cfg, err := h.configMgr.Read()
+		if err == nil {
+			// Update info section with setup values
+			if req.RelayName != "" {
+				cfg.Info.Name = req.RelayName
+			}
+			if req.RelayDesc != "" {
+				cfg.Info.Description = req.RelayDesc
+			}
+			// Set operator pubkey and contact
+			cfg.Info.Pubkey = hexPubkey
+			cfg.Info.Contact = npub
+
+			// Write updated config
+			if err := h.configMgr.Write(cfg); err != nil {
+				// Log but don't fail setup - config can be updated later via settings
+			}
+		}
 	}
 
 	// Mark setup as complete

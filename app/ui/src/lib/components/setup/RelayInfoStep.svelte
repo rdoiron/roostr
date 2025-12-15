@@ -3,7 +3,18 @@
 
 	let nameValue = $state(name);
 	let descriptionValue = $state(description);
+	let initialized = $state(false);
 
+	// Sync local state with props when they change (for back navigation)
+	$effect(() => {
+		if (!initialized && name) {
+			nameValue = name;
+			descriptionValue = description;
+			initialized = true;
+		}
+	});
+
+	// Notify parent of changes
 	$effect(() => {
 		const valid = nameValue.trim().length > 0;
 		onChange({

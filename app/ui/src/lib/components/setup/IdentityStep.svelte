@@ -1,5 +1,4 @@
 <script>
-	import { onMount } from 'svelte';
 	import { setup } from '$lib/api/client.js';
 
 	let { identity = '', onChange } = $props();
@@ -9,7 +8,15 @@
 	let validationResult = $state(null);
 	let debounceTimer = null;
 
-	onMount(() => {
+	// Sync local state with prop when it changes
+	$effect(() => {
+		if (identity !== inputValue && identity !== '') {
+			inputValue = identity;
+		}
+	});
+
+	// Cleanup on unmount
+	$effect(() => {
 		return () => {
 			if (debounceTimer) clearTimeout(debounceTimer);
 		};

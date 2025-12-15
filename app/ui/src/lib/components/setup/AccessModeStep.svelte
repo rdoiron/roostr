@@ -3,6 +3,13 @@
 
 	let selectedMode = $state(mode);
 
+	// Sync local state with prop when it changes (for back navigation)
+	$effect(() => {
+		if (mode !== selectedMode) {
+			selectedMode = mode;
+		}
+	});
+
 	function selectMode(newMode) {
 		selectedMode = newMode;
 		onChange(newMode);
