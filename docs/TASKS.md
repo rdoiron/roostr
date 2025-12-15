@@ -309,12 +309,12 @@ This document tracks all development tasks. Check off items as they're completed
 - [ ] UMBREL-006: Submit to Umbrel App Store
 
 ### Start9 Package
-- [ ] STARTOS-001: Create Dockerfile
-- [ ] STARTOS-002: Create manifest.yaml
-- [ ] STARTOS-003: Create instructions.md
-- [ ] STARTOS-004: Create health check script
-- [ ] STARTOS-005: Create config scripts
-- [ ] STARTOS-006: Build .s9pk package
+- [x] STARTOS-001: Create Dockerfile
+- [x] STARTOS-002: Create manifest.yaml
+- [x] STARTOS-003: Create instructions.md
+- [x] STARTOS-004: Create health check script
+- [x] STARTOS-005: Create config scripts
+- [x] STARTOS-006: Build .s9pk package
 - [ ] STARTOS-007: Test on StartOS
 - [ ] STARTOS-008: Submit to Start9 Marketplace
 
@@ -361,14 +361,14 @@ This document tracks all development tasks. Check off items as they're completed
 | 11. Paid Access | 27 | 27 | 100% |
 | 12. Relay Controls | 10 | 10 | 100% |
 | 13. Statistics | 8 | 8 | 100% |
-| 14. Packaging | 14 | 4 | 29% |
+| 14. Packaging | 14 | 10 | 71% |
 | 15. Polish | 14 | 0 | 0% |
-| **TOTAL** | **205** | **181** | **88%** |
+| **TOTAL** | **205** | **187** | **91%** |
 
 ---
 
 ## Current Focus
 
-**Next Task:** UMBREL-005: Test on Umbrel
+**Next Task:** UMBREL-005: Test on Umbrel / STARTOS-007: Test on StartOS
 
 See SPECIFICATION.md for full details on any feature.

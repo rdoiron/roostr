@@ -97,11 +97,19 @@ package-umbrel:
 	@echo "Umbrel package prepared in dist/umbrel/"
 
 # Build Start9 package
+# Requires: start-sdk (cargo install --git https://github.com/Start9Labs/start-os.git start-sdk)
 package-startos:
 	@echo "Building Start9 package..."
-	@mkdir -p dist/startos
-	cp -r platforms/startos/* dist/startos/
-	@echo "Start9 package prepared in dist/startos/"
+	@if command -v start-sdk >/dev/null 2>&1; then \
+		cd platforms/startos && start-sdk pack; \
+		mv platforms/startos/*.s9pk dist/ 2>/dev/null || true; \
+		echo "Start9 package built successfully!"; \
+	else \
+		echo "start-sdk not found. Installing..."; \
+		echo "Run: cargo install --git https://github.com/Start9Labs/start-os.git start-sdk"; \
+		echo "Then run 'make package-startos' again."; \
+		exit 1; \
+	fi
 
 # ============================================================================
 # Utilities

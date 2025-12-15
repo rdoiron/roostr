@@ -28,7 +28,7 @@ assets:
 main:
   type: docker
   image: main
-  entrypoint: /usr/local/bin/roostr-api
+  entrypoint: /entrypoint.sh
   args: []
   mounts:
     main: /data
