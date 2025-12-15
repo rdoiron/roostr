@@ -1,5 +1,5 @@
 <script>
-	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
 	import { stats, relay, events, storage } from '$lib/api/client.js';
 	import { relayStatus } from '$lib/stores';
 	import { formatUptime, formatBytes } from '$lib/utils/format.js';
@@ -16,6 +16,7 @@
 
 	let loading = $state(true);
 	let error = $state(null);
+	let initialized = $state(false);
 
 	let dashboardData = $state({
 		stats: null,
@@ -55,15 +56,20 @@
 		}
 	}
 
-	onMount(() => {
-		loadDashboard();
-		// Auto-refresh every 30 seconds
-		const refreshInterval = setInterval(loadDashboard, REFRESH_INTERVAL);
+	// Initialize on client side
+	$effect(() => {
+		if (browser && !initialized) {
+			initialized = true;
+			loadDashboard();
 
-		// Return cleanup function (runs on component unmount)
-		return () => {
-			clearInterval(refreshInterval);
-		};
+			// Auto-refresh every 30 seconds
+			const refreshInterval = setInterval(loadDashboard, REFRESH_INTERVAL);
+
+			// Cleanup on unmount
+			return () => {
+				clearInterval(refreshInterval);
+			};
+		}
 	});
 
 	// Derived values

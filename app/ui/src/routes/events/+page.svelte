@@ -1,5 +1,5 @@
 <script>
-	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { events, setup, access } from '$lib/api/client.js';
@@ -47,19 +47,27 @@
 		{ value: '6', label: 'Reposts (kind 6)' },
 		{ value: '10002', label: 'Relay Lists (kind 10002)' }
 	];
+	// Track if we've initialized
+	let initialized = $state(false);
 
-	onMount(async () => {
-		// Load operator pubkey and whitelist for filters
-		try {
-			const [setupRes, whitelistRes] = await Promise.all([
-				setup.getStatus(),
-				access.getWhitelist()
-			]);
+	$effect(() => {
+		if (browser && !initialized) {
+			initialized = true;
+			initPage();
+		}
+	});
+
+	async function initPage() {
+		// Load operator pubkey and whitelist for filters (non-blocking)
+		Promise.all([
+			setup.getStatus(),
+			access.getWhitelist()
+		]).then(([setupRes, whitelistRes]) => {
 			operatorPubkey = setupRes.operator_pubkey || '';
 			whitelist = whitelistRes.entries || [];
-		} catch {
+		}).catch(() => {
 			// Non-fatal, just won't have author dropdown populated
-		}
+		});
 
 		// Check for deep link
 		const urlEventId = $page.url.searchParams.get('id');
@@ -68,7 +76,7 @@
 		}
 
 		await loadEvents();
-	});
+	}
 
 	async function loadEventById(id) {
 		try {
