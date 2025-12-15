@@ -14,16 +14,25 @@
 	let sidebarOpen = $state(false);
 	let loading = $state(true);
 	let setupCompleted = $state(false);
-	let initialized = $state(false);
+	let lastPathname = $state('');
 
+	// Check setup status on initial load and when navigating away from /setup
 	$effect(() => {
-		if (browser && !initialized) {
-			initialized = true;
-			checkSetup();
+		if (browser) {
+			const currentPath = $page.url.pathname;
+			const wasOnSetup = lastPathname.startsWith('/setup');
+			const nowOnSetup = currentPath.startsWith('/setup');
+
+			// Re-check if: first load OR navigating away from setup
+			if (!lastPathname || (wasOnSetup && !nowOnSetup)) {
+				checkSetup();
+			}
+			lastPathname = currentPath;
 		}
 	});
 
 	async function checkSetup() {
+		loading = true;
 		try {
 			const status = await setup.getStatus();
 			setupCompleted = status.completed;

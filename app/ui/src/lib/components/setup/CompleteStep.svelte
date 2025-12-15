@@ -1,5 +1,5 @@
 <script>
-	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { relay } from '$lib/api/client.js';
 	import { notify } from '$lib/stores';
@@ -7,13 +7,21 @@
 	import Loading from '$lib/components/Loading.svelte';
 
 	let loading = $state(true);
+	let initialized = $state(false);
 	let urls = $state({ local: '', tor: '' });
 	let qrLocal = $state('');
 	let qrTor = $state('');
 	let showQrLocal = $state(false);
 	let showQrTor = $state(false);
 
-	onMount(async () => {
+	$effect(() => {
+		if (browser && !initialized) {
+			initialized = true;
+			loadRelayInfo();
+		}
+	});
+
+	async function loadRelayInfo() {
 		try {
 			// Get relay URLs from API
 			const status = await relay.getStatus();
@@ -23,24 +31,22 @@
 			};
 
 			// Generate QR codes
-			if (typeof window !== 'undefined') {
-				const QRCode = (await import('qrcode')).default;
+			const QRCode = (await import('qrcode')).default;
 
-				if (urls.local) {
-					qrLocal = await QRCode.toDataURL(urls.local, {
-						width: 200,
-						margin: 2,
-						color: { dark: '#1f2937', light: '#ffffff' }
-					});
-				}
+			if (urls.local) {
+				qrLocal = await QRCode.toDataURL(urls.local, {
+					width: 200,
+					margin: 2,
+					color: { dark: '#1f2937', light: '#ffffff' }
+				});
+			}
 
-				if (urls.tor) {
-					qrTor = await QRCode.toDataURL(urls.tor, {
-						width: 200,
-						margin: 2,
-						color: { dark: '#1f2937', light: '#ffffff' }
-					});
-				}
+			if (urls.tor) {
+				qrTor = await QRCode.toDataURL(urls.tor, {
+					width: 200,
+					margin: 2,
+					color: { dark: '#1f2937', light: '#ffffff' }
+				});
 			}
 		} catch (e) {
 			console.error('Failed to load relay status:', e);
@@ -52,7 +58,7 @@
 		} finally {
 			loading = false;
 		}
-	});
+	}
 
 	async function copyToClipboard(text) {
 		try {
