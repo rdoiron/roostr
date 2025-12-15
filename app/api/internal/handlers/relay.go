@@ -126,7 +126,8 @@ func (h *Handler) getRelayLogPath() (string, error) {
 
 	cfg, err := h.configMgr.Read()
 	if err != nil {
-		return "", err
+		// Config file may not exist yet - return empty path (no logs)
+		return "", nil
 	}
 
 	if cfg.Logging.FolderPath == "" {

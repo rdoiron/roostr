@@ -1,5 +1,5 @@
 <script>
-	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
 	import { storage } from '$lib/api/client.js';
 	import { notify } from '$lib/stores/app.svelte.js';
 	import { formatBytes, formatRelativeTime } from '$lib/utils/format.js';
@@ -216,8 +216,13 @@
 		showDeletionModal = true;
 	}
 
-	onMount(() => {
-		loadData();
+	// Load data on mount (using $effect for Svelte 5 compatibility)
+	let initialized = $state(false);
+	$effect(() => {
+		if (browser && !initialized) {
+			initialized = true;
+			loadData();
+		}
 	});
 
 	// Watch cleanup date for estimate
