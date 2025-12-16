@@ -34,6 +34,7 @@ Target platforms: Umbrel App Store and Start9 StartOS.
 |---------|---------|
 | `github.com/mattn/go-sqlite3` | SQLite database driver |
 | `github.com/BurntSushi/toml` | TOML config file parsing for relay config.toml |
+| `github.com/btcsuite/btcd/btcec/v2` | BIP-340 Schnorr signatures for Nostr event verification |
 
 ## Project Structure
 
@@ -158,10 +159,21 @@ PUBLIC_API_URL=http://localhost:3001/api/v1
 
 ## Database Notes
 
-**Relay Database (read-only)**
+**Relay Database (nostr-rs-relay)**
 - Owned by nostr-rs-relay
-- We only SELECT from it
-- Main table: `event` (id, pubkey, created_at, kind, tags, content, sig)
+- We read from it; write only for sync imports
+- Main table: `event` with nostr-rs-relay schema:
+  - `id` INTEGER PRIMARY KEY (auto-generated)
+  - `event_hash` BLOB NOT NULL (32-byte event ID)
+  - `first_seen` INTEGER NOT NULL (Unix timestamp when received)
+  - `created_at` INTEGER (event creation timestamp)
+  - `author` BLOB NOT NULL (32-byte pubkey)
+  - `delegated_by` BLOB (optional)
+  - `kind` INTEGER
+  - `hidden` INTEGER
+  - `content` TEXT NOT NULL (full serialized event JSON)
+  - UNIQUE constraint on `event_hash`
+- Note: nostr-rs-relay stores the complete event JSON in `content`, not just the content field
 
 **App Database (read-write)**
 - Owned by Roostr
