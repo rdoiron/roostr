@@ -52,4 +52,4 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
-    user: "1000:1000"
+    # Note: Container starts as root to fix volume permissions, then switches to appuser via entrypoint

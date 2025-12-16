@@ -42,6 +42,7 @@ RUN apt-get update && apt-get install -y \
     sqlite3 \
     wget \
     procps \
+    gosu \
     && rm -rf /var/lib/apt/lists/*
 
 # Create app user
@@ -78,6 +79,5 @@ EXPOSE 8080 7000
 # Copy entrypoint script
 COPY --chmod=755 platforms/umbrel/entrypoint.sh /entrypoint.sh
 
-USER appuser
-
+# Don't set USER here - entrypoint handles permission setup and user switching
 ENTRYPOINT ["/entrypoint.sh"]

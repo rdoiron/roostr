@@ -2,10 +2,24 @@
 set -e
 
 # Roostr Umbrel Entrypoint
-# Starts nostr-rs-relay in background, then runs the Roostr API
+# Handles permission setup, starts nostr-rs-relay in background, then runs the Roostr API
 
 CONFIG_PATH="${CONFIG_PATH:-/data/config.toml}"
 RELAY_PORT="${RELAY_PORT:-7000}"
+
+# Fix permissions if running as root (needed for mounted volumes)
+if [ "$(id -u)" = "0" ]; then
+    echo "Running as root, fixing data directory permissions..."
+    mkdir -p /data
+    chown -R appuser:appuser /data
+
+    # Re-exec as appuser
+    echo "Switching to appuser..."
+    exec gosu appuser "$0" "$@"
+fi
+
+# From here on, we're running as appuser
+echo "Running as $(whoami) (UID=$(id -u))"
 
 # Create default config.toml if not exists
 if [ ! -f "$CONFIG_PATH" ]; then
