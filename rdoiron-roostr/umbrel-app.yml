@@ -40,7 +40,7 @@ developer: rdoiron
 website: https://github.com/rdoiron/roostr
 repo: https://github.com/rdoiron/roostr
 support: https://github.com/rdoiron/roostr/issues
-port: 8080
+port: 8880
 dependencies: []
 releaseNotes: >-
   Initial release of Roostr - Your Private Roost on Nostr.
