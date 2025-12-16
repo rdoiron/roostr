@@ -7,7 +7,7 @@ services:
   # Umbrel app proxy handles authentication and routing
   app_proxy:
     environment:
-      APP_HOST: roostr_app_1
+      APP_HOST: rdoiron-roostr_app_1
       APP_PORT: 8080
     image: getumbrel/app-proxy:1.0.0
     restart: on-failure
