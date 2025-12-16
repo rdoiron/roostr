@@ -68,9 +68,9 @@ func (d *DB) GetEvent(ctx context.Context, id string) (*Event, error) {
 	}
 
 	row := d.RelayDB.QueryRowContext(ctx, `
-		SELECT id, pubkey, created_at, kind, tags, content, sig
+		SELECT event_hash, author, created_at, kind, content
 		FROM event
-		WHERE id = ?
+		WHERE event_hash = ?
 	`, idBytes)
 
 	return scanEvent(row)
@@ -82,8 +82,9 @@ func (d *DB) GetEvents(ctx context.Context, filter EventFilter) ([]Event, error)
 		return nil, fmt.Errorf("relay database not connected")
 	}
 
-	// Build query
-	query := `SELECT id, pubkey, created_at, kind, tags, content, sig FROM event WHERE 1=1`
+	// Build query - nostr-rs-relay uses event_hash for ID, author for pubkey,
+	// and stores the full event JSON in content
+	query := `SELECT event_hash, author, created_at, kind, content FROM event WHERE 1=1`
 	args := []interface{}{}
 
 	if len(filter.IDs) > 0 {
@@ -96,7 +97,7 @@ func (d *DB) GetEvents(ctx context.Context, filter EventFilter) ([]Event, error)
 			placeholders[i] = "?"
 			args = append(args, idBytes)
 		}
-		query += fmt.Sprintf(" AND id IN (%s)", strings.Join(placeholders, ","))
+		query += fmt.Sprintf(" AND event_hash IN (%s)", strings.Join(placeholders, ","))
 	}
 
 	if len(filter.Authors) > 0 {
@@ -109,7 +110,7 @@ func (d *DB) GetEvents(ctx context.Context, filter EventFilter) ([]Event, error)
 			placeholders[i] = "?"
 			args = append(args, pubkeyBytes)
 		}
-		query += fmt.Sprintf(" AND pubkey IN (%s)", strings.Join(placeholders, ","))
+		query += fmt.Sprintf(" AND author IN (%s)", strings.Join(placeholders, ","))
 	}
 
 	if len(filter.Kinds) > 0 {
@@ -138,8 +139,8 @@ func (d *DB) GetEvents(ctx context.Context, filter EventFilter) ([]Event, error)
 
 	if filter.Mentions != "" {
 		// Filter events that have a "p" tag mentioning this pubkey
-		// Tags are stored as JSON: [["p","pubkey"],...]
-		query += " AND tags LIKE ?"
+		// In nostr-rs-relay, tags are stored within the content JSON
+		query += " AND content LIKE ?"
 		args = append(args, `%["p","`+filter.Mentions+`"%`)
 	}
 
@@ -198,8 +199,8 @@ func (d *DB) GetRelayStats(ctx context.Context) (*RelayStats, error) {
 		return nil, fmt.Errorf("failed to count events: %w", err)
 	}
 
-	// Unique pubkeys
-	err = d.RelayDB.QueryRowContext(ctx, "SELECT COUNT(DISTINCT pubkey) FROM event").Scan(&stats.TotalPubkeys)
+	// Unique pubkeys (nostr-rs-relay uses 'author' column)
+	err = d.RelayDB.QueryRowContext(ctx, "SELECT COUNT(DISTINCT author) FROM event").Scan(&stats.TotalPubkeys)
 	if err != nil {
 		return nil, fmt.Errorf("failed to count pubkeys: %w", err)
 	}
@@ -273,7 +274,7 @@ func (d *DB) CountEventsByPubkey(ctx context.Context, pubkeys []string) (map[str
 		}
 
 		var count int64
-		err = d.RelayDB.QueryRowContext(ctx, "SELECT COUNT(*) FROM event WHERE pubkey = ?", pubkeyBytes).Scan(&count)
+		err = d.RelayDB.QueryRowContext(ctx, "SELECT COUNT(*) FROM event WHERE author = ?", pubkeyBytes).Scan(&count)
 		if err != nil {
 			continue
 		}
@@ -297,9 +298,9 @@ func (d *DB) GetTopAuthors(ctx context.Context, limit int) ([]struct {
 	}
 
 	rows, err := d.RelayDB.QueryContext(ctx, `
-		SELECT pubkey, COUNT(*) as count
+		SELECT author, COUNT(*) as count
 		FROM event
-		GROUP BY pubkey
+		GROUP BY author
 		ORDER BY count DESC
 		LIMIT ?
 	`, limit)
@@ -377,13 +378,24 @@ func (d *DB) EstimateEventSize(ctx context.Context) (int64, error) {
 
 // Helper functions
 
+// nostrEventJSON represents the full Nostr event as stored in nostr-rs-relay's content column
+type nostrEventJSON struct {
+	ID        string     `json:"id"`
+	Pubkey    string     `json:"pubkey"`
+	CreatedAt int64      `json:"created_at"`
+	Kind      int        `json:"kind"`
+	Tags      [][]string `json:"tags"`
+	Content   string     `json:"content"`
+	Sig       string     `json:"sig"`
+}
+
 func scanEvent(row *sql.Row) (*Event, error) {
-	var idBytes, pubkeyBytes, sigBytes []byte
+	var idBytes, authorBytes []byte
 	var createdAt int64
 	var kind int
-	var tagsJSON, content string
+	var contentJSON string
 
-	err := row.Scan(&idBytes, &pubkeyBytes, &createdAt, &kind, &tagsJSON, &content, &sigBytes)
+	err := row.Scan(&idBytes, &authorBytes, &createdAt, &kind, &contentJSON)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
@@ -391,40 +403,49 @@ func scanEvent(row *sql.Row) (*Event, error) {
 		return nil, fmt.Errorf("failed to scan event: %w", err)
 	}
 
-	return parseEvent(idBytes, pubkeyBytes, createdAt, kind, tagsJSON, content, sigBytes)
+	return parseEventFromDB(idBytes, authorBytes, createdAt, kind, contentJSON)
 }
 
 func scanEventRows(rows *sql.Rows) (*Event, error) {
-	var idBytes, pubkeyBytes, sigBytes []byte
+	var idBytes, authorBytes []byte
 	var createdAt int64
 	var kind int
-	var tagsJSON, content string
+	var contentJSON string
 
-	err := rows.Scan(&idBytes, &pubkeyBytes, &createdAt, &kind, &tagsJSON, &content, &sigBytes)
+	err := rows.Scan(&idBytes, &authorBytes, &createdAt, &kind, &contentJSON)
 	if err != nil {
 		return nil, fmt.Errorf("failed to scan event: %w", err)
 	}
 
-	return parseEvent(idBytes, pubkeyBytes, createdAt, kind, tagsJSON, content, sigBytes)
+	return parseEventFromDB(idBytes, authorBytes, createdAt, kind, contentJSON)
 }
 
-func parseEvent(idBytes, pubkeyBytes []byte, createdAt int64, kind int, tagsJSON, content string, sigBytes []byte) (*Event, error) {
-	var tags [][]string
-	if tagsJSON != "" {
-		if err := json.Unmarshal([]byte(tagsJSON), &tags); err != nil {
-			// If JSON parsing fails, use empty tags
-			tags = [][]string{}
-		}
+// parseEventFromDB parses an event from nostr-rs-relay's database format.
+// The content column contains the full serialized JSON event.
+func parseEventFromDB(idBytes, authorBytes []byte, createdAt int64, kind int, contentJSON string) (*Event, error) {
+	// Parse the full event from the content JSON
+	var eventData nostrEventJSON
+	if err := json.Unmarshal([]byte(contentJSON), &eventData); err != nil {
+		// If parsing fails, return a minimal event with available data
+		return &Event{
+			ID:        hex.EncodeToString(idBytes),
+			Pubkey:    hex.EncodeToString(authorBytes),
+			CreatedAt: time.Unix(createdAt, 0),
+			Kind:      kind,
+			Tags:      [][]string{},
+			Content:   contentJSON, // Return raw JSON as content
+			Sig:       "",
+		}, nil
 	}
 
 	return &Event{
 		ID:        hex.EncodeToString(idBytes),
-		Pubkey:    hex.EncodeToString(pubkeyBytes),
+		Pubkey:    hex.EncodeToString(authorBytes),
 		CreatedAt: time.Unix(createdAt, 0),
 		Kind:      kind,
-		Tags:      tags,
-		Content:   content,
-		Sig:       hex.EncodeToString(sigBytes),
+		Tags:      eventData.Tags,
+		Content:   eventData.Content,
+		Sig:       eventData.Sig,
 	}, nil
 }
 
@@ -534,7 +555,7 @@ func (d *DB) GetTopAuthorsInRange(ctx context.Context, limit int, since, until t
 		limit = 100
 	}
 
-	query := `SELECT pubkey, COUNT(*) as count FROM event WHERE 1=1`
+	query := `SELECT author, COUNT(*) as count FROM event WHERE 1=1`
 	args := []interface{}{}
 
 	if !since.IsZero() {
@@ -546,7 +567,7 @@ func (d *DB) GetTopAuthorsInRange(ctx context.Context, limit int, since, until t
 		args = append(args, until.Unix())
 	}
 
-	query += " GROUP BY pubkey ORDER BY count DESC LIMIT ?"
+	query += " GROUP BY author ORDER BY count DESC LIMIT ?"
 	args = append(args, limit)
 
 	rows, err := d.RelayDB.QueryContext(ctx, query, args...)
@@ -617,7 +638,8 @@ func (d *DB) StreamEvents(ctx context.Context, filter EventFilter, callback func
 	}
 
 	// Build query (same WHERE clauses as GetEvents, but no LIMIT for full export)
-	query := `SELECT id, pubkey, created_at, kind, tags, content, sig FROM event WHERE 1=1`
+	// nostr-rs-relay uses event_hash for ID, author for pubkey, and stores full event JSON in content
+	query := `SELECT event_hash, author, created_at, kind, content FROM event WHERE 1=1`
 	args := []interface{}{}
 
 	if len(filter.Kinds) > 0 {
@@ -656,31 +678,41 @@ func (d *DB) StreamEvents(ctx context.Context, filter EventFilter, callback func
 		default:
 		}
 
-		var idBytes, pubkeyBytes, sigBytes []byte
-		var createdAt int64
+		var idBytes, authorBytes []byte
+		var dbCreatedAt int64
 		var kind int
-		var tagsJSON, content string
+		var contentJSON string
 
-		err := rows.Scan(&idBytes, &pubkeyBytes, &createdAt, &kind, &tagsJSON, &content, &sigBytes)
+		err := rows.Scan(&idBytes, &authorBytes, &dbCreatedAt, &kind, &contentJSON)
 		if err != nil {
 			return fmt.Errorf("failed to scan event: %w", err)
 		}
 
-		var tags [][]string
-		if tagsJSON != "" {
-			if err := json.Unmarshal([]byte(tagsJSON), &tags); err != nil {
-				tags = [][]string{}
-			}
-		}
+		// Parse the full event from the content JSON
+		var eventData nostrEventJSON
+		var event ExportEvent
 
-		event := ExportEvent{
-			ID:        hex.EncodeToString(idBytes),
-			Pubkey:    hex.EncodeToString(pubkeyBytes),
-			CreatedAt: createdAt,
-			Kind:      kind,
-			Tags:      tags,
-			Content:   content,
-			Sig:       hex.EncodeToString(sigBytes),
+		if err := json.Unmarshal([]byte(contentJSON), &eventData); err != nil {
+			// If parsing fails, use available data
+			event = ExportEvent{
+				ID:        hex.EncodeToString(idBytes),
+				Pubkey:    hex.EncodeToString(authorBytes),
+				CreatedAt: dbCreatedAt,
+				Kind:      kind,
+				Tags:      [][]string{},
+				Content:   contentJSON,
+				Sig:       "",
+			}
+		} else {
+			event = ExportEvent{
+				ID:        hex.EncodeToString(idBytes),
+				Pubkey:    hex.EncodeToString(authorBytes),
+				CreatedAt: dbCreatedAt,
+				Kind:      kind,
+				Tags:      eventData.Tags,
+				Content:   eventData.Content,
+				Sig:       eventData.Sig,
+			}
 		}
 
 		if err := callback(event); err != nil {
