@@ -28,7 +28,7 @@ Coming soon to the Start9 Marketplace.
 
 ```bash
 # Clone the repo
-git clone https://github.com/yourusername/roostr.git
+git clone https://github.com/rdoiron/roostr.git
 cd roostr
 
 # Start development servers

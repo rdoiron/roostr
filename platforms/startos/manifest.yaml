@@ -6,10 +6,10 @@ title: Roostr
 version: 0.1.0
 release-notes: Initial release
 license: MIT
-wrapper-repo: https://github.com/roostr/roostr
-upstream-repo: https://github.com/roostr/roostr
-support-site: https://github.com/roostr/roostr/issues
-marketing-site: https://github.com/roostr/roostr
+wrapper-repo: https://github.com/rdoiron/roostr
+upstream-repo: https://github.com/rdoiron/roostr
+support-site: https://github.com/rdoiron/roostr/issues
+marketing-site: https://github.com/rdoiron/roostr
 donation-url: ~
 build: []
 

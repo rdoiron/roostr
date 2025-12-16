@@ -2,7 +2,7 @@
 # https://github.com/getumbrel/umbrel-apps
 
 manifestVersion: 1
-id: roostr
+id: rdoiron-roostr
 category: social
 name: Roostr
 version: "0.1.0"

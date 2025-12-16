@@ -23,7 +23,8 @@ COPY app/api/ ./
 RUN CGO_ENABLED=1 go build -o /roostr-api ./cmd/server
 
 # Stage 3: Build nostr-rs-relay
-FROM rust:1-bookworm AS relay-builder
+# Pin to Rust 1.79 for compatibility with time crate v0.3.28
+FROM rust:1.79-bookworm AS relay-builder
 
 RUN apt-get update && apt-get install -y cmake protobuf-compiler libsqlite3-dev
 

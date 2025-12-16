@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#A78BFA"/>
+      <stop offset="100%" style="stop-color:#7C3AED"/>
+    </linearGradient>
+    <linearGradient id="combGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#F87171"/>
+      <stop offset="100%" style="stop-color:#DC2626"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background circle -->
+  <circle cx="128" cy="128" r="120" fill="#1A1A2E"/>
+
+  <!-- Rooster body -->
+  <ellipse cx="128" cy="148" rx="55" ry="48" fill="url(#bodyGrad)"/>
+
+  <!-- Rooster head -->
+  <circle cx="155" cy="95" r="32" fill="url(#bodyGrad)"/>
+
+  <!-- Rooster comb (3 bumps) -->
+  <path d="M145 65 Q150 45 160 55 Q165 40 175 52 Q185 38 188 58 Q175 70 160 68 Q148 68 145 65" fill="url(#combGrad)"/>
+
+  <!-- Beak -->
+  <path d="M182 95 L205 100 L182 108 Z" fill="#FCD34D"/>
+
+  <!-- Eye -->
+  <circle cx="165" cy="90" r="6" fill="#1A1A2E"/>
+  <circle cx="167" cy="88" r="2" fill="white"/>
+
+  <!-- Wattle -->
+  <ellipse cx="175" cy="118" rx="8" ry="12" fill="url(#combGrad)"/>
+
+  <!-- Tail feathers -->
+  <path d="M73 148 Q45 100 60 70 Q70 90 75 130" fill="#A78BFA"/>
+  <path d="M78 145 Q55 105 72 78 Q80 100 82 135" fill="#8B5CF6"/>
+  <path d="M83 142 Q65 110 85 85 Q90 108 88 132" fill="#7C3AED"/>
+
+  <!-- Wing -->
+  <ellipse cx="115" cy="155" rx="30" ry="22" fill="#6D28D9"/>
+  <path d="M90 145 Q100 160 95 175 Q110 165 125 170 Q115 155 120 140" fill="#5B21B6" opacity="0.6"/>
+
+  <!-- Feet -->
+  <path d="M110 195 L105 220 L95 215 M105 220 L105 230 M105 220 L115 225" stroke="#FCD34D" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M145 195 L150 220 L160 215 M150 220 L150 230 M150 220 L140 225" stroke="#FCD34D" stroke-width="4" fill="none" stroke-linecap="round"/>
+</svg>
