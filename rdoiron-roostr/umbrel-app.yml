@@ -7,6 +7,7 @@ category: social
 name: Roostr
 version: "0.1.0"
 tagline: Your Private Roost on Nostr
+icon: https://raw.githubusercontent.com/rdoiron/roostr/main/rdoiron-roostr/icon.svg
 description: >-
   Roostr is a web-based admin interface for managing your private Nostr relay.
   It wraps nostr-rs-relay and provides a beautiful dashboard for monitoring
