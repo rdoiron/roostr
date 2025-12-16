@@ -10,8 +10,8 @@
     </linearGradient>
   </defs>
 
-  <!-- Background circle -->
-  <circle cx="128" cy="128" r="120" fill="#1A1A2E"/>
+  <!-- Background (full square - Umbrel rounds corners with CSS) -->
+  <rect width="256" height="256" fill="#1A1A2E"/>
 
   <!-- Rooster body -->
   <ellipse cx="128" cy="148" rx="55" ry="48" fill="url(#bodyGrad)"/>
