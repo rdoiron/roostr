@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/decred/dcrd/dcrec/secp256k1/v4"
-	"github.com/decred/dcrd/dcrec/secp256k1/v4/schnorr"
+	"github.com/btcsuite/btcd/btcec/v2"
+	"github.com/btcsuite/btcd/btcec/v2/schnorr"
 )
 
 // Event verification errors
@@ -175,7 +175,7 @@ func (e *SyncEvent) ToDBFormat() *DBEvent {
 }
 
 // XOnlyPubKey returns the pubkey parsed as an x-only secp256k1 public key.
-func (e *SyncEvent) XOnlyPubKey() (*secp256k1.PublicKey, error) {
+func (e *SyncEvent) XOnlyPubKey() (*btcec.PublicKey, error) {
 	pubkeyBytes, err := hex.DecodeString(e.Pubkey)
 	if err != nil {
 		return nil, err

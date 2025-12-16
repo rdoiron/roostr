@@ -77,14 +77,14 @@ func (w *RelayWriter) DeleteEventsBefore(ctx context.Context, before time.Time, 
 		query += fmt.Sprintf(" AND kind NOT IN (%s)", strings.Join(placeholders, ","))
 	}
 
-	// Add pubkey exceptions
+	// Add pubkey exceptions (nostr-rs-relay uses 'author' column)
 	if len(pubkeyExceptions) > 0 {
 		placeholders := make([]string, len(pubkeyExceptions))
 		for i, pubkey := range pubkeyExceptions {
 			placeholders[i] = "?"
 			args = append(args, pubkey)
 		}
-		query += fmt.Sprintf(" AND pubkey NOT IN (%s)", strings.Join(placeholders, ","))
+		query += fmt.Sprintf(" AND author NOT IN (%s)", strings.Join(placeholders, ","))
 	}
 
 	result, err := w.db.ExecContext(ctx, query, args...)
@@ -119,7 +119,7 @@ func (w *RelayWriter) DeleteEventsByIDs(ctx context.Context, ids []string) (int6
 		args[i] = idBytes
 	}
 
-	query := fmt.Sprintf("DELETE FROM event WHERE id IN (%s)", strings.Join(placeholders, ","))
+	query := fmt.Sprintf("DELETE FROM event WHERE event_hash IN (%s)", strings.Join(placeholders, ","))
 	result, err := w.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return 0, fmt.Errorf("failed to delete events: %w", err)
@@ -142,7 +142,7 @@ func (w *RelayWriter) GetEventAuthor(ctx context.Context, eventID string) (strin
 	}
 
 	var pubkeyBytes []byte
-	err = w.db.QueryRowContext(ctx, "SELECT pubkey FROM event WHERE id = ?", idBytes).Scan(&pubkeyBytes)
+	err = w.db.QueryRowContext(ctx, "SELECT author FROM event WHERE event_hash = ?", idBytes).Scan(&pubkeyBytes)
 	if err == sql.ErrNoRows {
 		return "", nil
 	}
@@ -197,6 +197,8 @@ func (w *RelayWriter) GetPageInfo(ctx context.Context) (pageCount int64, freePag
 // InsertEvent inserts a Nostr event into the relay database.
 // Uses INSERT OR IGNORE to handle duplicates gracefully.
 // Returns true if the event was inserted (new), false if it already existed.
+// Note: nostr-rs-relay stores events with event_hash (id), author (pubkey),
+// created_at, kind, and content (full serialized event JSON).
 func (w *RelayWriter) InsertEvent(ctx context.Context, event *Event) (bool, error) {
 	// Convert hex ID to bytes
 	idBytes, err := hex.DecodeString(event.ID)
@@ -210,23 +212,28 @@ func (w *RelayWriter) InsertEvent(ctx context.Context, event *Event) (bool, erro
 		return false, fmt.Errorf("invalid pubkey: %w", err)
 	}
 
-	// Convert hex signature to bytes
-	sigBytes, err := hex.DecodeString(event.Sig)
+	// Serialize full event as JSON for content column (nostr-rs-relay format)
+	eventJSON := map[string]interface{}{
+		"id":         event.ID,
+		"pubkey":     event.Pubkey,
+		"created_at": event.CreatedAt.Unix(),
+		"kind":       event.Kind,
+		"tags":       event.Tags,
+		"content":    event.Content,
+		"sig":        event.Sig,
+	}
+	contentJSON, err := json.Marshal(eventJSON)
 	if err != nil {
-		return false, fmt.Errorf("invalid signature: %w", err)
+		return false, fmt.Errorf("failed to serialize event: %w", err)
 	}
 
-	// Serialize tags to JSON
-	tagsJSON, err := json.Marshal(event.Tags)
-	if err != nil {
-		return false, fmt.Errorf("failed to serialize tags: %w", err)
-	}
-
-	// Insert with OR IGNORE for duplicate handling
+	// Insert with nostr-rs-relay schema: event_hash, first_seen, author, created_at, kind, content
+	// first_seen = when we received the event (now)
+	firstSeen := time.Now().Unix()
 	result, err := w.db.ExecContext(ctx, `
-		INSERT OR IGNORE INTO event (id, pubkey, created_at, kind, tags, content, sig)
-		VALUES (?, ?, ?, ?, ?, ?, ?)
-	`, idBytes, pubkeyBytes, event.CreatedAt.Unix(), event.Kind, string(tagsJSON), event.Content, sigBytes)
+		INSERT OR IGNORE INTO event (event_hash, first_seen, created_at, author, kind, content)
+		VALUES (?, ?, ?, ?, ?, ?)
+	`, idBytes, firstSeen, event.CreatedAt.Unix(), pubkeyBytes, event.Kind, string(contentJSON))
 	if err != nil {
 		return false, fmt.Errorf("failed to insert event: %w", err)
 	}
