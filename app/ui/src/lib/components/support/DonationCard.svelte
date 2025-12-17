@@ -41,34 +41,34 @@
 	}
 </script>
 
-<div class="rounded-lg bg-white p-6 shadow">
+<div class="rounded-lg bg-white dark:bg-gray-800 p-6 shadow dark:shadow-gray-900/50">
 	<div class="flex items-center gap-2">
 		<span class="text-2xl">{icon}</span>
-		<h2 class="text-lg font-semibold text-gray-900">{title}</h2>
+		<h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">{title}</h2>
 	</div>
 
 	<div class="mt-4 flex flex-col items-center">
 		{#if qrDataUrl}
-			<div class="rounded-lg border border-gray-200 bg-white p-2">
+			<div class="rounded-lg border border-gray-200 dark:border-gray-600 bg-white p-2">
 				<img src={qrDataUrl} alt="QR Code for {title}" class="rounded" />
 			</div>
 		{:else}
-			<div class="flex h-[180px] w-[180px] items-center justify-center rounded-lg bg-gray-100">
+			<div class="flex h-[180px] w-[180px] items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700">
 				<span class="text-gray-400">Loading...</span>
 			</div>
 		{/if}
 
 		<div class="mt-4 w-full">
-			<div class="flex items-center gap-2 rounded-lg bg-gray-50 p-3">
-				<code class="flex-1 truncate font-mono text-sm text-gray-700">{address}</code>
+			<div class="flex items-center gap-2 rounded-lg bg-gray-50 dark:bg-gray-700 p-3">
+				<code class="flex-1 truncate font-mono text-sm text-gray-700 dark:text-gray-200">{address}</code>
 				<button
 					type="button"
 					onclick={copyAddress}
-					class="inline-flex shrink-0 items-center justify-center rounded-lg bg-gray-100 p-2 text-gray-700 transition-colors hover:bg-gray-200"
+					class="inline-flex shrink-0 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-600 p-2 text-gray-700 dark:text-gray-200 transition-colors hover:bg-gray-200 dark:hover:bg-gray-500"
 					title="Copy"
 				>
 					{#if copied}
-						<svg class="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<svg class="h-5 w-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
 						</svg>
 					{:else}

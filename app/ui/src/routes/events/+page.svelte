@@ -231,19 +231,19 @@
 
 <div class="space-y-6">
 	<div>
-		<h1 class="text-2xl font-bold text-gray-900">Event Browser</h1>
-		<p class="text-gray-600">Explore and manage events stored on your relay</p>
+		<h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Event Browser</h1>
+		<p class="text-gray-600 dark:text-gray-400">Explore and manage events stored on your relay</p>
 	</div>
 
 	<!-- Filters -->
-	<div class="rounded-lg bg-white p-4 shadow">
+	<div class="rounded-lg bg-white dark:bg-gray-800 p-4 shadow dark:shadow-gray-900/50">
 		<div class="mb-4 flex items-center justify-between">
-			<h2 class="font-medium text-gray-900">Filters</h2>
+			<h2 class="font-medium text-gray-900 dark:text-gray-100">Filters</h2>
 			{#if hasFilters}
 				<button
 					type="button"
 					onclick={clearFilters}
-					class="text-sm text-gray-500 hover:text-gray-700"
+					class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
 				>
 					Clear all
 				</button>
@@ -253,7 +253,7 @@
 		<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 			<!-- Kind filter -->
 			<div>
-				<label for="kind-filter" class="mb-1 block text-sm font-medium text-gray-700">Kind</label>
+				<label for="kind-filter" class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200">Kind</label>
 				<select
 					id="kind-filter"
 					bind:value={kindFilter}
@@ -267,7 +267,7 @@
 
 			<!-- Author filter -->
 			<div>
-				<label for="author-filter" class="mb-1 block text-sm font-medium text-gray-700">Author</label>
+				<label for="author-filter" class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200">Author</label>
 				<select
 					id="author-filter"
 					bind:value={authorFilter}
@@ -281,7 +281,7 @@
 
 			<!-- Start date -->
 			<div>
-				<label for="start-date" class="mb-1 block text-sm font-medium text-gray-700">From Date</label>
+				<label for="start-date" class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200">From Date</label>
 				<input
 					id="start-date"
 					type="date"
@@ -292,7 +292,7 @@
 
 			<!-- End date -->
 			<div>
-				<label for="end-date" class="mb-1 block text-sm font-medium text-gray-700">To Date</label>
+				<label for="end-date" class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200">To Date</label>
 				<input
 					id="end-date"
 					type="date"
@@ -318,9 +318,9 @@
 				<input
 					type="checkbox"
 					bind:checked={mentionsMe}
-					class="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+					class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-purple-600 focus:ring-purple-500"
 				/>
-				<span class="text-sm text-gray-700">Only events mentioning me</span>
+				<span class="text-sm text-gray-700 dark:text-gray-200">Only events mentioning me</span>
 			</label>
 
 			<!-- Apply button -->
@@ -333,7 +333,7 @@
 	<!-- Results header -->
 	{#if !loading && !error}
 		<div class="flex items-center justify-between">
-			<p class="text-sm text-gray-600">
+			<p class="text-sm text-gray-600 dark:text-gray-400">
 				{#if eventList.length > 0}
 					Showing {showingStart}-{showingEnd} events
 				{:else}

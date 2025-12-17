@@ -19,27 +19,27 @@
 	const displayName = $derived(entry.nickname || (entry.npub ? truncateNpub(entry.npub) : 'Unknown'));
 </script>
 
-<div class="flex items-center justify-between rounded-lg border p-4 {isOperator ? 'border-purple-200 bg-purple-50' : 'border-gray-200 bg-gray-50'}">
+<div class="flex items-center justify-between rounded-lg border p-4 {isOperator ? 'border-purple-200 dark:border-purple-700 bg-purple-50 dark:bg-purple-900/20' : 'border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700'}">
 	<div class="flex items-center space-x-3 min-w-0 flex-1">
-		<div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 {isOperator ? 'bg-purple-200' : listType === 'blacklist' ? 'bg-red-100' : 'bg-green-100'}">
+		<div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 {isOperator ? 'bg-purple-200 dark:bg-purple-900/50' : listType === 'blacklist' ? 'bg-red-100 dark:bg-red-900/30' : 'bg-green-100 dark:bg-green-900/30'}">
 			{#if listType === 'blacklist'}
-				<svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<svg class="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
 				</svg>
 			{:else}
-				<svg class="w-5 h-5 {isOperator ? 'text-purple-600' : 'text-green-600'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<svg class="w-5 h-5 {isOperator ? 'text-purple-600 dark:text-purple-400' : 'text-green-600 dark:text-green-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
 				</svg>
 			{/if}
 		</div>
 		<div class="min-w-0 flex-1">
 			<div class="flex items-center space-x-2">
-				<p class="font-medium text-gray-900 truncate">{displayName}</p>
+				<p class="font-medium text-gray-900 dark:text-gray-100 truncate">{displayName}</p>
 				{#if isOperator}
-					<span class="flex-shrink-0 rounded bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700">Operator</span>
+					<span class="flex-shrink-0 rounded bg-purple-100 dark:bg-purple-900/30 px-2 py-0.5 text-xs font-medium text-purple-700 dark:text-purple-300">Operator</span>
 				{/if}
 			</div>
-			<p class="text-sm text-gray-500 font-mono truncate">{entry.npub || entry.pubkey}</p>
+			<p class="text-sm text-gray-500 dark:text-gray-400 font-mono truncate">{entry.npub || entry.pubkey}</p>
 			<div class="flex items-center space-x-3 mt-1 text-xs text-gray-400">
 				<span>Added {formatDate(entry.added_at)}</span>
 				{#if listType === 'whitelist' && entry.event_count !== undefined}
@@ -51,7 +51,7 @@
 					</span>
 				{/if}
 				{#if listType === 'blacklist' && entry.reason}
-					<span class="text-red-500 truncate">Reason: {entry.reason}</span>
+					<span class="text-red-500 dark:text-red-400 truncate">Reason: {entry.reason}</span>
 				{/if}
 			</div>
 		</div>
@@ -61,7 +61,7 @@
 			<button
 				type="button"
 				onclick={() => onEdit(entry)}
-				class="p-2 text-gray-400 hover:text-gray-600 transition-colors rounded hover:bg-gray-100"
+				class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors rounded hover:bg-gray-100 dark:hover:bg-gray-600"
 				title="Edit nickname"
 			>
 				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -74,7 +74,7 @@
 				type="button"
 				onclick={() => onRemove(entry)}
 				disabled={isOperator}
-				class="p-2 transition-colors rounded {isOperator ? 'text-gray-300 cursor-not-allowed' : 'text-gray-400 hover:text-red-500 hover:bg-red-50'}"
+				class="p-2 transition-colors rounded {isOperator ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed' : 'text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20'}"
 				title={isOperator ? 'Cannot remove operator' : 'Remove'}
 			>
 				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

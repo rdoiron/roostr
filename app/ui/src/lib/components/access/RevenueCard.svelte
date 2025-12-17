@@ -24,13 +24,13 @@
 	}
 </script>
 
-<div class="rounded-lg bg-white p-6 shadow">
+<div class="rounded-lg bg-white dark:bg-gray-800 p-6 shadow dark:shadow-gray-900/50">
 	<div class="flex items-center justify-between mb-4">
 		<div>
-			<h2 class="text-lg font-semibold text-gray-900">Revenue Summary</h2>
-			<p class="text-sm text-gray-500">Lifetime earnings from paid relay access</p>
+			<h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Revenue Summary</h2>
+			<p class="text-sm text-gray-500 dark:text-gray-400">Lifetime earnings from paid relay access</p>
 		</div>
-		<svg class="w-8 h-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+		<svg class="w-8 h-8 text-purple-500 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
 		</svg>
 	</div>
@@ -42,45 +42,45 @@
 	{:else}
 		<div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
 			<!-- Total Revenue -->
-			<div class="p-4 bg-purple-50 rounded-lg">
-				<p class="text-sm text-purple-600 font-medium">Total Revenue</p>
-				<p class="text-2xl font-bold text-purple-900">{formatSats(revenue.total_sats || 0)}</p>
+			<div class="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+				<p class="text-sm text-purple-600 dark:text-purple-400 font-medium">Total Revenue</p>
+				<p class="text-2xl font-bold text-purple-900 dark:text-purple-100">{formatSats(revenue.total_sats || 0)}</p>
 				{#if revenue.total_sats > 0}
-					<p class="text-xs text-purple-500">{formatUSD(revenue.total_sats)}</p>
+					<p class="text-xs text-purple-500 dark:text-purple-400">{formatUSD(revenue.total_sats)}</p>
 				{/if}
 			</div>
 
 			<!-- Active Subscribers -->
-			<div class="p-4 bg-green-50 rounded-lg">
-				<p class="text-sm text-green-600 font-medium">Active Users</p>
-				<p class="text-2xl font-bold text-green-900">{revenue.active_count || 0}</p>
-				<p class="text-xs text-green-500">with relay access</p>
+			<div class="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+				<p class="text-sm text-green-600 dark:text-green-400 font-medium">Active Users</p>
+				<p class="text-2xl font-bold text-green-900 dark:text-green-100">{revenue.active_count || 0}</p>
+				<p class="text-xs text-green-500 dark:text-green-400">with relay access</p>
 			</div>
 
 			<!-- Expiring Soon -->
-			<div class="p-4 {revenue.expiring_soon > 0 ? 'bg-amber-50' : 'bg-gray-50'} rounded-lg">
-				<p class="text-sm {revenue.expiring_soon > 0 ? 'text-amber-600' : 'text-gray-600'} font-medium">Expiring Soon</p>
-				<p class="text-2xl font-bold {revenue.expiring_soon > 0 ? 'text-amber-900' : 'text-gray-900'}">{revenue.expiring_soon || 0}</p>
-				<p class="text-xs {revenue.expiring_soon > 0 ? 'text-amber-500' : 'text-gray-500'}">within 7 days</p>
+			<div class="p-4 {revenue.expiring_soon > 0 ? 'bg-amber-50 dark:bg-amber-900/20' : 'bg-gray-50 dark:bg-gray-700'} rounded-lg">
+				<p class="text-sm {revenue.expiring_soon > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-gray-600 dark:text-gray-400'} font-medium">Expiring Soon</p>
+				<p class="text-2xl font-bold {revenue.expiring_soon > 0 ? 'text-amber-900 dark:text-amber-100' : 'text-gray-900 dark:text-gray-100'}">{revenue.expiring_soon || 0}</p>
+				<p class="text-xs {revenue.expiring_soon > 0 ? 'text-amber-500 dark:text-amber-400' : 'text-gray-500 dark:text-gray-400'}">within 7 days</p>
 			</div>
 
 			<!-- Total Payments -->
-			<div class="p-4 bg-gray-50 rounded-lg">
-				<p class="text-sm text-gray-600 font-medium">Total Payments</p>
-				<p class="text-2xl font-bold text-gray-900">{revenue.payment_count || 0}</p>
-				<p class="text-xs text-gray-500">transactions</p>
+			<div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+				<p class="text-sm text-gray-600 dark:text-gray-400 font-medium">Total Payments</p>
+				<p class="text-2xl font-bold text-gray-900 dark:text-gray-100">{revenue.payment_count || 0}</p>
+				<p class="text-xs text-gray-500 dark:text-gray-400">transactions</p>
 			</div>
 		</div>
 
 		<!-- Revenue by Tier -->
 		{#if revenue.by_tier && Object.keys(revenue.by_tier).length > 0}
-			<div class="mt-4 pt-4 border-t">
-				<p class="text-sm font-medium text-gray-700 mb-2">Revenue by Tier</p>
+			<div class="mt-4 pt-4 border-t dark:border-gray-700">
+				<p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Revenue by Tier</p>
 				<div class="space-y-2">
 					{#each Object.entries(revenue.by_tier) as [tier, amount]}
 						<div class="flex items-center justify-between text-sm">
-							<span class="text-gray-600">{tier}</span>
-							<span class="font-medium text-gray-900">{formatSats(amount)}</span>
+							<span class="text-gray-600 dark:text-gray-400">{tier}</span>
+							<span class="font-medium text-gray-900 dark:text-gray-100">{formatSats(amount)}</span>
 						</div>
 					{/each}
 				</div>

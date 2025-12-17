@@ -257,8 +257,8 @@
 
 <div class="space-y-6">
 	<div>
-		<h1 class="text-2xl font-bold text-gray-900">Access Control</h1>
-		<p class="text-gray-600">Manage who can write to your relay</p>
+		<h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Access Control</h1>
+		<p class="text-gray-600 dark:text-gray-400">Manage who can write to your relay</p>
 	</div>
 
 	{#if loading}
@@ -266,17 +266,17 @@
 			<div class="h-8 w-8 animate-spin rounded-full border-4 border-purple-600 border-t-transparent"></div>
 		</div>
 	{:else if error}
-		<div class="rounded-lg bg-red-50 p-4 text-red-700">
+		<div class="rounded-lg bg-red-50 dark:bg-red-900/20 p-4 text-red-700 dark:text-red-400">
 			<p class="font-medium">Error loading access control</p>
 			<p class="text-sm">{error}</p>
-			<button onclick={loadData} class="mt-2 text-sm font-medium text-red-600 hover:text-red-500">
+			<button onclick={loadData} class="mt-2 text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-500 dark:hover:text-red-300">
 				Try again
 			</button>
 		</div>
 	{:else}
 		<!-- Access Mode Selector -->
-		<div class="rounded-lg bg-white p-6 shadow">
-			<h2 class="text-lg font-semibold text-gray-900 mb-4">Access Mode</h2>
+		<div class="rounded-lg bg-white dark:bg-gray-800 p-6 shadow dark:shadow-gray-900/50">
+			<h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Access Mode</h2>
 			<AccessModeSelector {mode} onChange={handleModeChange} />
 		</div>
 
@@ -297,15 +297,15 @@
 
 		<!-- Whitelist Section -->
 		{#if showWhitelist}
-			<div class="rounded-lg bg-white p-6 shadow">
+			<div class="rounded-lg bg-white dark:bg-gray-800 p-6 shadow dark:shadow-gray-900/50">
 				<div class="flex items-center justify-between mb-4">
 					<div>
-						<h2 class="text-lg font-semibold text-gray-900">
+						<h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
 							Whitelisted Pubkeys
-							<span class="ml-2 text-sm font-normal text-gray-500">({whitelist.length})</span>
+							<span class="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">({whitelist.length})</span>
 						</h2>
 						{#if mode === 'paid'}
-							<p class="text-sm text-gray-500 mt-1">These users plus paid subscribers can write to your relay.</p>
+							<p class="text-sm text-gray-500 dark:text-gray-400 mt-1">These users plus paid subscribers can write to your relay.</p>
 						{/if}
 					</div>
 					<Button variant="primary" onclick={openAddWhitelist}>
@@ -320,13 +320,13 @@
 
 				{#if whitelist.length === 0}
 					<div class="text-center py-8">
-						<div class="w-12 h-12 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-3">
-							<svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<div class="w-12 h-12 mx-auto bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-3">
+							<svg class="w-6 h-6 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
 							</svg>
 						</div>
-						<p class="text-gray-500">No pubkeys whitelisted yet</p>
-						<p class="text-sm text-gray-400 mt-1">Add pubkeys to allow them to write to your relay</p>
+						<p class="text-gray-500 dark:text-gray-400">No pubkeys whitelisted yet</p>
+						<p class="text-sm text-gray-400 dark:text-gray-500 mt-1">Add pubkeys to allow them to write to your relay</p>
 					</div>
 				{:else}
 					<div class="space-y-2">
@@ -342,7 +342,7 @@
 				{/if}
 
 				<!-- Import/Export -->
-				<div class="flex items-center space-x-3 mt-6 pt-4 border-t">
+				<div class="flex items-center space-x-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
 					<input
 						type="file"
 						accept=".json,.txt"
@@ -353,7 +353,7 @@
 					/>
 					<label
 						for="import-input"
-						class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer {importing ? 'opacity-50 pointer-events-none' : ''}"
+						class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer {importing ? 'opacity-50 pointer-events-none' : ''}"
 					>
 						{#if importing}
 							<div class="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-gray-600 border-t-transparent"></div>
@@ -368,7 +368,7 @@
 						type="button"
 						onclick={handleExport}
 						disabled={whitelist.length === 0}
-						class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+						class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
 					>
 						<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -381,14 +381,14 @@
 
 		<!-- Blacklist Section -->
 		{#if showBlacklist}
-			<div class="rounded-lg bg-white p-6 shadow">
+			<div class="rounded-lg bg-white dark:bg-gray-800 p-6 shadow dark:shadow-gray-900/50">
 				<div class="flex items-center justify-between mb-4">
 					<div>
-						<h2 class="text-lg font-semibold text-gray-900">
+						<h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
 							Blacklisted Pubkeys
-							<span class="ml-2 text-sm font-normal text-gray-500">({blacklist.length})</span>
+							<span class="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">({blacklist.length})</span>
 						</h2>
-						<p class="text-sm text-gray-500 mt-1">These users are blocked from writing to your relay.</p>
+						<p class="text-sm text-gray-500 dark:text-gray-400 mt-1">These users are blocked from writing to your relay.</p>
 					</div>
 					<Button variant="primary" onclick={openAddBlacklist}>
 						<span class="flex items-center whitespace-nowrap">
@@ -402,13 +402,13 @@
 
 				{#if blacklist.length === 0}
 					<div class="text-center py-8">
-						<div class="w-12 h-12 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-3">
-							<svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<div class="w-12 h-12 mx-auto bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-3">
+							<svg class="w-6 h-6 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
 							</svg>
 						</div>
-						<p class="text-gray-500">No pubkeys blacklisted</p>
-						<p class="text-sm text-gray-400 mt-1">Add pubkeys to block them from your relay</p>
+						<p class="text-gray-500 dark:text-gray-400">No pubkeys blacklisted</p>
+						<p class="text-sm text-gray-400 dark:text-gray-500 mt-1">Add pubkeys to block them from your relay</p>
 					</div>
 				{:else}
 					<div class="space-y-2">
@@ -426,14 +426,14 @@
 
 		<!-- Open mode info -->
 		{#if mode === 'open'}
-			<div class="rounded-lg bg-amber-50 border border-amber-200 p-4">
+			<div class="rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-4">
 				<div class="flex items-start space-x-3">
-					<svg class="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<svg class="w-5 h-5 text-amber-500 dark:text-amber-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
 					</svg>
 					<div>
-						<p class="font-medium text-amber-800">Open Mode Active</p>
-						<p class="text-sm text-amber-700 mt-1">
+						<p class="font-medium text-amber-800 dark:text-amber-300">Open Mode Active</p>
+						<p class="text-sm text-amber-700 dark:text-amber-400 mt-1">
 							Anyone can write to your relay. This is not recommended for private relays as it may fill up your storage with unwanted content.
 						</p>
 					</div>

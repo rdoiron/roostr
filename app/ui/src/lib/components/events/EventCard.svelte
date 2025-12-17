@@ -16,15 +16,15 @@
 	};
 
 	const kindColors = {
-		0: 'bg-blue-100 text-blue-700',
-		1: 'bg-purple-100 text-purple-700',
-		3: 'bg-green-100 text-green-700',
-		4: 'bg-yellow-100 text-yellow-700',
-		5: 'bg-red-100 text-red-700',
-		6: 'bg-indigo-100 text-indigo-700',
-		7: 'bg-pink-100 text-pink-700',
-		14: 'bg-yellow-100 text-yellow-700',
-		10002: 'bg-cyan-100 text-cyan-700'
+		0: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',
+		1: 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300',
+		3: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300',
+		4: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300',
+		5: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300',
+		6: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300',
+		7: 'bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300',
+		14: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300',
+		10002: 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300'
 	};
 
 	function getKindLabel(kind) {
@@ -32,7 +32,7 @@
 	}
 
 	function getKindColor(kind) {
-		return kindColors[kind] || 'bg-gray-100 text-gray-700';
+		return kindColors[kind] || 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300';
 	}
 
 	// Kind-specific content rendering
@@ -96,13 +96,13 @@
 	const authorDisplay = $derived(truncatePubkey(event.pubkey));
 </script>
 
-<div class="rounded-lg bg-white p-4 shadow transition-shadow hover:shadow-md">
+<div class="rounded-lg bg-white dark:bg-gray-800 p-4 shadow dark:shadow-gray-900/50 transition-shadow hover:shadow-md">
 	<div class="flex items-start justify-between">
 		<div class="flex items-center gap-3">
 			<span class="rounded px-2 py-1 text-xs font-semibold {getKindColor(event.kind)}">
 				{getKindLabel(event.kind)}
 			</span>
-			<p class="font-mono text-sm text-gray-500">
+			<p class="font-mono text-sm text-gray-500 dark:text-gray-400">
 				{authorDisplay}
 			</p>
 		</div>
@@ -111,7 +111,7 @@
 
 	<div class="mt-3">
 		{#if content.type === 'reaction'}
-			<p class="text-gray-700">
+			<p class="text-gray-700 dark:text-gray-200">
 				<span class="mr-2 text-xl">{content.emoji}</span>
 				{content.text}
 			</p>
@@ -128,22 +128,22 @@
 				{content.text}
 			</p>
 		{:else}
-			<p class="text-gray-700 line-clamp-3">{content.text}</p>
+			<p class="text-gray-700 dark:text-gray-200 line-clamp-3">{content.text}</p>
 		{/if}
 	</div>
 
-	<div class="mt-3 flex gap-3 border-t pt-3">
+	<div class="mt-3 flex gap-3 border-t border-gray-200 dark:border-gray-700 pt-3">
 		<button
 			type="button"
 			onclick={() => onViewRaw?.(event)}
-			class="text-sm text-purple-600 hover:text-purple-700"
+			class="text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300"
 		>
 			View Raw
 		</button>
 		<button
 			type="button"
 			onclick={() => onDelete?.(event)}
-			class="text-sm text-red-600 hover:text-red-700"
+			class="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
 		>
 			Delete
 		</button>

@@ -381,10 +381,10 @@
 	aria-labelledby="sync-title"
 	tabindex="-1"
 >
-	<div class="w-full max-w-lg rounded-lg bg-white shadow-xl">
+	<div class="w-full max-w-lg rounded-lg bg-white dark:bg-gray-800 shadow-xl dark:shadow-gray-900/50">
 		<!-- Header -->
-		<div class="flex items-center justify-between border-b px-6 py-4">
-			<h2 id="sync-title" class="text-lg font-semibold text-gray-900">
+		<div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+			<h2 id="sync-title" class="text-lg font-semibold text-gray-900 dark:text-gray-100">
 				{#if phase === 'config'}
 					Sync from Public Relays
 				{:else if phase === 'syncing'}
@@ -398,7 +398,7 @@
 					type="button"
 					onclick={onClose}
 					aria-label="Close modal"
-					class="rounded p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+					class="rounded p-1 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-600 dark:hover:text-gray-300"
 				>
 					<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -415,29 +415,29 @@
 						<Loading text="Loading configuration..." />
 					</div>
 				{:else if configError}
-					<div class="rounded-lg border border-red-200 bg-red-50 p-4">
-						<p class="text-sm text-red-700">{configError}</p>
+					<div class="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-4">
+						<p class="text-sm text-red-700 dark:text-red-400">{configError}</p>
 					</div>
 				{:else}
 					<div class="space-y-6">
-						<p class="text-sm text-gray-600">
+						<p class="text-sm text-gray-600 dark:text-gray-400">
 							Import your Nostr history from public relays into Roostr.
 						</p>
 
 						<!-- Pubkeys Section -->
 						<fieldset>
-							<legend class="mb-3 block text-sm font-medium text-gray-700">Pubkeys to sync:</legend>
-							<div class="max-h-40 space-y-2 overflow-y-auto rounded-lg border border-gray-200 p-3">
+							<legend class="mb-3 block text-sm font-medium text-gray-700 dark:text-gray-200">Pubkeys to sync:</legend>
+							<div class="max-h-40 space-y-2 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-600 p-3">
 								{#each whitelist as entry}
 									<label class="flex cursor-pointer items-center gap-3">
 										<input
 											type="checkbox"
 											bind:checked={selectedPubkeys[entry.pubkey]}
-											class="h-4 w-4 rounded border-gray-300 text-purple-600"
+											class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-purple-600 dark:bg-gray-700"
 										/>
-										<span class="text-sm text-gray-700">{getDisplayName(entry)}</span>
+										<span class="text-sm text-gray-700 dark:text-gray-300">{getDisplayName(entry)}</span>
 										{#if entry.is_operator}
-											<span class="rounded bg-purple-100 px-1.5 py-0.5 text-xs text-purple-700">You</span>
+											<span class="rounded bg-purple-100 dark:bg-purple-900/50 px-1.5 py-0.5 text-xs text-purple-700 dark:text-purple-300">You</span>
 										{/if}
 									</label>
 								{/each}
@@ -446,10 +446,10 @@
 										<input
 											type="checkbox"
 											bind:checked={selectedPubkeys[entry.pubkey]}
-											class="h-4 w-4 rounded border-gray-300 text-purple-600"
+											class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-purple-600 dark:bg-gray-700"
 										/>
-										<span class="text-sm text-gray-700">{entry.nickname}</span>
-										<span class="rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-600">Custom</span>
+										<span class="text-sm text-gray-700 dark:text-gray-300">{entry.nickname}</span>
+										<span class="rounded bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 text-xs text-gray-600 dark:text-gray-400">Custom</span>
 									</label>
 								{/each}
 							</div>
@@ -462,7 +462,7 @@
 										bind:value={customPubkey}
 										placeholder="npub... or user@domain.com"
 										disabled={validatingPubkey}
-										class="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none disabled:bg-gray-50"
+										class="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm focus:border-purple-500 dark:focus:border-purple-400 focus:outline-none disabled:bg-gray-50 dark:disabled:bg-gray-800 dark:bg-gray-700 dark:text-gray-100"
 										onkeydown={(e) => e.key === 'Enter' && addCustomPubkey()}
 									/>
 									<Button
@@ -475,23 +475,23 @@
 									</Button>
 								</div>
 								{#if customPubkeyError}
-									<p class="mt-1 text-xs text-red-600">{customPubkeyError}</p>
+									<p class="mt-1 text-xs text-red-600 dark:text-red-400">{customPubkeyError}</p>
 								{/if}
 							</div>
 						</fieldset>
 
 						<!-- Relays Section -->
 						<fieldset>
-							<legend class="mb-3 block text-sm font-medium text-gray-700">Source relays:</legend>
-							<div class="max-h-40 space-y-2 overflow-y-auto rounded-lg border border-gray-200 p-3">
+							<legend class="mb-3 block text-sm font-medium text-gray-700 dark:text-gray-200">Source relays:</legend>
+							<div class="max-h-40 space-y-2 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-600 p-3">
 								{#each defaultRelays as relay}
 									<label class="flex cursor-pointer items-center gap-3">
 										<input
 											type="checkbox"
 											bind:checked={selectedRelays[relay]}
-											class="h-4 w-4 rounded border-gray-300 text-purple-600"
+											class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-purple-600 dark:bg-gray-700"
 										/>
-										<span class="truncate text-sm text-gray-700">{relay}</span>
+										<span class="truncate text-sm text-gray-700 dark:text-gray-300">{relay}</span>
 									</label>
 								{/each}
 								{#each addedCustomRelays as relay}
@@ -499,10 +499,10 @@
 										<input
 											type="checkbox"
 											bind:checked={selectedRelays[relay]}
-											class="h-4 w-4 rounded border-gray-300 text-purple-600"
+											class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-purple-600 dark:bg-gray-700"
 										/>
-										<span class="truncate text-sm text-gray-700">{relay}</span>
-										<span class="rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-600">Custom</span>
+										<span class="truncate text-sm text-gray-700 dark:text-gray-300">{relay}</span>
+										<span class="rounded bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 text-xs text-gray-600 dark:text-gray-400">Custom</span>
 									</label>
 								{/each}
 							</div>
@@ -514,7 +514,7 @@
 										type="text"
 										bind:value={customRelay}
 										placeholder="wss://relay.example.com"
-										class="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none"
+										class="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm focus:border-purple-500 dark:focus:border-purple-400 focus:outline-none dark:bg-gray-700 dark:text-gray-100"
 										onkeydown={(e) => e.key === 'Enter' && addCustomRelay()}
 									/>
 									<Button variant="secondary" onclick={addCustomRelay} disabled={!customRelay.trim()}>
@@ -522,65 +522,65 @@
 									</Button>
 								</div>
 								{#if customRelayError}
-									<p class="mt-1 text-xs text-red-600">{customRelayError}</p>
+									<p class="mt-1 text-xs text-red-600 dark:text-red-400">{customRelayError}</p>
 								{/if}
 							</div>
 						</fieldset>
 
 						<!-- Event Types Section -->
 						<fieldset>
-							<legend class="mb-3 block text-sm font-medium text-gray-700">Event types to sync:</legend>
+							<legend class="mb-3 block text-sm font-medium text-gray-700 dark:text-gray-200">Event types to sync:</legend>
 							<div class="flex flex-wrap gap-4">
 								<label class="flex cursor-pointer items-center gap-2">
 									<input
 										type="checkbox"
 										bind:checked={eventTypes.posts}
-										class="h-4 w-4 rounded border-gray-300 text-purple-600"
+										class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-purple-600 dark:bg-gray-700"
 									/>
-									<span class="text-sm text-gray-700">Posts</span>
+									<span class="text-sm text-gray-700 dark:text-gray-300">Posts</span>
 								</label>
 								<label class="flex cursor-pointer items-center gap-2">
 									<input
 										type="checkbox"
 										bind:checked={eventTypes.reactions}
-										class="h-4 w-4 rounded border-gray-300 text-purple-600"
+										class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-purple-600 dark:bg-gray-700"
 									/>
-									<span class="text-sm text-gray-700">Reactions</span>
+									<span class="text-sm text-gray-700 dark:text-gray-300">Reactions</span>
 								</label>
 								<label class="flex cursor-pointer items-center gap-2">
 									<input
 										type="checkbox"
 										bind:checked={eventTypes.reposts}
-										class="h-4 w-4 rounded border-gray-300 text-purple-600"
+										class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-purple-600 dark:bg-gray-700"
 									/>
-									<span class="text-sm text-gray-700">Reposts</span>
+									<span class="text-sm text-gray-700 dark:text-gray-300">Reposts</span>
 								</label>
 								<label class="flex cursor-pointer items-center gap-2">
 									<input
 										type="checkbox"
 										bind:checked={eventTypes.profile}
-										class="h-4 w-4 rounded border-gray-300 text-purple-600"
+										class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-purple-600 dark:bg-gray-700"
 									/>
-									<span class="text-sm text-gray-700">Profile</span>
+									<span class="text-sm text-gray-700 dark:text-gray-300">Profile</span>
 								</label>
 								<label class="flex cursor-pointer items-center gap-2">
 									<input
 										type="checkbox"
 										bind:checked={eventTypes.follows}
-										class="h-4 w-4 rounded border-gray-300 text-purple-600"
+										class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-purple-600 dark:bg-gray-700"
 									/>
-									<span class="text-sm text-gray-700">Follows</span>
+									<span class="text-sm text-gray-700 dark:text-gray-300">Follows</span>
 								</label>
 								<label class="flex cursor-pointer items-center gap-2">
 									<input
 										type="checkbox"
 										bind:checked={eventTypes.dms}
-										class="h-4 w-4 rounded border-gray-300 text-purple-600"
+										class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-purple-600 dark:bg-gray-700"
 									/>
-									<span class="text-sm text-gray-700">DMs</span>
+									<span class="text-sm text-gray-700 dark:text-gray-300">DMs</span>
 								</label>
 							</div>
-							<p class="mt-2 text-xs text-gray-500">DMs are end-to-end encrypted and safe to sync.</p>
+							<p class="mt-2 text-xs text-gray-500 dark:text-gray-400">DMs are end-to-end encrypted and safe to sync.</p>
 						</fieldset>
 					</div>
 				{/if}
@@ -590,12 +590,12 @@
 					<!-- Progress bar -->
 					<div class="space-y-2">
 						<div class="flex items-center justify-between text-sm">
-							<span class="text-gray-600">Progress</span>
-							<span class="font-medium text-gray-900">{progressPercent()}%</span>
+							<span class="text-gray-600 dark:text-gray-400">Progress</span>
+							<span class="font-medium text-gray-900 dark:text-gray-100">{progressPercent()}%</span>
 						</div>
-						<div class="h-3 w-full rounded-full bg-gray-200">
+						<div class="h-3 w-full rounded-full bg-gray-200 dark:bg-gray-700">
 							<div
-								class="h-3 rounded-full bg-purple-600 transition-all duration-300"
+								class="h-3 rounded-full bg-purple-600 dark:bg-purple-500 transition-all duration-300"
 								style="width: {progressPercent()}%"
 							></div>
 						</div>
@@ -603,31 +603,31 @@
 
 					<!-- Stats -->
 					{#if syncProgress}
-						<div class="rounded-lg bg-gray-50 p-4">
+						<div class="rounded-lg bg-gray-50 dark:bg-gray-700/50 p-4">
 							<div class="grid grid-cols-3 gap-2 sm:gap-4 text-center">
 								<div>
-									<div class="text-xl sm:text-2xl font-bold text-gray-900">
+									<div class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
 										{formatCompactNumber(syncProgress.events_fetched || 0)}
 									</div>
-									<div class="text-xs text-gray-500">Fetched</div>
+									<div class="text-xs text-gray-500 dark:text-gray-400">Fetched</div>
 								</div>
 								<div>
-									<div class="text-xl sm:text-2xl font-bold text-green-600">
+									<div class="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400">
 										{formatCompactNumber(syncProgress.events_stored || 0)}
 									</div>
-									<div class="text-xs text-gray-500">New</div>
+									<div class="text-xs text-gray-500 dark:text-gray-400">New</div>
 								</div>
 								<div>
-									<div class="text-xl sm:text-2xl font-bold text-gray-400">
+									<div class="text-xl sm:text-2xl font-bold text-gray-400 dark:text-gray-500">
 										{formatCompactNumber(syncProgress.events_skipped || 0)}
 									</div>
-									<div class="text-xs text-gray-500">Duplicates</div>
+									<div class="text-xs text-gray-500 dark:text-gray-400">Duplicates</div>
 								</div>
 							</div>
 						</div>
 					{/if}
 
-					<p class="text-center text-sm text-gray-500">
+					<p class="text-center text-sm text-gray-500 dark:text-gray-400">
 						This may take a few minutes depending on history size.
 					</p>
 				</div>
@@ -636,55 +636,55 @@
 				<div class="space-y-6">
 					{#if syncResult?.status === 'completed'}
 						<div class="text-center">
-							<div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-								<svg class="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+								<svg class="h-8 w-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
 								</svg>
 							</div>
-							<p class="text-gray-600">Successfully imported your Nostr history.</p>
+							<p class="text-gray-600 dark:text-gray-400">Successfully imported your Nostr history.</p>
 						</div>
 					{:else if syncResult?.status === 'cancelled'}
 						<div class="text-center">
-							<div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-yellow-100">
-								<svg class="h-8 w-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900/30">
+								<svg class="h-8 w-8 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
 								</svg>
 							</div>
-							<p class="text-gray-600">Sync was cancelled.</p>
+							<p class="text-gray-600 dark:text-gray-400">Sync was cancelled.</p>
 						</div>
 					{:else}
 						<div class="text-center">
-							<div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
-								<svg class="h-8 w-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
+								<svg class="h-8 w-8 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
 								</svg>
 							</div>
-							<p class="text-gray-600">Sync failed: {syncResult?.error_message || 'Unknown error'}</p>
+							<p class="text-gray-600 dark:text-gray-400">Sync failed: {syncResult?.error_message || 'Unknown error'}</p>
 						</div>
 					{/if}
 
 					<!-- Summary -->
 					{#if syncResult}
-						<div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
-							<h3 class="mb-3 text-sm font-medium text-gray-900">Summary</h3>
+						<div class="rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 p-4">
+							<h3 class="mb-3 text-sm font-medium text-gray-900 dark:text-gray-100">Summary</h3>
 							<div class="space-y-2 text-sm">
 								<div class="flex justify-between">
-									<span class="text-gray-600">Total events fetched:</span>
-									<span class="font-medium text-gray-900">{(syncResult.events_fetched || 0).toLocaleString()}</span>
+									<span class="text-gray-600 dark:text-gray-400">Total events fetched:</span>
+									<span class="font-medium text-gray-900 dark:text-gray-100">{(syncResult.events_fetched || 0).toLocaleString()}</span>
 								</div>
 								<div class="flex justify-between">
-									<span class="text-gray-600">New events saved:</span>
-									<span class="font-medium text-green-600">{(syncResult.events_stored || 0).toLocaleString()}</span>
+									<span class="text-gray-600 dark:text-gray-400">New events saved:</span>
+									<span class="font-medium text-green-600 dark:text-green-400">{(syncResult.events_stored || 0).toLocaleString()}</span>
 								</div>
 								<div class="flex justify-between">
-									<span class="text-gray-600">Already existed:</span>
-									<span class="font-medium text-gray-500">{(syncResult.events_skipped || 0).toLocaleString()}</span>
+									<span class="text-gray-600 dark:text-gray-400">Already existed:</span>
+									<span class="font-medium text-gray-500 dark:text-gray-400">{(syncResult.events_skipped || 0).toLocaleString()}</span>
 								</div>
 							</div>
 						</div>
 					{/if}
 
-					<p class="text-center text-sm text-gray-500">
+					<p class="text-center text-sm text-gray-500 dark:text-gray-400">
 						Your relay now has a backup of your Nostr activity!
 					</p>
 				</div>
@@ -692,7 +692,7 @@
 		</div>
 
 		<!-- Footer -->
-		<div class="flex justify-end space-x-3 border-t px-6 py-4">
+		<div class="flex justify-end space-x-3 border-t border-gray-200 dark:border-gray-700 px-6 py-4">
 			{#if phase === 'config'}
 				<Button variant="secondary" onclick={onClose}>Cancel</Button>
 				<Button

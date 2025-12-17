@@ -2,11 +2,11 @@
 	let { icon = '📭', title = 'No data', message = '', action = null, actionLabel = '' } = $props();
 </script>
 
-<div class="flex flex-col items-center justify-center rounded-lg bg-gray-50 px-6 py-12 text-center">
+<div class="flex flex-col items-center justify-center rounded-lg bg-gray-50 dark:bg-gray-800 px-6 py-12 text-center">
 	<span class="text-4xl">{icon}</span>
-	<h3 class="mt-4 text-lg font-medium text-gray-900">{title}</h3>
+	<h3 class="mt-4 text-lg font-medium text-gray-900 dark:text-gray-100">{title}</h3>
 	{#if message}
-		<p class="mt-1 text-sm text-gray-500">{message}</p>
+		<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{message}</p>
 	{/if}
 	{#if action}
 		<button

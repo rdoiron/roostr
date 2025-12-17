@@ -44,7 +44,7 @@
 		{open ? 'translate-x-0' : '-translate-x-full'}"
 >
 	<!-- Logo -->
-	<div class="flex h-16 items-center gap-3 border-b border-gray-800 px-6">
+	<div class="flex h-16 items-center gap-3 border-b border-gray-800 lg:border-gray-700 px-6 lg:bg-gray-800">
 		<img src="/roostr-icon.svg" alt="Roostr" class="h-8 w-8 rounded" />
 		<span class="text-xl font-bold text-white">Roostr</span>
 	</div>

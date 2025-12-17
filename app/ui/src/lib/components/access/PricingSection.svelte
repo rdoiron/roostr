@@ -62,11 +62,11 @@
 	}
 </script>
 
-<div class="rounded-lg bg-white p-6 shadow">
+<div class="rounded-lg bg-white dark:bg-gray-800 p-6 shadow dark:shadow-gray-900/50">
 	<div class="flex items-center justify-between mb-4">
 		<div>
-			<h2 class="text-lg font-semibold text-gray-900">Pricing Tiers</h2>
-			<p class="text-sm text-gray-500">Configure which pricing tiers to offer and their prices</p>
+			<h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Pricing Tiers</h2>
+			<p class="text-sm text-gray-500 dark:text-gray-400">Configure which pricing tiers to offer and their prices</p>
 		</div>
 	</div>
 
@@ -77,7 +77,7 @@
 	{:else}
 		<div class="space-y-4">
 			{#each localTiers as tier (tier.id)}
-				<div class="flex items-center justify-between p-4 border rounded-lg {tier.enabled ? 'border-purple-200 bg-purple-50' : 'border-gray-200 bg-gray-50'}">
+				<div class="flex items-center justify-between p-4 border rounded-lg {tier.enabled ? 'border-purple-200 dark:border-purple-700 bg-purple-50 dark:bg-purple-900/20' : 'border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700'}">
 					<div class="flex items-center space-x-4">
 						<label class="relative inline-flex items-center cursor-pointer">
 							<input
@@ -86,11 +86,11 @@
 								onchange={() => handleToggle(tier.id)}
 								class="sr-only peer"
 							/>
-							<div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+							<div class="w-11 h-6 bg-gray-200 dark:bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 dark:peer-focus:ring-purple-900 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 dark:after:border-gray-500 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
 						</label>
 						<div>
-							<p class="font-medium text-gray-900">{tier.name}</p>
-							<p class="text-sm text-gray-500">{getTierDescription(tier)}</p>
+							<p class="font-medium text-gray-900 dark:text-gray-100">{tier.name}</p>
+							<p class="text-sm text-gray-500 dark:text-gray-400">{getTierDescription(tier)}</p>
 						</div>
 					</div>
 					<div class="flex items-center space-x-2">
@@ -100,16 +100,16 @@
 							value={tier.amount_sats}
 							oninput={(e) => handlePriceChange(tier.id, e.target.value)}
 							disabled={!tier.enabled}
-							class="w-28 px-3 py-2 border border-gray-300 rounded-lg text-right focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 disabled:text-gray-400"
+							class="w-28 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-right focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-600 disabled:text-gray-400"
 						/>
-						<span class="text-sm text-gray-500 w-8">sats</span>
+						<span class="text-sm text-gray-500 dark:text-gray-400 w-8">sats</span>
 					</div>
 				</div>
 			{/each}
 		</div>
 
-		<div class="flex items-center justify-between mt-6 pt-4 border-t">
-			<p class="text-sm text-gray-500">
+		<div class="flex items-center justify-between mt-6 pt-4 border-t dark:border-gray-700">
+			<p class="text-sm text-gray-500 dark:text-gray-400">
 				Enable at least one tier for users to purchase access
 			</p>
 			<div class="flex items-center space-x-3">

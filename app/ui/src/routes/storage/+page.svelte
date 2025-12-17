@@ -236,8 +236,8 @@
 <div class="space-y-6">
 	<!-- Page Header -->
 	<div>
-		<h1 class="text-2xl font-bold text-gray-900">Storage Management</h1>
-		<p class="text-gray-600">Monitor and manage relay storage</p>
+		<h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Storage Management</h1>
+		<p class="text-gray-600 dark:text-gray-400">Monitor and manage relay storage</p>
 	</div>
 
 	{#if loading}
@@ -248,8 +248,8 @@
 		<Error title="Error loading storage data" message={error} onRetry={loadData} />
 	{:else}
 		<!-- Current Usage -->
-		<div class="rounded-lg bg-white p-6 shadow">
-			<h2 class="mb-4 text-lg font-semibold text-gray-900">Current Usage</h2>
+		<div class="rounded-lg bg-white dark:bg-gray-800 p-6 shadow dark:shadow-gray-900/50">
+			<h2 class="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">Current Usage</h2>
 
 			<StorageProgressBar
 				usedBytes={storageStatus?.total_size ?? 0}
@@ -259,46 +259,46 @@
 			/>
 
 			<div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-				<div class="rounded-lg bg-gray-50 p-4">
-					<div class="text-sm text-gray-500">Relay Database</div>
-					<div class="text-lg font-semibold text-gray-900">
+				<div class="rounded-lg bg-gray-50 dark:bg-gray-700 p-4">
+					<div class="text-sm text-gray-500 dark:text-gray-400">Relay Database</div>
+					<div class="text-lg font-semibold text-gray-900 dark:text-gray-100">
 						{formatBytes(storageStatus?.database_size ?? 0)}
 					</div>
 				</div>
-				<div class="rounded-lg bg-gray-50 p-4">
-					<div class="text-sm text-gray-500">App Database</div>
-					<div class="text-lg font-semibold text-gray-900">
+				<div class="rounded-lg bg-gray-50 dark:bg-gray-700 p-4">
+					<div class="text-sm text-gray-500 dark:text-gray-400">App Database</div>
+					<div class="text-lg font-semibold text-gray-900 dark:text-gray-100">
 						{formatBytes(storageStatus?.app_database_size ?? 0)}
 					</div>
 				</div>
-				<div class="rounded-lg bg-gray-50 p-4">
-					<div class="text-sm text-gray-500">Available Space</div>
-					<div class="text-lg font-semibold text-gray-900">
+				<div class="rounded-lg bg-gray-50 dark:bg-gray-700 p-4">
+					<div class="text-sm text-gray-500 dark:text-gray-400">Available Space</div>
+					<div class="text-lg font-semibold text-gray-900 dark:text-gray-100">
 						{formatBytes(storageStatus?.available_space ?? 0)}
 					</div>
 				</div>
-				<div class="rounded-lg bg-gray-50 p-4">
-					<div class="text-sm text-gray-500">Total Events</div>
-					<div class="text-lg font-semibold text-gray-900">
+				<div class="rounded-lg bg-gray-50 dark:bg-gray-700 p-4">
+					<div class="text-sm text-gray-500 dark:text-gray-400">Total Events</div>
+					<div class="text-lg font-semibold text-gray-900 dark:text-gray-100">
 						{storageStatus?.total_events?.toLocaleString() ?? 0}
 					</div>
 				</div>
 			</div>
 
 			{#if storageStatus?.oldest_event && storageStatus?.newest_event}
-				<div class="mt-4 text-sm text-gray-500">
+				<div class="mt-4 text-sm text-gray-500 dark:text-gray-400">
 					Events span from {new Date(storageStatus.oldest_event).toLocaleDateString()} to {new Date(storageStatus.newest_event).toLocaleDateString()}
 				</div>
 			{/if}
 		</div>
 
 		<!-- Retention Policy -->
-		<div class="rounded-lg bg-white p-6 shadow">
-			<h2 class="mb-4 text-lg font-semibold text-gray-900">Retention Policy</h2>
+		<div class="rounded-lg bg-white dark:bg-gray-800 p-6 shadow dark:shadow-gray-900/50">
+			<h2 class="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">Retention Policy</h2>
 
 			<div class="space-y-4">
 				<fieldset>
-					<legend class="mb-2 block text-sm font-medium text-gray-700">
+					<legend class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200">
 						Auto-delete events older than:
 					</legend>
 					<div class="space-y-2">
@@ -310,7 +310,7 @@
 								bind:group={retentionMode}
 								class="h-4 w-4 text-purple-600"
 							/>
-							<span class="text-sm text-gray-700">Never (keep forever)</span>
+							<span class="text-sm text-gray-700 dark:text-gray-200">Never (keep forever)</span>
 						</label>
 						<label class="flex cursor-pointer items-center gap-2">
 							<input
@@ -320,7 +320,7 @@
 								bind:group={retentionMode}
 								class="h-4 w-4 text-purple-600"
 							/>
-							<span class="text-sm text-gray-700">1 year</span>
+							<span class="text-sm text-gray-700 dark:text-gray-200">1 year</span>
 						</label>
 						<label class="flex cursor-pointer items-center gap-2">
 							<input
@@ -330,7 +330,7 @@
 								bind:group={retentionMode}
 								class="h-4 w-4 text-purple-600"
 							/>
-							<span class="text-sm text-gray-700">6 months</span>
+							<span class="text-sm text-gray-700 dark:text-gray-200">6 months</span>
 						</label>
 						<label class="flex cursor-pointer items-center gap-2">
 							<input
@@ -340,7 +340,7 @@
 								bind:group={retentionMode}
 								class="h-4 w-4 text-purple-600"
 							/>
-							<span class="text-sm text-gray-700">90 days</span>
+							<span class="text-sm text-gray-700 dark:text-gray-200">90 days</span>
 						</label>
 						<label class="flex cursor-pointer items-center gap-2">
 							<input
@@ -350,7 +350,7 @@
 								bind:group={retentionMode}
 								class="h-4 w-4 text-purple-600"
 							/>
-							<span class="text-sm text-gray-700">30 days</span>
+							<span class="text-sm text-gray-700 dark:text-gray-200">30 days</span>
 						</label>
 						<label class="flex cursor-pointer items-center gap-2">
 							<input
@@ -360,21 +360,21 @@
 								bind:group={retentionMode}
 								class="h-4 w-4 text-purple-600"
 							/>
-							<span class="text-sm text-gray-700">Custom:</span>
+							<span class="text-sm text-gray-700 dark:text-gray-200">Custom:</span>
 							<input
 								type="number"
 								min="1"
 								bind:value={customDays}
 								disabled={retentionMode !== 'custom'}
-								class="w-20 rounded-lg border border-gray-300 px-2 py-1 text-sm disabled:bg-gray-100 disabled:text-gray-400"
+								class="w-20 rounded-lg border border-gray-300 dark:border-gray-600 px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 disabled:bg-gray-100 dark:disabled:bg-gray-600 disabled:text-gray-400"
 							/>
-							<span class="text-sm text-gray-700">days</span>
+							<span class="text-sm text-gray-700 dark:text-gray-200">days</span>
 						</label>
 					</div>
 				</fieldset>
 
 				<fieldset>
-					<legend class="mb-2 block text-sm font-medium text-gray-700">
+					<legend class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200">
 						Exceptions (never auto-delete):
 					</legend>
 					<div class="space-y-2">
@@ -382,79 +382,79 @@
 							<input
 								type="checkbox"
 								bind:checked={exceptOperator}
-								class="mt-0.5 h-4 w-4 rounded border-gray-300 text-purple-600"
+								class="mt-0.5 h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-purple-600"
 							/>
 							<div>
-								<span class="text-sm font-medium text-gray-700">My events (operator pubkey)</span>
-								<p class="text-xs text-gray-500">Keep all events from the relay operator</p>
+								<span class="text-sm font-medium text-gray-700 dark:text-gray-200">My events (operator pubkey)</span>
+								<p class="text-xs text-gray-500 dark:text-gray-400">Keep all events from the relay operator</p>
 							</div>
 						</label>
 						<label class="flex cursor-pointer items-start gap-3">
 							<input
 								type="checkbox"
 								bind:checked={exceptProfiles}
-								class="mt-0.5 h-4 w-4 rounded border-gray-300 text-purple-600"
+								class="mt-0.5 h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-purple-600"
 							/>
 							<div>
-								<span class="text-sm font-medium text-gray-700">Profile metadata (kind 0)</span>
-								<p class="text-xs text-gray-500">Keep user profile information</p>
+								<span class="text-sm font-medium text-gray-700 dark:text-gray-200">Profile metadata (kind 0)</span>
+								<p class="text-xs text-gray-500 dark:text-gray-400">Keep user profile information</p>
 							</div>
 						</label>
 						<label class="flex cursor-pointer items-start gap-3">
 							<input
 								type="checkbox"
 								bind:checked={exceptFollows}
-								class="mt-0.5 h-4 w-4 rounded border-gray-300 text-purple-600"
+								class="mt-0.5 h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-purple-600"
 							/>
 							<div>
-								<span class="text-sm font-medium text-gray-700">Follow lists (kind 3)</span>
-								<p class="text-xs text-gray-500">Keep contact/follow lists</p>
+								<span class="text-sm font-medium text-gray-700 dark:text-gray-200">Follow lists (kind 3)</span>
+								<p class="text-xs text-gray-500 dark:text-gray-400">Keep contact/follow lists</p>
 							</div>
 						</label>
 						<label class="flex cursor-pointer items-start gap-3">
 							<input
 								type="checkbox"
 								bind:checked={exceptDMs}
-								class="mt-0.5 h-4 w-4 rounded border-gray-300 text-purple-600"
+								class="mt-0.5 h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-purple-600"
 							/>
 							<div>
-								<span class="text-sm font-medium text-gray-700">DMs (kind 4, 14)</span>
-								<p class="text-xs text-gray-500">Keep encrypted direct messages</p>
+								<span class="text-sm font-medium text-gray-700 dark:text-gray-200">DMs (kind 4, 14)</span>
+								<p class="text-xs text-gray-500 dark:text-gray-400">Keep encrypted direct messages</p>
 							</div>
 						</label>
 					</div>
 				</fieldset>
 
-				<div class="border-t border-gray-200 pt-4">
+				<div class="border-t border-gray-200 dark:border-gray-700 pt-4">
 					<label class="flex cursor-pointer items-start gap-3">
 						<input
 							type="checkbox"
 							bind:checked={retentionPolicy.honor_nip09}
-							class="mt-0.5 h-4 w-4 rounded border-gray-300 text-purple-600"
+							class="mt-0.5 h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-purple-600"
 						/>
 						<div>
-							<span class="text-sm font-medium text-gray-700">Honor NIP-09 deletion requests</span>
-							<p class="text-xs text-gray-500">Delete events when authors request their removal</p>
+							<span class="text-sm font-medium text-gray-700 dark:text-gray-200">Honor NIP-09 deletion requests</span>
+							<p class="text-xs text-gray-500 dark:text-gray-400">Delete events when authors request their removal</p>
 						</div>
 					</label>
 
 					{#if storageStatus?.pending_deletions > 0}
 						<button
 							onclick={openDeletionModal}
-							class="mt-2 text-sm text-purple-600 hover:text-purple-700 hover:underline"
+							class="mt-2 text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:underline"
 						>
 							{storageStatus.pending_deletions} pending deletion request{storageStatus.pending_deletions !== 1 ? 's' : ''}
 						</button>
 					{/if}
 				</div>
 
-				<div class="flex items-center gap-2 text-xs text-gray-500">
+				<div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
 					<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
 					</svg>
 					Retention policy runs daily at midnight
 					{#if retentionPolicy.last_run}
-						<span class="text-gray-400">|</span>
+						<span class="text-gray-400 dark:text-gray-500">|</span>
 						Last run: {formatRelativeTime(retentionPolicy.last_run)}
 					{/if}
 				</div>
@@ -468,12 +468,12 @@
 		</div>
 
 		<!-- Manual Cleanup -->
-		<div class="rounded-lg bg-white p-6 shadow">
-			<h2 class="mb-4 text-lg font-semibold text-gray-900">Manual Cleanup</h2>
+		<div class="rounded-lg bg-white dark:bg-gray-800 p-6 shadow dark:shadow-gray-900/50">
+			<h2 class="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">Manual Cleanup</h2>
 
 			<div class="space-y-4">
 				<div>
-					<label for="cleanup-date" class="mb-1 block text-sm font-medium text-gray-700">
+					<label for="cleanup-date" class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200">
 						Delete all events before:
 					</label>
 					<input
@@ -481,27 +481,27 @@
 						type="date"
 						bind:value={cleanupDate}
 						max={new Date().toISOString().split('T')[0]}
-						class="rounded-lg border border-gray-300 px-4 py-2 focus:border-purple-500 focus:outline-none"
+						class="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-4 py-2 focus:border-purple-500 focus:outline-none"
 					/>
 				</div>
 
 				{#if cleanupEstimate}
-					<div class="rounded-lg bg-gray-50 p-4">
-						<div class="text-sm text-gray-600">
+					<div class="rounded-lg bg-gray-50 dark:bg-gray-700 p-4">
+						<div class="text-sm text-gray-600 dark:text-gray-300">
 							<strong>{cleanupEstimate.event_count?.toLocaleString()}</strong> events will be deleted
 						</div>
-						<div class="text-sm text-gray-600">
+						<div class="text-sm text-gray-600 dark:text-gray-300">
 							Estimated space freed: <strong>{formatBytes(cleanupEstimate.estimated_space ?? 0)}</strong>
 						</div>
 					</div>
 				{:else if estimateLoading}
-					<div class="flex items-center gap-2 text-sm text-gray-500">
+					<div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
 						<Loading size="sm" />
 						Calculating estimate...
 					</div>
 				{/if}
 
-				<div class="flex items-start gap-2 rounded-lg bg-yellow-50 p-3 text-sm text-yellow-800">
+				<div class="flex items-start gap-2 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 p-3 text-sm text-yellow-800 dark:text-yellow-200">
 					<svg class="mt-0.5 h-4 w-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
 					</svg>
@@ -521,14 +521,14 @@
 		</div>
 
 		<!-- Database Maintenance -->
-		<div class="rounded-lg bg-white p-6 shadow">
-			<h2 class="mb-4 text-lg font-semibold text-gray-900">Database Maintenance</h2>
+		<div class="rounded-lg bg-white dark:bg-gray-800 p-6 shadow dark:shadow-gray-900/50">
+			<h2 class="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">Database Maintenance</h2>
 
 			<div class="space-y-4">
 				<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 					<div>
-						<h3 class="font-medium text-gray-900">VACUUM Database</h3>
-						<p class="text-sm text-gray-500">
+						<h3 class="font-medium text-gray-900 dark:text-gray-100">VACUUM Database</h3>
+						<p class="text-sm text-gray-500 dark:text-gray-400">
 							Reclaims disk space after deletions. May take a few minutes for large databases.
 						</p>
 					</div>
@@ -537,11 +537,11 @@
 					</Button>
 				</div>
 
-				<div class="border-t border-gray-200 pt-4">
+				<div class="border-t border-gray-200 dark:border-gray-700 pt-4">
 					<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 						<div>
-							<h3 class="font-medium text-gray-900">Integrity Check</h3>
-							<p class="text-sm text-gray-500">
+							<h3 class="font-medium text-gray-900 dark:text-gray-100">Integrity Check</h3>
+							<p class="text-sm text-gray-500 dark:text-gray-400">
 								Verify database integrity and check for corruption.
 							</p>
 						</div>
@@ -551,8 +551,8 @@
 					</div>
 
 					{#if integrityResult}
-						<div class="mt-3 rounded-lg p-3 {integrityResult.app_db?.ok && integrityResult.relay_db?.ok ? 'bg-green-50' : 'bg-red-50'}">
-							<div class="flex items-center gap-2 text-sm {integrityResult.app_db?.ok && integrityResult.relay_db?.ok ? 'text-green-800' : 'text-red-800'}">
+						<div class="mt-3 rounded-lg p-3 {integrityResult.app_db?.ok && integrityResult.relay_db?.ok ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20'}">
+							<div class="flex items-center gap-2 text-sm {integrityResult.app_db?.ok && integrityResult.relay_db?.ok ? 'text-green-800 dark:text-green-200' : 'text-red-800 dark:text-red-200'}">
 								{#if integrityResult.app_db?.ok && integrityResult.relay_db?.ok}
 									<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
@@ -566,12 +566,12 @@
 								{/if}
 							</div>
 							{#if !integrityResult.app_db?.ok}
-								<div class="mt-1 text-xs text-red-600">
+								<div class="mt-1 text-xs text-red-600 dark:text-red-400">
 									App DB: {integrityResult.app_db?.result}
 								</div>
 							{/if}
 							{#if !integrityResult.relay_db?.ok}
-								<div class="mt-1 text-xs text-red-600">
+								<div class="mt-1 text-xs text-red-600 dark:text-red-400">
 									Relay DB: {integrityResult.relay_db?.result}
 								</div>
 							{/if}
@@ -596,19 +596,19 @@
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div
-			class="mx-4 w-full max-w-md rounded-lg bg-white p-6 shadow-xl"
+			class="mx-4 w-full max-w-md rounded-lg bg-white dark:bg-gray-800 p-6 shadow-xl"
 			onclick={(e) => e.stopPropagation()}
 		>
-			<h3 class="text-lg font-semibold text-gray-900">Confirm Cleanup</h3>
-			<p class="mt-2 text-sm text-gray-600">
+			<h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Confirm Cleanup</h3>
+			<p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
 				You are about to delete <strong>{cleanupEstimate?.event_count?.toLocaleString()}</strong> events
 				created before <strong>{new Date(cleanupDate).toLocaleDateString()}</strong>.
 			</p>
-			<p class="mt-2 text-sm text-gray-600">
+			<p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
 				This will free approximately <strong>{formatBytes(cleanupEstimate?.estimated_space ?? 0)}</strong>
 				of storage space.
 			</p>
-			<div class="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-800">
+			<div class="mt-4 rounded-lg bg-red-50 dark:bg-red-900/20 p-3 text-sm text-red-800 dark:text-red-200">
 				This action cannot be undone. Make sure you have exported any important data.
 			</div>
 			<div class="mt-6 flex justify-end gap-3">
@@ -636,14 +636,14 @@
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div
-			class="mx-4 max-h-[80vh] w-full max-w-2xl overflow-hidden rounded-lg bg-white shadow-xl"
+			class="mx-4 max-h-[80vh] w-full max-w-2xl overflow-hidden rounded-lg bg-white dark:bg-gray-800 shadow-xl"
 			onclick={(e) => e.stopPropagation()}
 		>
-			<div class="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-				<h3 class="text-lg font-semibold text-gray-900">NIP-09 Deletion Requests</h3>
+			<div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+				<h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">NIP-09 Deletion Requests</h3>
 				<button
 					onclick={() => showDeletionModal = false}
-					class="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+					class="rounded-lg p-1 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-600 dark:hover:text-gray-300"
 					aria-label="Close"
 				>
 					<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -654,34 +654,34 @@
 
 			<div class="max-h-[60vh] overflow-y-auto p-6">
 				{#if deletionRequests.length === 0}
-					<div class="py-8 text-center text-gray-500">
+					<div class="py-8 text-center text-gray-500 dark:text-gray-400">
 						No deletion requests found
 					</div>
 				{:else}
 					<div class="space-y-3">
 						{#each deletionRequests as request}
-							<div class="rounded-lg border border-gray-200 p-4">
+							<div class="rounded-lg border border-gray-200 dark:border-gray-700 p-4">
 								<div class="flex items-start justify-between">
 									<div>
-										<div class="text-sm font-medium text-gray-900">
+										<div class="text-sm font-medium text-gray-900 dark:text-gray-100">
 											{request.target_event_ids?.length ?? 0} event{request.target_event_ids?.length !== 1 ? 's' : ''}
 										</div>
-										<div class="mt-1 text-xs text-gray-500">
+										<div class="mt-1 text-xs text-gray-500 dark:text-gray-400">
 											From: {request.author_pubkey?.slice(0, 8)}...{request.author_pubkey?.slice(-4)}
 										</div>
-										<div class="mt-1 text-xs text-gray-500">
+										<div class="mt-1 text-xs text-gray-500 dark:text-gray-400">
 											Received: {formatRelativeTime(request.received_at)}
 										</div>
 									</div>
 									<span class="rounded-full px-2 py-1 text-xs font-medium
-										{request.status === 'processed' ? 'bg-green-100 text-green-800' :
-										 request.status === 'failed' ? 'bg-red-100 text-red-800' :
-										 'bg-yellow-100 text-yellow-800'}">
+										{request.status === 'processed' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200' :
+										 request.status === 'failed' ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200' :
+										 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200'}">
 										{request.status}
 									</span>
 								</div>
 								{#if request.reason}
-									<div class="mt-2 text-xs text-gray-600">
+									<div class="mt-2 text-xs text-gray-600 dark:text-gray-400">
 										Reason: {request.reason}
 									</div>
 								{/if}
@@ -691,7 +691,7 @@
 				{/if}
 			</div>
 
-			<div class="border-t border-gray-200 px-6 py-4">
+			<div class="border-t border-gray-200 dark:border-gray-700 px-6 py-4">
 				<Button variant="secondary" onclick={() => showDeletionModal = false}>
 					Close
 				</Button>

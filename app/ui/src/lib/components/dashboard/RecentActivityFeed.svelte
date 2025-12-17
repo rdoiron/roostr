@@ -22,29 +22,29 @@
 	}
 </script>
 
-<div class="rounded-lg bg-white shadow">
-	<div class="flex items-center justify-between border-b border-gray-100 p-4">
-		<h2 class="text-lg font-semibold text-gray-900">Recent Activity</h2>
-		<a href="/events" class="text-sm text-purple-600 hover:text-purple-700">View All</a>
+<div class="rounded-lg bg-white dark:bg-gray-800 shadow dark:shadow-gray-900/50">
+	<div class="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 p-4">
+		<h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Recent Activity</h2>
+		<a href="/events" class="text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300">View All</a>
 	</div>
 
 	{#if events.length === 0}
-		<div class="p-8 text-center text-gray-500">
+		<div class="p-8 text-center text-gray-500 dark:text-gray-400">
 			<p>No recent events</p>
 		</div>
 	{:else}
-		<ul class="divide-y divide-gray-100">
+		<ul class="divide-y divide-gray-100 dark:divide-gray-700">
 			{#each events as event (event.id)}
 				<li>
 					<a
 						href="/events?id={event.id}"
-						class="flex items-center gap-3 p-4 transition-colors hover:bg-gray-50"
+						class="flex items-center gap-3 p-4 transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50"
 					>
 						<div
-							class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gray-100"
+							class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700"
 						>
 							<svg
-								class="h-4 w-4 text-gray-600"
+								class="h-4 w-4 text-gray-600 dark:text-gray-400"
 								fill="none"
 								stroke="currentColor"
 								viewBox="0 0 24 24"
@@ -58,13 +58,13 @@
 							</svg>
 						</div>
 						<div class="min-w-0 flex-1">
-							<p class="text-sm font-medium text-gray-900">{getKindLabel(event.kind)} received</p>
-							<p class="truncate text-xs text-gray-500">{truncatePubkey(event.pubkey)}</p>
+							<p class="text-sm font-medium text-gray-900 dark:text-gray-100">{getKindLabel(event.kind)} received</p>
+							<p class="truncate text-xs text-gray-500 dark:text-gray-400">{truncatePubkey(event.pubkey)}</p>
 						</div>
 						<div class="flex flex-shrink-0 items-center gap-2">
-							<span class="text-xs text-gray-400">{formatRelativeTime(event.created_at)}</span>
+							<span class="text-xs text-gray-400 dark:text-gray-500">{formatRelativeTime(event.created_at)}</span>
 							<svg
-								class="h-4 w-4 text-gray-400"
+								class="h-4 w-4 text-gray-400 dark:text-gray-500"
 								fill="none"
 								stroke="currentColor"
 								viewBox="0 0 24 24"

@@ -57,11 +57,11 @@
 <button
 	type="button"
 	onclick={copy}
-	class="inline-flex items-center justify-center rounded-lg bg-gray-100 p-2 text-gray-700 transition-colors hover:bg-gray-200"
+	class="inline-flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-600 p-2 text-gray-700 dark:text-gray-300 transition-colors hover:bg-gray-200 dark:hover:bg-gray-500"
 	title="Copy"
 >
 	{#if copied}
-		<svg class="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+		<svg class="h-5 w-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
 		</svg>
 	{:else}

@@ -5,6 +5,16 @@
 		<link rel="icon" href="%sveltekit.assets%/favicon.svg" type="image/svg+xml" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<title>Roostr</title>
+		<script>
+			(function () {
+				var saved = localStorage.getItem('roostr-theme');
+				var pref = saved || 'auto';
+				var dark =
+					pref === 'dark' ||
+					(pref === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+				if (dark) document.documentElement.classList.add('dark');
+			})();
+		</script>
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">

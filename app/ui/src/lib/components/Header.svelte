@@ -26,11 +26,11 @@
 	let lastSyncText = $derived(formatRelativeTime(syncStatus.lastSyncTime));
 </script>
 
-<header class="relative flex h-16 items-center justify-between border-b border-gray-200 bg-white px-4 lg:px-6">
+<header class="relative flex h-16 items-center justify-between border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 lg:px-6">
 	<!-- Mobile menu button -->
 	<button
 		type="button"
-		class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 lg:hidden"
+		class="rounded-lg p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 lg:hidden"
 		onclick={onMenuClick}
 		aria-label="Open menu"
 	>
@@ -42,7 +42,7 @@
 	<!-- Mobile branding - absolutely positioned for true centering -->
 	<div class="absolute left-1/2 flex -translate-x-1/2 items-center lg:hidden">
 		<img src="/roostr-icon.svg" alt="Roostr" class="h-6 w-6 rounded" />
-		<span class="ml-2 text-lg font-bold text-gray-900">Roostr</span>
+		<span class="ml-2 text-lg font-bold text-gray-900 dark:text-gray-100">Roostr</span>
 	</div>
 
 	<!-- Spacer to push right content to the right -->
@@ -53,18 +53,18 @@
 		<!-- Sync button with last sync time -->
 		<div class="flex items-center gap-2">
 			{#if lastSyncText}
-				<span class="hidden text-xs text-gray-500 sm:inline">
+				<span class="hidden text-xs text-gray-500 dark:text-gray-400 sm:inline">
 					Last synced: {lastSyncText}
 				</span>
 			{/if}
 			<button
 				type="button"
 				onclick={() => (showSyncModal = true)}
-				class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
+				class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100"
 				title="Sync from public relays"
 			>
 				{#if syncStatus.running}
-					<svg class="h-4 w-4 animate-spin text-purple-600" fill="none" viewBox="0 0 24 24">
+					<svg class="h-4 w-4 animate-spin text-purple-600 dark:text-purple-400" fill="none" viewBox="0 0 24 24">
 						<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
 						<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
 					</svg>
@@ -88,7 +88,7 @@
 					class="relative inline-flex h-2.5 w-2.5 rounded-full {relayStatus.online ? 'bg-green-500' : 'bg-red-500'}"
 				></span>
 			</span>
-			<span class="hidden text-gray-600 sm:inline">
+			<span class="hidden text-gray-600 dark:text-gray-300 sm:inline">
 				Relay {relayStatus.online ? 'Online' : 'Offline'}
 			</span>
 		</div>

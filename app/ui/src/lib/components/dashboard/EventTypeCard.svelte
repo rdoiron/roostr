@@ -19,18 +19,18 @@
 	const iconPath = $derived(icons[icon] || icons.other);
 </script>
 
-<div class="rounded-lg bg-white p-4 shadow">
+<div class="rounded-lg bg-white dark:bg-gray-800 p-4 shadow dark:shadow-gray-900/50">
 	<div class="flex items-center gap-3">
 		<div
-			class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-purple-100"
+			class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900/30"
 		>
-			<svg class="h-5 w-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+			<svg class="h-5 w-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={iconPath} />
 			</svg>
 		</div>
 		<div class="min-w-0">
-			<p class="text-sm text-gray-500">{label}</p>
-			<p class="text-xl font-bold text-gray-900" title={count.toLocaleString()}>
+			<p class="text-sm text-gray-500 dark:text-gray-400">{label}</p>
+			<p class="text-xl font-bold text-gray-900 dark:text-gray-100" title={count.toLocaleString()}>
 				{formatCompactNumber(count)}
 			</p>
 		</div>

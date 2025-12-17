@@ -71,8 +71,8 @@
 	<!-- Header -->
 	<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 		<div>
-			<h1 class="text-2xl font-bold text-gray-900">Statistics</h1>
-			<p class="mt-1 text-sm text-gray-600">Detailed insights into your relay activity</p>
+			<h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Statistics</h1>
+			<p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Detailed insights into your relay activity</p>
 		</div>
 		<TimeRangeSelector value={timeRange} onchange={handleTimeRangeChange} />
 	</div>
@@ -86,9 +86,9 @@
 		{#if EventsOverTimeChart}
 			<EventsOverTimeChart data={eventsOverTime.data ?? []} total={eventsOverTime.total ?? 0} />
 		{:else}
-			<div class="rounded-lg bg-white p-6 shadow">
-				<h3 class="text-lg font-semibold text-gray-900">Events Over Time</h3>
-				<p class="text-gray-500">{eventsOverTime.total} total</p>
+			<div class="rounded-lg bg-white dark:bg-gray-800 p-6 shadow dark:shadow-gray-900/50">
+				<h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Events Over Time</h3>
+				<p class="text-gray-500 dark:text-gray-400">{eventsOverTime.total} total</p>
 			</div>
 		{/if}
 
@@ -97,9 +97,9 @@
 			{#if EventsByKindChart}
 				<EventsByKindChart kinds={eventsByKind.kinds ?? []} total={eventsByKind.total ?? 0} />
 			{:else}
-				<div class="rounded-lg bg-white p-6 shadow">
-					<h3 class="text-lg font-semibold text-gray-900">Events by Kind</h3>
-					<p class="text-gray-500">{eventsByKind.total} total</p>
+				<div class="rounded-lg bg-white dark:bg-gray-800 p-6 shadow dark:shadow-gray-900/50">
+					<h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Events by Kind</h3>
+					<p class="text-gray-500 dark:text-gray-400">{eventsByKind.total} total</p>
 				</div>
 			{/if}
 			<TopAuthorsList authors={topAuthors.authors ?? []} />

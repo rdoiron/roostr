@@ -22,8 +22,8 @@
 <div class="space-y-6">
 	<!-- Header -->
 	<div>
-		<h1 class="text-2xl font-bold text-gray-900">Support Roostr</h1>
-		<p class="text-gray-600">Help keep the project alive and thriving</p>
+		<h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Support Roostr</h1>
+		<p class="text-gray-600 dark:text-gray-400">Help keep the project alive and thriving</p>
 	</div>
 
 	<!-- Support Development Intro -->
@@ -41,10 +41,10 @@
 
 	{#if loading}
 		<div class="flex items-center justify-center py-12">
-			<div class="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-purple-600"></div>
+			<div class="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 dark:border-gray-700 border-t-purple-600 dark:border-t-purple-400"></div>
 		</div>
 	{:else if error}
-		<div class="rounded-lg bg-red-50 p-4 text-red-700">
+		<div class="rounded-lg bg-red-50 dark:bg-red-900/20 p-4 text-red-700 dark:text-red-400">
 			<p>{error}</p>
 		</div>
 	{:else if config}
@@ -68,43 +68,43 @@
 		</div>
 
 		<!-- Get Help Section -->
-		<div class="rounded-lg bg-white p-6 shadow">
-			<h2 class="text-lg font-semibold text-gray-900">Get Help</h2>
+		<div class="rounded-lg bg-white dark:bg-gray-800 p-6 shadow dark:shadow-gray-900/50">
+			<h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Get Help</h2>
 			<div class="mt-4 space-y-3">
 				<a
 					href="{config.github_repo}"
 					target="_blank"
 					rel="noopener"
-					class="flex items-center gap-3 rounded-lg bg-gray-50 p-3 transition-colors hover:bg-gray-100"
+					class="flex items-center gap-3 rounded-lg bg-gray-50 dark:bg-gray-700 p-3 transition-colors hover:bg-gray-100 dark:hover:bg-gray-600"
 				>
 					<span class="text-xl">📖</span>
 					<div>
-						<p class="font-medium text-gray-900">Documentation</p>
-						<p class="text-sm text-gray-500">Read the docs on GitHub</p>
+						<p class="font-medium text-gray-900 dark:text-gray-100">Documentation</p>
+						<p class="text-sm text-gray-500 dark:text-gray-400">Read the docs on GitHub</p>
 					</div>
 				</a>
 				<a
 					href="{config.github_repo}/issues"
 					target="_blank"
 					rel="noopener"
-					class="flex items-center gap-3 rounded-lg bg-gray-50 p-3 transition-colors hover:bg-gray-100"
+					class="flex items-center gap-3 rounded-lg bg-gray-50 dark:bg-gray-700 p-3 transition-colors hover:bg-gray-100 dark:hover:bg-gray-600"
 				>
 					<span class="text-xl">🐛</span>
 					<div>
-						<p class="font-medium text-gray-900">Report a Bug</p>
-						<p class="text-sm text-gray-500">Open an issue on GitHub</p>
+						<p class="font-medium text-gray-900 dark:text-gray-100">Report a Bug</p>
+						<p class="text-sm text-gray-500 dark:text-gray-400">Open an issue on GitHub</p>
 					</div>
 				</a>
 				<a
 					href="{config.github_repo}/discussions"
 					target="_blank"
 					rel="noopener"
-					class="flex items-center gap-3 rounded-lg bg-gray-50 p-3 transition-colors hover:bg-gray-100"
+					class="flex items-center gap-3 rounded-lg bg-gray-50 dark:bg-gray-700 p-3 transition-colors hover:bg-gray-100 dark:hover:bg-gray-600"
 				>
 					<span class="text-xl">💬</span>
 					<div>
-						<p class="font-medium text-gray-900">Discussions</p>
-						<p class="text-sm text-gray-500">Join the community on GitHub</p>
+						<p class="font-medium text-gray-900 dark:text-gray-100">Discussions</p>
+						<p class="text-sm text-gray-500 dark:text-gray-400">Join the community on GitHub</p>
 					</div>
 				</a>
 				{#if config.developer_npub && config.developer_npub !== 'npub1...'}
@@ -112,12 +112,12 @@
 						href="https://njump.me/{config.developer_npub}"
 						target="_blank"
 						rel="noopener"
-						class="flex items-center gap-3 rounded-lg bg-gray-50 p-3 transition-colors hover:bg-gray-100"
+						class="flex items-center gap-3 rounded-lg bg-gray-50 dark:bg-gray-700 p-3 transition-colors hover:bg-gray-100 dark:hover:bg-gray-600"
 					>
 						<span class="text-xl">🦩</span>
 						<div>
-							<p class="font-medium text-gray-900">Follow on Nostr</p>
-							<p class="text-sm text-gray-500">Stay updated on development</p>
+							<p class="font-medium text-gray-900 dark:text-gray-100">Follow on Nostr</p>
+							<p class="text-sm text-gray-500 dark:text-gray-400">Stay updated on development</p>
 						</div>
 					</a>
 				{/if}
@@ -125,21 +125,21 @@
 		</div>
 
 		<!-- About Section -->
-		<div class="rounded-lg bg-white p-6 shadow">
-			<h2 class="text-lg font-semibold text-gray-900">About</h2>
+		<div class="rounded-lg bg-white dark:bg-gray-800 p-6 shadow dark:shadow-gray-900/50">
+			<h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">About</h2>
 			<div class="mt-4 space-y-3">
 				<div class="flex items-center gap-3">
 					<span class="text-2xl">🐓</span>
 					<div>
-						<p class="font-bold text-gray-900">Roostr v{config.version}</p>
-						<p class="text-gray-600">"Your private roost on Nostr"</p>
+						<p class="font-bold text-gray-900 dark:text-gray-100">Roostr v{config.version}</p>
+						<p class="text-gray-600 dark:text-gray-400">"Your private roost on Nostr"</p>
 					</div>
 				</div>
-				<div class="border-t border-gray-100 pt-3">
-					<p class="text-sm text-gray-500">
+				<div class="border-t border-gray-100 dark:border-gray-700 pt-3">
+					<p class="text-sm text-gray-500 dark:text-gray-400">
 						Built with Svelte, Go, and nostr-rs-relay
 					</p>
-					<p class="mt-1 text-sm text-gray-500">
+					<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
 						License: MIT
 					</p>
 				</div>

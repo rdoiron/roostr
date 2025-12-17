@@ -8,6 +8,7 @@
 	import Loading from '$lib/components/Loading.svelte';
 	import { setup } from '$lib/api/client.js';
 	import { notifications } from '$lib/stores/app.svelte.js';
+	import { initializeTheme } from '$lib/stores/theme.svelte.js';
 
 	let { children } = $props();
 
@@ -15,6 +16,15 @@
 	let loading = $state(true);
 	let setupCompleted = $state(false);
 	let lastPathname = $state('');
+	let themeInitialized = $state(false);
+
+	// Initialize theme on mount
+	$effect(() => {
+		if (browser && !themeInitialized) {
+			initializeTheme();
+			themeInitialized = true;
+		}
+	});
 
 	// Check setup status on initial load and when navigating away from /setup
 	$effect(() => {
@@ -53,7 +63,7 @@
 	}
 </script>
 
-<div class="min-h-screen bg-gray-50">
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
 	{#if loading}
 		<!-- Loading state while checking setup status -->
 		<div class="min-h-screen flex items-center justify-center">
@@ -89,12 +99,12 @@
 			{#each notifications as notification (notification.id)}
 				<div
 					class="rounded-lg px-4 py-3 shadow-lg text-sm font-medium flex items-center gap-2 animate-in slide-in-from-right {notification.type === 'success'
-						? 'bg-green-100 text-green-800'
+						? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300'
 						: notification.type === 'error'
-							? 'bg-red-100 text-red-800'
+							? 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300'
 							: notification.type === 'warning'
-								? 'bg-yellow-100 text-yellow-800'
-								: 'bg-blue-100 text-blue-800'}"
+								? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300'
+								: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300'}"
 				>
 					{#if notification.type === 'success'}
 						<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

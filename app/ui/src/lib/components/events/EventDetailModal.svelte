@@ -122,15 +122,15 @@
 	aria-modal="true"
 	aria-labelledby="modal-title"
 >
-	<div class="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white shadow-xl">
+	<div class="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white dark:bg-gray-800 shadow-xl">
 		<!-- Header -->
-		<div class="sticky top-0 flex items-center justify-between border-b bg-white px-6 py-4">
-			<h2 id="modal-title" class="text-lg font-semibold text-gray-900">Event Details</h2>
+		<div class="sticky top-0 flex items-center justify-between border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-6 py-4">
+			<h2 id="modal-title" class="text-lg font-semibold text-gray-900 dark:text-gray-100">Event Details</h2>
 			<button
 				type="button"
 				onclick={onClose}
 				aria-label="Close modal"
-				class="rounded p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+				class="rounded p-1 text-gray-400 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-600 dark:hover:text-gray-300"
 			>
 				<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path
@@ -147,19 +147,19 @@
 		<div class="space-y-4 p-6">
 			<!-- Event ID -->
 			<div>
-				<p class="mb-1 text-xs font-medium text-gray-500">Event ID</p>
+				<p class="mb-1 text-xs font-medium text-gray-500 dark:text-gray-400">Event ID</p>
 				<div class="flex items-center gap-2">
-					<code class="flex-1 truncate rounded bg-gray-100 px-3 py-2 font-mono text-sm">
+					<code class="flex-1 truncate rounded bg-gray-100 dark:bg-gray-700 px-3 py-2 font-mono text-sm text-gray-900 dark:text-gray-100">
 						{event.id}
 					</code>
 					<button
 						type="button"
 						onclick={() => copyToClipboard(event.id, 'id')}
-						class="rounded bg-gray-100 p-2 text-gray-600 transition-colors hover:bg-gray-200"
+						class="rounded bg-gray-100 dark:bg-gray-700 p-2 text-gray-600 dark:text-gray-300 transition-colors hover:bg-gray-200 dark:hover:bg-gray-600"
 						title="Copy Event ID"
 					>
 						{#if copiedField === 'id'}
-							<svg class="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<svg class="h-5 w-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
 							</svg>
 						{:else}
@@ -173,19 +173,19 @@
 
 			<!-- Author -->
 			<div>
-				<p class="mb-1 text-xs font-medium text-gray-500">Author</p>
+				<p class="mb-1 text-xs font-medium text-gray-500 dark:text-gray-400">Author</p>
 				<div class="flex items-center gap-2">
-					<code class="flex-1 truncate rounded bg-gray-100 px-3 py-2 font-mono text-sm">
+					<code class="flex-1 truncate rounded bg-gray-100 dark:bg-gray-700 px-3 py-2 font-mono text-sm text-gray-900 dark:text-gray-100">
 						{event.pubkey}
 					</code>
 					<button
 						type="button"
 						onclick={() => copyToClipboard(event.pubkey, 'pubkey')}
-						class="rounded bg-gray-100 p-2 text-gray-600 transition-colors hover:bg-gray-200"
+						class="rounded bg-gray-100 dark:bg-gray-700 p-2 text-gray-600 dark:text-gray-300 transition-colors hover:bg-gray-200 dark:hover:bg-gray-600"
 						title="Copy Pubkey"
 					>
 						{#if copiedField === 'pubkey'}
-							<svg class="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<svg class="h-5 w-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
 							</svg>
 						{:else}
@@ -200,14 +200,14 @@
 			<!-- Kind and Created -->
 			<div class="grid grid-cols-2 gap-4">
 				<div>
-					<p class="mb-1 text-xs font-medium text-gray-500">Kind</p>
-					<p class="rounded bg-gray-100 px-3 py-2 text-sm">
+					<p class="mb-1 text-xs font-medium text-gray-500 dark:text-gray-400">Kind</p>
+					<p class="rounded bg-gray-100 dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100">
 						{event.kind} ({getKindName(event.kind)})
 					</p>
 				</div>
 				<div>
-					<p class="mb-1 text-xs font-medium text-gray-500">Created</p>
-					<p class="rounded bg-gray-100 px-3 py-2 text-sm">
+					<p class="mb-1 text-xs font-medium text-gray-500 dark:text-gray-400">Created</p>
+					<p class="rounded bg-gray-100 dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100">
 						{formatDate(event.created_at)}
 						<span class="text-gray-400">({getUnixTimestamp(event.created_at)})</span>
 					</p>
@@ -216,8 +216,8 @@
 
 			<!-- Content -->
 			<div>
-				<p class="mb-1 text-xs font-medium text-gray-500">Content</p>
-				<div class="max-h-40 overflow-y-auto rounded bg-gray-100 px-3 py-2">
+				<p class="mb-1 text-xs font-medium text-gray-500 dark:text-gray-400">Content</p>
+				<div class="max-h-40 overflow-y-auto rounded bg-gray-100 dark:bg-gray-700 px-3 py-2">
 					{#if isEncrypted}
 						<p class="italic text-gray-400">
 							<svg class="mr-1 inline h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -226,7 +226,7 @@
 							Encrypted content
 						</p>
 					{:else if event.content}
-						<p class="whitespace-pre-wrap break-words text-sm">{event.content}</p>
+						<p class="whitespace-pre-wrap break-words text-sm text-gray-900 dark:text-gray-100">{event.content}</p>
 					{:else}
 						<p class="italic text-gray-400">(empty)</p>
 					{/if}
@@ -236,9 +236,9 @@
 			<!-- Tags -->
 			{#if event.tags && event.tags.length > 0}
 				<div>
-					<p class="mb-1 text-xs font-medium text-gray-500">Tags ({event.tags.length})</p>
-					<div class="max-h-32 overflow-y-auto rounded bg-gray-100 px-3 py-2">
-						<pre class="font-mono text-xs text-gray-700">{JSON.stringify(event.tags, null, 2)}</pre>
+					<p class="mb-1 text-xs font-medium text-gray-500 dark:text-gray-400">Tags ({event.tags.length})</p>
+					<div class="max-h-32 overflow-y-auto rounded bg-gray-100 dark:bg-gray-700 px-3 py-2">
+						<pre class="font-mono text-xs text-gray-700 dark:text-gray-300">{JSON.stringify(event.tags, null, 2)}</pre>
 					</div>
 				</div>
 			{/if}
@@ -246,11 +246,11 @@
 			<!-- Raw JSON -->
 			<div>
 				<div class="mb-1 flex items-center justify-between">
-					<p class="text-xs font-medium text-gray-500">Raw JSON</p>
+					<p class="text-xs font-medium text-gray-500 dark:text-gray-400">Raw JSON</p>
 					<button
 						type="button"
 						onclick={() => copyToClipboard(rawJSON, 'json')}
-						class="rounded px-2 py-1 text-xs text-purple-600 transition-colors hover:bg-purple-50"
+						class="rounded px-2 py-1 text-xs text-purple-600 dark:text-purple-400 transition-colors hover:bg-purple-50 dark:hover:bg-purple-900/20"
 					>
 						{copiedField === 'json' ? 'Copied!' : 'Copy JSON'}
 					</button>
@@ -262,7 +262,7 @@
 		</div>
 
 		<!-- Footer -->
-		<div class="sticky bottom-0 flex justify-end gap-3 border-t bg-white px-6 py-4">
+		<div class="sticky bottom-0 flex justify-end gap-3 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-6 py-4">
 			<Button variant="danger" onclick={() => onDelete?.(event)}>
 				Delete Event
 			</Button>

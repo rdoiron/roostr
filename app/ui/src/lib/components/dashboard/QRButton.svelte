@@ -39,7 +39,7 @@
 	<button
 		type="button"
 		onclick={() => (showQR = !showQR)}
-		class="inline-flex items-center justify-center rounded-lg bg-gray-100 p-2 text-gray-700 transition-colors hover:bg-gray-200"
+		class="inline-flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 p-2 text-gray-700 dark:text-gray-200 transition-colors hover:bg-gray-200 dark:hover:bg-gray-600"
 		title="QR Code"
 	>
 		<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -63,13 +63,13 @@
 			tabindex="-1"
 		>
 			<!-- Modal content -->
-			<div class="relative rounded-xl bg-white p-4 shadow-2xl">
+			<div class="relative rounded-xl bg-white dark:bg-gray-800 p-4 shadow-2xl dark:shadow-gray-900/50">
 				<img
 					src={qrDataUrl}
 					alt="QR Code for {url}"
 					class="h-64 w-64 rounded-lg"
 				/>
-				<p class="mt-2 max-w-64 truncate text-center text-xs text-gray-500">{url}</p>
+				<p class="mt-2 max-w-64 truncate text-center text-xs text-gray-500 dark:text-gray-400">{url}</p>
 				<button
 					type="button"
 					onclick={closeModal}

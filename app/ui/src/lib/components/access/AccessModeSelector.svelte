@@ -71,15 +71,15 @@
 			onclick={() => selectMode(modeOption.id)}
 			disabled={saving}
 			class="w-full text-left p-4 rounded-lg border-2 transition-all {selectedMode === modeOption.id
-				? 'border-purple-500 bg-purple-50'
-				: 'border-gray-200 hover:border-gray-300 bg-white'} {saving ? 'opacity-50 cursor-wait' : ''}"
+				? 'border-purple-500 bg-purple-50 dark:bg-purple-900/30'
+				: 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 bg-white dark:bg-gray-700'} {saving ? 'opacity-50 cursor-wait' : ''}"
 		>
 			<div class="flex items-start space-x-3">
 				<!-- Radio indicator -->
 				<div
 					class="w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 flex-shrink-0 {selectedMode === modeOption.id
 						? 'border-purple-500'
-						: 'border-gray-300'}"
+						: 'border-gray-300 dark:border-gray-500'}"
 				>
 					{#if selectedMode === modeOption.id}
 						<div class="w-2.5 h-2.5 rounded-full bg-purple-500"></div>
@@ -89,8 +89,8 @@
 				<!-- Icon -->
 				<div
 					class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 {selectedMode === modeOption.id
-						? 'bg-purple-100 text-purple-600'
-						: 'bg-gray-100 text-gray-500'}"
+						? 'bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400'
+						: 'bg-gray-100 dark:bg-gray-600 text-gray-500 dark:text-gray-400'}"
 				>
 					{#if modeOption.icon === 'globe'}
 						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -114,15 +114,15 @@
 				<!-- Content -->
 				<div class="flex-1 min-w-0">
 					<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-						<p class="font-medium text-gray-900">{modeOption.name}</p>
+						<p class="font-medium text-gray-900 dark:text-gray-100">{modeOption.name}</p>
 						{#if modeOption.recommended}
-							<span class="flex-shrink-0 rounded bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Recommended</span>
+							<span class="flex-shrink-0 rounded bg-green-100 dark:bg-green-900/30 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400">Recommended</span>
 						{/if}
 						{#if selectedMode === modeOption.id && saving}
 							<div class="h-4 w-4 animate-spin rounded-full border-2 border-purple-600 border-t-transparent"></div>
 						{/if}
 					</div>
-					<p class="text-sm text-gray-500">{modeOption.description}</p>
+					<p class="text-sm text-gray-500 dark:text-gray-400">{modeOption.description}</p>
 					{#if modeOption.warning}
 						<p class="text-xs text-amber-600 mt-1">{modeOption.warning}</p>
 					{/if}
@@ -134,7 +134,7 @@
 		</button>
 	{/each}
 
-	<p class="text-xs text-gray-500 flex items-center space-x-1 mt-2">
+	<p class="text-xs text-gray-500 dark:text-gray-400 flex items-center space-x-1 mt-2">
 		<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
 		</svg>

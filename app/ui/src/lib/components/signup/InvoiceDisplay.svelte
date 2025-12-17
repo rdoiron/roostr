@@ -138,19 +138,19 @@
 
 <div class="space-y-6">
 	<!-- Amount Summary -->
-	<div class="text-center p-4 bg-purple-50 rounded-lg">
-		<p class="text-sm text-purple-600 mb-1">{tier?.name || 'Relay Access'}</p>
-		<p class="text-2xl font-bold text-purple-900">{invoice?.amount_sats?.toLocaleString()} sats</p>
+	<div class="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+		<p class="text-sm text-purple-600 dark:text-purple-400 mb-1">{tier?.name || 'Relay Access'}</p>
+		<p class="text-2xl font-bold text-purple-900 dark:text-purple-100">{invoice?.amount_sats?.toLocaleString()} sats</p>
 	</div>
 
 	<!-- QR Code -->
 	<div class="flex justify-center">
 		{#if qrCodeUrl}
-			<div class="p-4 bg-white rounded-xl border-2 border-gray-200 shadow-sm">
+			<div class="p-4 bg-white rounded-xl border-2 border-gray-200 dark:border-gray-600 shadow-sm">
 				<img src={qrCodeUrl} alt="Lightning Invoice QR Code" class="w-56 h-56" />
 			</div>
 		{:else}
-			<div class="w-64 h-64 bg-gray-100 rounded-xl animate-pulse flex items-center justify-center">
+			<div class="w-64 h-64 bg-gray-100 dark:bg-gray-700 rounded-xl animate-pulse flex items-center justify-center">
 				<div class="h-8 w-8 animate-spin rounded-full border-4 border-purple-600 border-t-transparent"></div>
 			</div>
 		{/if}
@@ -158,14 +158,14 @@
 
 	<!-- Invoice String -->
 	<div class="space-y-2">
-		<div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
-			<code class="text-xs text-gray-600 font-mono truncate mr-2">
+		<div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+			<code class="text-xs text-gray-600 dark:text-gray-300 font-mono truncate mr-2">
 				{truncateInvoice(invoice?.payment_request)}
 			</code>
 			<button
 				type="button"
 				onclick={copyInvoice}
-				class="flex-shrink-0 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors {copied ? 'bg-green-100 text-green-700' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}"
+				class="flex-shrink-0 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors {copied ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200'}"
 			>
 				{copied ? 'Copied!' : 'Copy'}
 			</button>
@@ -195,7 +195,7 @@
 	<!-- Timer and Status -->
 	<div class="text-center space-y-2">
 		{#if timeRemaining > 0}
-			<div class="flex items-center justify-center text-gray-600">
+			<div class="flex items-center justify-center text-gray-600 dark:text-gray-300">
 				<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
 				</svg>
@@ -204,10 +204,10 @@
 				</span>
 			</div>
 		{:else}
-			<div class="text-amber-600 font-medium">Invoice expired</div>
+			<div class="text-amber-600 dark:text-amber-400 font-medium">Invoice expired</div>
 		{/if}
 
-		<div class="flex items-center justify-center text-sm text-gray-500">
+		<div class="flex items-center justify-center text-sm text-gray-500 dark:text-gray-400">
 			<div class="w-2 h-2 mr-2 bg-green-500 rounded-full animate-pulse"></div>
 			Waiting for payment...
 		</div>

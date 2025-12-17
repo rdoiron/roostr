@@ -54,7 +54,7 @@
 
 <div class="w-full">
 	<!-- Progress bar -->
-	<div class="w-full rounded-full bg-gray-200 {barHeight()}">
+	<div class="w-full rounded-full bg-gray-200 dark:bg-gray-700 {barHeight()}">
 		<div
 			class="rounded-full transition-all duration-300 {barHeight()} {barColor()}"
 			style="width: {percentage}%"
@@ -64,9 +64,9 @@
 	{#if showLabel}
 		<!-- Usage label -->
 		<div class="mt-2 flex flex-col gap-1 text-sm sm:flex-row sm:items-center sm:justify-between">
-			<span class="text-gray-600">
+			<span class="text-gray-600 dark:text-gray-400">
 				{formatBytes(usedBytes)} used of {formatBytes(totalBytes)} available
-				<span class="ml-1 text-gray-400">({rawPercentage.toFixed(1)}%)</span>
+				<span class="ml-1 text-gray-400 dark:text-gray-500">({rawPercentage.toFixed(1)}%)</span>
 			</span>
 			<span class="text-right {statusInfo().color}">
 				{statusInfo().text}

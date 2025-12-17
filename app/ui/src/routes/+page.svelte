@@ -91,8 +91,8 @@
 <div class="space-y-6">
 	<!-- Page Header -->
 	<div>
-		<h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
-		<p class="text-gray-600">Your private Nostr relay at a glance</p>
+		<h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Dashboard</h1>
+		<p class="text-gray-600 dark:text-gray-400">Your private Nostr relay at a glance</p>
 	</div>
 
 	{#if loading}
@@ -103,14 +103,14 @@
 		<Error title="Error loading dashboard" message={error} onRetry={loadDashboard} />
 	{:else}
 		<!-- Relay Status Card -->
-		<div class="rounded-lg bg-white p-6 shadow">
+		<div class="rounded-lg bg-white dark:bg-gray-800 p-6 shadow dark:shadow-gray-900/50">
 			<div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 				<div class="flex items-center gap-4">
-					<h2 class="text-lg font-semibold text-gray-900">Relay Status</h2>
+					<h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Relay Status</h2>
 					<StatusIndicator status={statusType} />
 				</div>
-				<div class="text-sm text-gray-500">
-					Uptime: <span class="font-medium text-gray-900"
+				<div class="text-sm text-gray-500 dark:text-gray-400">
+					Uptime: <span class="font-medium text-gray-900 dark:text-gray-100"
 						>{formatUptime(dashboardData.stats?.uptime_seconds || 0)}</span
 					>
 				</div>

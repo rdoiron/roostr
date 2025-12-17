@@ -62,15 +62,15 @@
 	aria-labelledby="modal-title"
 >
 	<!-- Modal content -->
-	<div class="w-full max-w-md rounded-lg bg-white shadow-xl">
+	<div class="w-full max-w-md rounded-lg bg-white dark:bg-gray-800 shadow-xl">
 		<!-- Header -->
-		<div class="flex items-center justify-between border-b px-6 py-4">
-			<h2 id="modal-title" class="text-lg font-semibold text-gray-900">Edit Nickname</h2>
+		<div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+			<h2 id="modal-title" class="text-lg font-semibold text-gray-900 dark:text-gray-100">Edit Nickname</h2>
 			<button
 				type="button"
 				onclick={onClose}
 				aria-label="Close modal"
-				class="p-1 text-gray-400 hover:text-gray-600 transition-colors rounded hover:bg-gray-100"
+				class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors rounded hover:bg-gray-100 dark:hover:bg-gray-700"
 			>
 				<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -81,14 +81,14 @@
 		<!-- Body -->
 		<div class="p-6 space-y-4">
 			<!-- Pubkey info -->
-			<div class="p-3 bg-gray-50 rounded-lg">
-				<p class="text-sm text-gray-500">Editing nickname for:</p>
-				<p class="text-sm font-mono text-gray-700 truncate">{entry?.npub || truncateNpub(entry?.pubkey)}</p>
+			<div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+				<p class="text-sm text-gray-500 dark:text-gray-400">Editing nickname for:</p>
+				<p class="text-sm font-mono text-gray-700 dark:text-gray-200 truncate">{entry?.npub || truncateNpub(entry?.pubkey)}</p>
 			</div>
 
 			<!-- Nickname input -->
 			<div>
-				<label for="nickname-input" class="block text-sm font-medium text-gray-700 mb-2">
+				<label for="nickname-input" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
 					Nickname
 				</label>
 				<input
@@ -104,14 +104,14 @@
 
 			<!-- Error -->
 			{#if error}
-				<div class="p-3 bg-red-50 border border-red-200 rounded-lg">
-					<p class="text-sm text-red-700">{error}</p>
+				<div class="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+					<p class="text-sm text-red-700 dark:text-red-300">{error}</p>
 				</div>
 			{/if}
 		</div>
 
 		<!-- Footer -->
-		<div class="flex justify-end space-x-3 border-t px-6 py-4">
+		<div class="flex justify-end space-x-3 border-t border-gray-200 dark:border-gray-700 px-6 py-4">
 			<Button variant="secondary" onclick={onClose} disabled={saving}>
 				Cancel
 			</Button>

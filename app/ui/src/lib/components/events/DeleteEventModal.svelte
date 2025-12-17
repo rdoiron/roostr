@@ -73,15 +73,15 @@
 	aria-modal="true"
 	aria-labelledby="modal-title"
 >
-	<div class="w-full max-w-md rounded-lg bg-white shadow-xl">
+	<div class="w-full max-w-md rounded-lg bg-white dark:bg-gray-800 shadow-xl">
 		<!-- Header -->
-		<div class="flex items-center justify-between border-b px-6 py-4">
-			<h2 id="modal-title" class="text-lg font-semibold text-gray-900">Delete Event</h2>
+		<div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+			<h2 id="modal-title" class="text-lg font-semibold text-gray-900 dark:text-gray-100">Delete Event</h2>
 			<button
 				type="button"
 				onclick={onClose}
 				aria-label="Close modal"
-				class="rounded p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+				class="rounded p-1 text-gray-400 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-600 dark:hover:text-gray-300"
 			>
 				<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path
@@ -98,8 +98,8 @@
 		<div class="space-y-4 p-6">
 			<!-- Warning icon -->
 			<div class="flex justify-center">
-				<div class="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
-					<svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<div class="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
+					<svg class="h-6 w-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path
 							stroke-linecap="round"
 							stroke-linejoin="round"
@@ -112,27 +112,27 @@
 
 			<!-- Message -->
 			<div class="text-center">
-				<p class="text-gray-900">Are you sure you want to delete this event?</p>
-				<p class="mt-2 text-sm text-gray-500">This action will queue the event for deletion from your relay.</p>
+				<p class="text-gray-900 dark:text-gray-100">Are you sure you want to delete this event?</p>
+				<p class="mt-2 text-sm text-gray-500 dark:text-gray-400">This action will queue the event for deletion from your relay.</p>
 			</div>
 
 			<!-- Event info -->
-			<div class="rounded-lg bg-gray-50 p-3">
+			<div class="rounded-lg bg-gray-50 dark:bg-gray-700 p-3">
 				<div class="grid grid-cols-2 gap-2 text-sm">
 					<div>
-						<p class="text-xs text-gray-500">Event ID:</p>
-						<p class="truncate font-mono text-gray-700">{truncateId(event?.id)}</p>
+						<p class="text-xs text-gray-500 dark:text-gray-400">Event ID:</p>
+						<p class="truncate font-mono text-gray-700 dark:text-gray-200">{truncateId(event?.id)}</p>
 					</div>
 					<div>
-						<p class="text-xs text-gray-500">Kind:</p>
-						<p class="text-gray-700">{event?.kind} ({getKindName(event?.kind)})</p>
+						<p class="text-xs text-gray-500 dark:text-gray-400">Kind:</p>
+						<p class="text-gray-700 dark:text-gray-200">{event?.kind} ({getKindName(event?.kind)})</p>
 					</div>
 				</div>
 			</div>
 
 			<!-- Reason input (optional) -->
 			<div>
-				<label for="delete-reason" class="mb-1 block text-sm font-medium text-gray-700">
+				<label for="delete-reason" class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200">
 					Reason (optional)
 				</label>
 				<input
@@ -146,14 +146,14 @@
 
 			<!-- Error -->
 			{#if error}
-				<div class="rounded-lg border border-red-200 bg-red-50 p-3">
-					<p class="text-sm text-red-700">{error}</p>
+				<div class="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-3">
+					<p class="text-sm text-red-700 dark:text-red-300">{error}</p>
 				</div>
 			{/if}
 		</div>
 
 		<!-- Footer -->
-		<div class="flex justify-end gap-3 border-t px-6 py-4">
+		<div class="flex justify-end gap-3 border-t border-gray-200 dark:border-gray-700 px-6 py-4">
 			<Button variant="secondary" onclick={onClose} disabled={deleting}>Cancel</Button>
 			<Button variant="danger" onclick={handleDelete} disabled={deleting} loading={deleting}>
 				Delete

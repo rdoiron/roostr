@@ -10,9 +10,9 @@
 
 <div class="flex flex-col items-center justify-center gap-3">
 	<div
-		class="animate-spin rounded-full border-purple-600 border-t-transparent {sizes[size]}"
+		class="animate-spin rounded-full border-purple-600 dark:border-purple-400 border-t-transparent {sizes[size]}"
 	></div>
 	{#if text}
-		<p class="text-sm text-gray-500">{text}</p>
+		<p class="text-sm text-gray-500 dark:text-gray-400">{text}</p>
 	{/if}
 </div>
