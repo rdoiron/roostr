@@ -214,10 +214,10 @@
 	aria-labelledby="export-title"
 	tabindex="-1"
 >
-	<div class="w-full max-w-lg rounded-lg bg-white shadow-xl">
+	<div class="w-full max-w-lg rounded-lg bg-white dark:bg-gray-800 shadow-xl dark:shadow-gray-900/50">
 		<!-- Header -->
-		<div class="flex items-center justify-between border-b px-6 py-4">
-			<h2 id="export-title" class="text-lg font-semibold text-gray-900">
+		<div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+			<h2 id="export-title" class="text-lg font-semibold text-gray-900 dark:text-gray-100">
 				Export Events
 			</h2>
 			<button
@@ -225,7 +225,7 @@
 				onclick={onClose}
 				disabled={downloading}
 				aria-label="Close modal"
-				class="p-1 text-gray-400 hover:text-gray-600 transition-colors rounded hover:bg-gray-100 disabled:opacity-50"
+				class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors rounded hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
 			>
 				<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -237,7 +237,7 @@
 		<div class="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
 			<!-- What to export -->
 			<fieldset>
-				<legend class="mb-3 block text-sm font-medium text-gray-700">What to export:</legend>
+				<legend class="mb-3 block text-sm font-medium text-gray-700 dark:text-gray-200">What to export:</legend>
 				<div class="space-y-3">
 					<label class="flex cursor-pointer items-center gap-3">
 						<input
@@ -248,7 +248,7 @@
 							disabled={downloading}
 							class="h-4 w-4 text-purple-600"
 						/>
-						<span class="text-sm text-gray-700">
+						<span class="text-sm text-gray-700 dark:text-gray-200">
 							All events
 							{#if !estimateLoading && exportMode === 'all'}
 								<span class="text-gray-500">({estimatedCount.toLocaleString()} events, ~{formatBytes(estimatedBytes)})</span>
@@ -264,7 +264,7 @@
 							disabled={downloading}
 							class="h-4 w-4 text-purple-600"
 						/>
-						<span class="text-sm text-gray-700">Selected event kinds</span>
+						<span class="text-sm text-gray-700 dark:text-gray-200">Selected event kinds</span>
 					</label>
 				</div>
 
@@ -278,7 +278,7 @@
 								disabled={downloading}
 								class="h-4 w-4 rounded border-gray-300 text-purple-600"
 							/>
-							<span class="text-sm text-gray-700">Notes (kind 1)</span>
+							<span class="text-sm text-gray-700 dark:text-gray-200">Notes (kind 1)</span>
 							<span class="text-xs text-gray-400">{kindCounts.notes.toLocaleString()} events</span>
 						</label>
 						<label class="flex cursor-pointer items-center gap-3">
@@ -288,7 +288,7 @@
 								disabled={downloading}
 								class="h-4 w-4 rounded border-gray-300 text-purple-600"
 							/>
-							<span class="text-sm text-gray-700">Reactions (kind 7)</span>
+							<span class="text-sm text-gray-700 dark:text-gray-200">Reactions (kind 7)</span>
 							<span class="text-xs text-gray-400">{kindCounts.reactions.toLocaleString()} events</span>
 						</label>
 						<label class="flex cursor-pointer items-center gap-3">
@@ -298,7 +298,7 @@
 								disabled={downloading}
 								class="h-4 w-4 rounded border-gray-300 text-purple-600"
 							/>
-							<span class="text-sm text-gray-700">Follow lists (kind 3)</span>
+							<span class="text-sm text-gray-700 dark:text-gray-200">Follow lists (kind 3)</span>
 							<span class="text-xs text-gray-400">{kindCounts.follows.toLocaleString()} events</span>
 						</label>
 						<label class="flex cursor-pointer items-center gap-3">
@@ -308,7 +308,7 @@
 								disabled={downloading}
 								class="h-4 w-4 rounded border-gray-300 text-purple-600"
 							/>
-							<span class="text-sm text-gray-700">DMs (kind 4, 14)</span>
+							<span class="text-sm text-gray-700 dark:text-gray-200">DMs (kind 4, 14)</span>
 							<span class="text-xs text-gray-400">{kindCounts.dms.toLocaleString()} events</span>
 						</label>
 						<label class="flex cursor-pointer items-center gap-3">
@@ -318,7 +318,7 @@
 								disabled={downloading}
 								class="h-4 w-4 rounded border-gray-300 text-purple-600"
 							/>
-							<span class="text-sm text-gray-700">Profile (kind 0)</span>
+							<span class="text-sm text-gray-700 dark:text-gray-200">Profile (kind 0)</span>
 						</label>
 						<label class="flex cursor-pointer items-center gap-3">
 							<input
@@ -327,7 +327,7 @@
 								disabled={downloading}
 								class="h-4 w-4 rounded border-gray-300 text-purple-600"
 							/>
-							<span class="text-sm text-gray-700">Reposts (kind 6)</span>
+							<span class="text-sm text-gray-700 dark:text-gray-200">Reposts (kind 6)</span>
 							<span class="text-xs text-gray-400">{kindCounts.reposts.toLocaleString()} events</span>
 						</label>
 						<label class="flex cursor-pointer items-center gap-3">
@@ -337,7 +337,7 @@
 								disabled={downloading}
 								class="h-4 w-4 rounded border-gray-300 text-purple-600"
 							/>
-							<span class="text-sm text-gray-700">Other kinds</span>
+							<span class="text-sm text-gray-700 dark:text-gray-200">Other kinds</span>
 							<span class="text-xs text-gray-400">{kindCounts.other.toLocaleString()} events</span>
 						</label>
 					</div>
@@ -346,7 +346,7 @@
 
 			<!-- Date range -->
 			<fieldset>
-				<legend class="mb-3 block text-sm font-medium text-gray-700">Date range:</legend>
+				<legend class="mb-3 block text-sm font-medium text-gray-700 dark:text-gray-200">Date range:</legend>
 				<div class="space-y-3">
 					<label class="flex cursor-pointer items-center gap-3">
 						<input
@@ -357,7 +357,7 @@
 							disabled={downloading}
 							class="h-4 w-4 text-purple-600"
 						/>
-						<span class="text-sm text-gray-700">All time</span>
+						<span class="text-sm text-gray-700 dark:text-gray-200">All time</span>
 					</label>
 					<label class="flex cursor-pointer items-center gap-3">
 						<input
@@ -368,7 +368,7 @@
 							disabled={downloading}
 							class="h-4 w-4 text-purple-600"
 						/>
-						<span class="text-sm text-gray-700">Custom range</span>
+						<span class="text-sm text-gray-700 dark:text-gray-200">Custom range</span>
 					</label>
 				</div>
 
@@ -382,7 +382,7 @@
 								bind:value={dateFrom}
 								max={dateTo || today}
 								disabled={downloading}
-								class="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none"
+								class="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none"
 							/>
 						</div>
 						<span class="text-sm text-gray-500">to</span>
@@ -395,7 +395,7 @@
 								min={dateFrom}
 								max={today}
 								disabled={downloading}
-								class="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none"
+								class="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none"
 							/>
 						</div>
 					</div>
@@ -404,7 +404,7 @@
 
 			<!-- Format -->
 			<fieldset>
-				<legend class="mb-3 block text-sm font-medium text-gray-700">Format:</legend>
+				<legend class="mb-3 block text-sm font-medium text-gray-700 dark:text-gray-200">Format:</legend>
 				<div class="space-y-3">
 					<label class="flex cursor-pointer items-start gap-3">
 						<input
@@ -416,9 +416,9 @@
 							class="mt-0.5 h-4 w-4 text-purple-600"
 						/>
 						<div>
-							<span class="text-sm text-gray-700">NDJSON (Newline Delimited JSON)</span>
-							<span class="ml-2 rounded bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Recommended</span>
-							<p class="text-xs text-gray-500">One event per line. Best for large exports and streaming.</p>
+							<span class="text-sm text-gray-700 dark:text-gray-200">NDJSON (Newline Delimited JSON)</span>
+							<span class="ml-2 rounded bg-green-100 dark:bg-green-900/30 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400">Recommended</span>
+							<p class="text-xs text-gray-500 dark:text-gray-400">One event per line. Best for large exports and streaming.</p>
 						</div>
 					</label>
 					<label class="flex cursor-pointer items-start gap-3">
@@ -431,28 +431,28 @@
 							class="mt-0.5 h-4 w-4 text-purple-600"
 						/>
 						<div>
-							<span class="text-sm text-gray-700">JSON Array</span>
-							<p class="text-xs text-gray-500">Standard JSON array format. Better compatibility.</p>
+							<span class="text-sm text-gray-700 dark:text-gray-200">JSON Array</span>
+							<p class="text-xs text-gray-500 dark:text-gray-400">Standard JSON array format. Better compatibility.</p>
 						</div>
 					</label>
 				</div>
 			</fieldset>
 
 			<!-- Estimate display -->
-			<div class="rounded-lg bg-gray-50 p-4">
+			<div class="rounded-lg bg-gray-50 dark:bg-gray-700 p-4">
 				{#if estimateLoading}
-					<div class="flex items-center gap-2 text-sm text-gray-500">
+					<div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
 						<Loading size="sm" />
 						Calculating estimate...
 					</div>
 				{:else if estimateError}
-					<div class="text-sm text-red-600">
+					<div class="text-sm text-red-600 dark:text-red-400">
 						Error: {estimateError}
 					</div>
 				{:else}
-					<div class="text-sm text-gray-700">
+					<div class="text-sm text-gray-700 dark:text-gray-200">
 						<span class="font-medium">Estimated size:</span> ~{formatBytes(estimatedBytes)}
-						<span class="text-gray-500">({estimatedCount.toLocaleString()} events)</span>
+						<span class="text-gray-500 dark:text-gray-400">({estimatedCount.toLocaleString()} events)</span>
 					</div>
 				{/if}
 			</div>
@@ -461,10 +461,10 @@
 			{#if downloading}
 				<div class="space-y-2">
 					<div class="flex items-center justify-between text-sm">
-						<span class="text-gray-600">Downloading...</span>
-						<span class="text-gray-900 font-medium">{Math.round(downloadProgress)}%</span>
+						<span class="text-gray-600 dark:text-gray-400">Downloading...</span>
+						<span class="text-gray-900 dark:text-gray-100 font-medium">{Math.round(downloadProgress)}%</span>
 					</div>
-					<div class="h-2 w-full rounded-full bg-gray-200">
+					<div class="h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700">
 						<div
 							class="h-2 rounded-full bg-purple-600 transition-all duration-300"
 							style="width: {downloadProgress}%"
@@ -475,19 +475,19 @@
 
 			<!-- Download error -->
 			{#if downloadError}
-				<div class="p-3 bg-red-50 border border-red-200 rounded-lg">
+				<div class="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
 					<div class="flex items-start space-x-2">
-						<svg class="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<svg class="w-5 h-5 text-red-500 dark:text-red-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
 						</svg>
-						<p class="text-sm text-red-700">{downloadError}</p>
+						<p class="text-sm text-red-700 dark:text-red-300">{downloadError}</p>
 					</div>
 				</div>
 			{/if}
 		</div>
 
 		<!-- Footer -->
-		<div class="flex justify-end space-x-3 border-t px-6 py-4">
+		<div class="flex justify-end space-x-3 border-t border-gray-200 dark:border-gray-700 px-6 py-4">
 			<Button variant="secondary" onclick={onClose} disabled={downloading}>
 				Cancel
 			</Button>
