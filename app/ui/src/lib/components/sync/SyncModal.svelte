@@ -131,6 +131,17 @@
 		return pubkey.slice(0, 8) + '...' + pubkey.slice(-8);
 	}
 
+	// Format large numbers compactly (1.2K, 3.5M)
+	function formatCompactNumber(num) {
+		if (num >= 1000000) {
+			return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+		}
+		if (num >= 1000) {
+			return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+		}
+		return num.toString();
+	}
+
 	// Add custom pubkey
 	async function addCustomPubkey() {
 		if (!customPubkey.trim()) return;
@@ -593,22 +604,22 @@
 					<!-- Stats -->
 					{#if syncProgress}
 						<div class="rounded-lg bg-gray-50 p-4">
-							<div class="grid grid-cols-3 gap-4 text-center">
+							<div class="grid grid-cols-3 gap-2 sm:gap-4 text-center">
 								<div>
-									<div class="text-2xl font-bold text-gray-900">
-										{(syncProgress.events_fetched || 0).toLocaleString()}
+									<div class="text-xl sm:text-2xl font-bold text-gray-900">
+										{formatCompactNumber(syncProgress.events_fetched || 0)}
 									</div>
 									<div class="text-xs text-gray-500">Fetched</div>
 								</div>
 								<div>
-									<div class="text-2xl font-bold text-green-600">
-										{(syncProgress.events_stored || 0).toLocaleString()}
+									<div class="text-xl sm:text-2xl font-bold text-green-600">
+										{formatCompactNumber(syncProgress.events_stored || 0)}
 									</div>
-									<div class="text-xs text-gray-500">New events</div>
+									<div class="text-xs text-gray-500">New</div>
 								</div>
 								<div>
-									<div class="text-2xl font-bold text-gray-400">
-										{(syncProgress.events_skipped || 0).toLocaleString()}
+									<div class="text-xl sm:text-2xl font-bold text-gray-400">
+										{formatCompactNumber(syncProgress.events_skipped || 0)}
 									</div>
 									<div class="text-xs text-gray-500">Duplicates</div>
 								</div>
