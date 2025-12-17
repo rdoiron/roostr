@@ -40,24 +40,44 @@
 		@apply dark:outline-purple-400;
 	}
 
-	/* Custom scrollbar */
+	/* Custom scrollbar - using direct values since @apply may not work in pseudo-elements */
+	* {
+		scrollbar-width: thin;
+		scrollbar-color: #d1d5db transparent; /* gray-300 */
+	}
+
+	.dark * {
+		scrollbar-color: #4b5563 transparent; /* gray-600 */
+	}
+
 	::-webkit-scrollbar {
-		@apply w-2;
+		width: 8px;
+		height: 8px;
 	}
 
 	::-webkit-scrollbar-track {
-		@apply bg-gray-100;
-		@apply dark:bg-gray-800;
+		background: #f3f4f6; /* gray-100 */
 	}
 
 	::-webkit-scrollbar-thumb {
-		@apply rounded-full bg-gray-300;
-		@apply dark:bg-gray-600;
+		background: #d1d5db; /* gray-300 */
+		border-radius: 9999px;
 	}
 
 	::-webkit-scrollbar-thumb:hover {
-		@apply bg-gray-400;
-		@apply dark:bg-gray-500;
+		background: #9ca3af; /* gray-400 */
+	}
+
+	.dark ::-webkit-scrollbar-track {
+		background: #1f2937; /* gray-800 */
+	}
+
+	.dark ::-webkit-scrollbar-thumb {
+		background: #4b5563; /* gray-600 */
+	}
+
+	.dark ::-webkit-scrollbar-thumb:hover {
+		background: #6b7280; /* gray-500 */
 	}
 }
 
