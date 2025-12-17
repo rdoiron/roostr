@@ -16,7 +16,6 @@
 	let loading = $state(true);
 	let error = $state(null);
 	let initialized = false; // Not reactive - prevents $effect re-run
-	let connected = $state(false);
 
 	let dashboardData = $state({
 		stats: null,
@@ -52,7 +51,6 @@
 			const eventSource = new EventSource('/api/v1/stats/stream');
 
 			eventSource.addEventListener('connected', () => {
-				connected = true;
 				error = null;
 			});
 
@@ -83,7 +81,6 @@
 			});
 
 			eventSource.onerror = () => {
-				connected = false;
 				// EventSource will automatically reconnect
 				// Only show error if we haven't loaded data yet
 				if (loading) {
@@ -118,7 +115,7 @@
 			<Loading text="Loading dashboard..." />
 		</div>
 	{:else if error}
-		<Error title="Error loading dashboard" message={error} onRetry={loadDashboard} />
+		<Error title="Error loading dashboard" message={error} />
 	{:else}
 		<!-- Relay Status Card -->
 		<div class="rounded-lg bg-white dark:bg-gray-800 p-6 shadow dark:shadow-gray-900/50">

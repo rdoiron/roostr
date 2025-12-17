@@ -211,7 +211,7 @@
 
 				notify('success', `Imported ${added} entries${failed > 0 ? `, ${failed} failed` : ''}`);
 				loadData();
-			} catch (e) {
+			} catch {
 				notify('error', 'Failed to parse import file');
 			} finally {
 				importing = false;

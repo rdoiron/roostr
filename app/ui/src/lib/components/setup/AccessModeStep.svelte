@@ -1,13 +1,11 @@
 <script>
 	let { mode = 'private', onChange } = $props();
 
-	let selectedMode = $state(mode);
+	let selectedMode = $state('private');
 
-	// Sync local state with prop when it changes (for back navigation)
+	// Sync local state with prop (handles initial value and back navigation)
 	$effect(() => {
-		if (mode !== selectedMode) {
-			selectedMode = mode;
-		}
+		selectedMode = mode;
 	});
 
 	function selectMode(newMode) {

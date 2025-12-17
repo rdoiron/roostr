@@ -98,10 +98,11 @@
 
 			<!-- Local URL -->
 			<div class="mb-4">
-				<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Local Network</label>
+				<label for="local-url" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Local Network</label>
 				<div class="flex items-center space-x-2">
 					<input
 						type="text"
+						id="local-url"
 						value={urls.local}
 						readonly
 						class="input flex-1 font-mono text-sm bg-white dark:bg-gray-700"
@@ -137,10 +138,11 @@
 			<!-- Tor URL (if available) -->
 			{#if urls.tor}
 				<div>
-					<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tor (Remote Access)</label>
+					<label for="tor-url" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tor (Remote Access)</label>
 					<div class="flex items-center space-x-2">
 						<input
 							type="text"
+							id="tor-url"
 							value={urls.tor}
 							readonly
 							class="input flex-1 font-mono text-sm bg-white dark:bg-gray-700"

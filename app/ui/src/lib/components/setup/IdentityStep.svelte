@@ -3,14 +3,14 @@
 
 	let { identity = '', onChange } = $props();
 
-	let inputValue = $state(identity);
+	let inputValue = $state('');
 	let validating = $state(false);
 	let validationResult = $state(null);
 	let debounceTimer = null;
 
-	// Sync local state with prop when it changes
+	// Sync local state with prop (handles initial value and back navigation)
 	$effect(() => {
-		if (identity !== inputValue && identity !== '') {
+		if (identity && identity !== inputValue) {
 			inputValue = identity;
 		}
 	});

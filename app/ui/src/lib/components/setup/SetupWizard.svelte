@@ -2,7 +2,6 @@
 	import { setup, access } from '$lib/api/client.js';
 	import { notify } from '$lib/stores';
 	import Button from '$lib/components/Button.svelte';
-	import Loading from '$lib/components/Loading.svelte';
 	import WelcomeStep from './WelcomeStep.svelte';
 	import IdentityStep from './IdentityStep.svelte';
 	import RelayInfoStep from './RelayInfoStep.svelte';

@@ -1,11 +1,11 @@
 <script>
 	let { name = '', description = '', operatorNpub = '', onChange } = $props();
 
-	let nameValue = $state(name);
-	let descriptionValue = $state(description);
+	let nameValue = $state('');
+	let descriptionValue = $state('');
 	let initialized = $state(false);
 
-	// Sync local state with props when they change (for back navigation)
+	// Sync local state with props (handles initial value and back navigation)
 	$effect(() => {
 		if (!initialized && name) {
 			nameValue = name;
