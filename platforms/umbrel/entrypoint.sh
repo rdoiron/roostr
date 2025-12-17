@@ -57,6 +57,10 @@ max_ws_message_bytes = 131072
 max_ws_frame_bytes = 131072
 broadcast_buffer = 16384
 event_persist_buffer = 4096
+
+[logging]
+folder_path = "/data/logs"
+file_prefix = "relay"
 EOF
 fi
 
@@ -73,9 +77,16 @@ cleanup() {
 
 trap cleanup SIGTERM SIGINT
 
-# Start nostr-rs-relay in background
+# Create log directory for relay logs
+LOG_DIR="/data/logs"
+mkdir -p "$LOG_DIR"
+
+# Truncate log file on restart to prevent unbounded growth
+> "$LOG_DIR/relay.log"
+
+# Start nostr-rs-relay in background, capturing logs to file and stdout
 echo "Starting nostr-rs-relay on port ${RELAY_PORT}..."
-/usr/local/bin/nostr-rs-relay --config "$CONFIG_PATH" &
+/usr/local/bin/nostr-rs-relay --config "$CONFIG_PATH" 2>&1 | tee -a "$LOG_DIR/relay.log" &
 RELAY_PID=$!
 
 # Wait for relay to be ready

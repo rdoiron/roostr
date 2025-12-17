@@ -6,8 +6,10 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -15,11 +17,93 @@ import (
 	"time"
 )
 
+// LogEntry represents a parsed log line from the relay.
+type LogEntry struct {
+	Timestamp string `json:"timestamp"`
+	Level     string `json:"level"`
+	Message   string `json:"message"`
+}
+
+// LogBuffer is a thread-safe ring buffer for log entries with pub/sub support.
+type LogBuffer struct {
+	entries     []LogEntry
+	mu          sync.RWMutex
+	maxSize     int
+	subscribers map[chan LogEntry]struct{}
+	subMu       sync.RWMutex
+}
+
+// NewLogBuffer creates a new LogBuffer with the specified max size.
+func NewLogBuffer(maxSize int) *LogBuffer {
+	return &LogBuffer{
+		entries:     make([]LogEntry, 0, maxSize),
+		maxSize:     maxSize,
+		subscribers: make(map[chan LogEntry]struct{}),
+	}
+}
+
+// Add adds a log entry to the buffer and notifies subscribers.
+func (lb *LogBuffer) Add(entry LogEntry) {
+	lb.mu.Lock()
+	if len(lb.entries) >= lb.maxSize {
+		// Remove oldest entry
+		lb.entries = lb.entries[1:]
+	}
+	lb.entries = append(lb.entries, entry)
+	lb.mu.Unlock()
+
+	// Notify subscribers (non-blocking)
+	lb.subMu.RLock()
+	for ch := range lb.subscribers {
+		select {
+		case ch <- entry:
+		default:
+			// Skip if subscriber is not ready
+		}
+	}
+	lb.subMu.RUnlock()
+}
+
+// GetRecent returns the most recent log entries up to the limit.
+func (lb *LogBuffer) GetRecent(limit int) []LogEntry {
+	lb.mu.RLock()
+	defer lb.mu.RUnlock()
+
+	if limit <= 0 || limit > len(lb.entries) {
+		limit = len(lb.entries)
+	}
+
+	// Return entries in reverse order (newest first)
+	result := make([]LogEntry, limit)
+	for i := 0; i < limit; i++ {
+		result[i] = lb.entries[len(lb.entries)-1-i]
+	}
+	return result
+}
+
+// Subscribe returns a channel that receives new log entries.
+func (lb *LogBuffer) Subscribe() chan LogEntry {
+	ch := make(chan LogEntry, 100)
+	lb.subMu.Lock()
+	lb.subscribers[ch] = struct{}{}
+	lb.subMu.Unlock()
+	return ch
+}
+
+// Unsubscribe removes a subscriber channel.
+func (lb *LogBuffer) Unsubscribe(ch chan LogEntry) {
+	lb.subMu.Lock()
+	delete(lb.subscribers, ch)
+	lb.subMu.Unlock()
+	close(ch)
+}
+
 // Relay manages the nostr-rs-relay process.
 type Relay struct {
 	BinaryPath string
 	ConfigPath string
 	cmd        *exec.Cmd
+	logBuffer  *LogBuffer
 
 	mu         sync.RWMutex
 	restarting bool
@@ -30,6 +114,7 @@ func New(binaryPath, configPath string) *Relay {
 	return &Relay{
 		BinaryPath: binaryPath,
 		ConfigPath: configPath,
+		logBuffer:  NewLogBuffer(1000), // Keep last 1000 log entries
 	}
 }
 
@@ -65,14 +150,61 @@ func (r *Relay) Start() error {
 	}
 
 	r.cmd = exec.Command(r.BinaryPath, args...)
-	r.cmd.Stdout = os.Stdout
-	r.cmd.Stderr = os.Stderr
+
+	// Capture stdout and stderr for log buffer
+	stdoutPipe, err := r.cmd.StdoutPipe()
+	if err != nil {
+		return fmt.Errorf("failed to create stdout pipe: %w", err)
+	}
+	stderrPipe, err := r.cmd.StderrPipe()
+	if err != nil {
+		return fmt.Errorf("failed to create stderr pipe: %w", err)
+	}
 
 	if err := r.cmd.Start(); err != nil {
 		return fmt.Errorf("failed to start relay: %w", err)
 	}
 
+	// Start goroutines to capture output
+	go r.captureOutput(stdoutPipe)
+	go r.captureOutput(stderrPipe)
+
 	return nil
+}
+
+// captureOutput reads from a pipe and stores log entries in the buffer.
+func (r *Relay) captureOutput(pipe io.ReadCloser) {
+	scanner := bufio.NewScanner(pipe)
+	for scanner.Scan() {
+		line := scanner.Text()
+		// Also print to stdout for debugging
+		fmt.Println(line)
+		// Parse and store in buffer
+		entry := parseLogLine(line)
+		r.logBuffer.Add(entry)
+	}
+}
+
+// logLineRegex matches nostr-rs-relay tracing format:
+// 2024-01-15T10:30:00.123456Z  INFO nostr_rs_relay::server: message
+var logLineRegex = regexp.MustCompile(`^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z?)\s+(\w+)\s+(.+)$`)
+
+// parseLogLine parses a log line into a LogEntry.
+func parseLogLine(line string) LogEntry {
+	matches := logLineRegex.FindStringSubmatch(line)
+	if matches != nil && len(matches) == 4 {
+		return LogEntry{
+			Timestamp: matches[1],
+			Level:     matches[2],
+			Message:   matches[3],
+		}
+	}
+	// Fallback: treat entire line as message
+	return LogEntry{
+		Timestamp: time.Now().UTC().Format(time.RFC3339),
+		Level:     "INFO",
+		Message:   line,
+	}
 }
 
 // Stop stops the relay process.
@@ -353,4 +485,28 @@ func (r *Relay) GetProcessUptime() int64 {
 	}
 
 	return int64(processUptime)
+}
+
+// GetRecentLogs returns the most recent log entries.
+func (r *Relay) GetRecentLogs(limit int) []LogEntry {
+	if r.logBuffer == nil {
+		return nil
+	}
+	return r.logBuffer.GetRecent(limit)
+}
+
+// SubscribeLogs returns a channel that receives new log entries.
+func (r *Relay) SubscribeLogs() chan LogEntry {
+	if r.logBuffer == nil {
+		return nil
+	}
+	return r.logBuffer.Subscribe()
+}
+
+// UnsubscribeLogs removes a log subscriber.
+func (r *Relay) UnsubscribeLogs(ch chan LogEntry) {
+	if r.logBuffer == nil {
+		return
+	}
+	r.logBuffer.Unsubscribe(ch)
 }

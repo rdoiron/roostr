@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -11,6 +12,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/roostr/roostr/app/api/internal/relay"
 )
 
 // LogEntry represents a parsed relay log entry.
@@ -70,7 +73,7 @@ func (h *Handler) RestartRelay(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// GetRelayLogs returns recent log entries from the relay log file.
+// GetRelayLogs returns recent log entries from the relay log buffer or file.
 // GET /api/v1/relay/logs
 func (h *Handler) GetRelayLogs(w http.ResponseWriter, r *http.Request) {
 	// Parse limit parameter (default 100, max 1000)
@@ -84,7 +87,28 @@ func (h *Handler) GetRelayLogs(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Get log file path from config
+	// First try to get logs from relay's in-memory buffer
+	if h.relay != nil {
+		relayEntries := h.relay.GetRecentLogs(limit)
+		if len(relayEntries) > 0 {
+			// Convert relay.LogEntry to handler LogEntry
+			entries := make([]LogEntry, len(relayEntries))
+			for i, e := range relayEntries {
+				entries[i] = LogEntry{
+					Timestamp: e.Timestamp,
+					Level:     e.Level,
+					Message:   e.Message,
+				}
+			}
+			respondJSON(w, http.StatusOK, map[string]interface{}{
+				"logs":        entries,
+				"total_lines": len(entries),
+			})
+			return
+		}
+	}
+
+	// Fall back to file-based reading
 	logPath, err := h.getRelayLogPath()
 	if err != nil {
 		respondError(w, http.StatusServiceUnavailable, "Could not determine log file path", "LOG_PATH_ERROR")
@@ -255,10 +279,47 @@ func (h *Handler) StreamRelayLogs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get log file path
+	ctx := r.Context()
+
+	// First try to use relay's in-memory log stream
+	if h.relay != nil {
+		logChan := h.relay.SubscribeLogs()
+		if logChan != nil {
+			defer h.relay.UnsubscribeLogs(logChan)
+
+			// Send initial connection event
+			fmt.Fprintf(w, "event: connected\ndata: {\"status\": \"connected\"}\n\n")
+			flusher.Flush()
+
+			// Keepalive ticker
+			ticker := time.NewTicker(15 * time.Second)
+			defer ticker.Stop()
+
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case entry, ok := <-logChan:
+					if !ok {
+						return
+					}
+					// Send log entry as SSE event
+					data, _ := json.Marshal(convertRelayLogEntry(entry))
+					fmt.Fprintf(w, "event: log\ndata: %s\n\n", data)
+					flusher.Flush()
+				case <-ticker.C:
+					// Send keepalive comment
+					fmt.Fprintf(w, ": keepalive\n\n")
+					flusher.Flush()
+				}
+			}
+		}
+	}
+
+	// Fall back to file-based streaming
 	logPath, err := h.getRelayLogPath()
 	if err != nil || logPath == "" {
-		fmt.Fprintf(w, "event: error\ndata: {\"error\": \"Log file not configured\"}\n\n")
+		fmt.Fprintf(w, "event: error\ndata: {\"error\": \"Log streaming not available\"}\n\n")
 		flusher.Flush()
 		return
 	}
@@ -285,9 +346,6 @@ func (h *Handler) StreamRelayLogs(w http.ResponseWriter, r *http.Request) {
 	// Ticker for checking new log entries
 	ticker := time.NewTicker(500 * time.Millisecond)
 	defer ticker.Stop()
-
-	// Use request context to detect client disconnect
-	ctx := r.Context()
 
 	for {
 		select {
@@ -324,5 +382,14 @@ func (h *Handler) StreamRelayLogs(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, ": keepalive\n\n")
 			flusher.Flush()
 		}
+	}
+}
+
+// convertRelayLogEntry converts a relay.LogEntry to a handler LogEntry
+func convertRelayLogEntry(e relay.LogEntry) LogEntry {
+	return LogEntry{
+		Timestamp: e.Timestamp,
+		Level:     e.Level,
+		Message:   e.Message,
 	}
 }
