@@ -205,8 +205,7 @@ export const pricing = {
 export const lightning = {
 	getStatus: () => get('/lightning/status'),
 	updateConfig: (config) => put('/lightning/config', config),
-	test: (config) => post('/lightning/test', config),
-	detect: () => post('/lightning/detect', {})
+	test: (config) => post('/lightning/test', config)
 };
 
 export const paidUsers = {

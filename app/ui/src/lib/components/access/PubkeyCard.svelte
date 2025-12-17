@@ -8,7 +8,10 @@
 
 	function formatDate(timestamp) {
 		if (!timestamp) return 'Unknown';
-		const date = new Date(timestamp * 1000);
+		// Handle both ISO string (from Go's time.Time) and Unix timestamp (number)
+		const date = typeof timestamp === 'string'
+			? new Date(timestamp)
+			: new Date(timestamp * 1000);
 		return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 	}
 

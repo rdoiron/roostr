@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"strings"
 	"testing"
 	"time"
@@ -335,120 +334,6 @@ func TestLN001_MockLNDServer(t *testing.T) {
 	})
 }
 
-// TestLN002_DetectFromEnv tests environment variable detection (LN-002)
-func TestLN002_DetectFromEnv(t *testing.T) {
-	// Save original env vars
-	origHost := os.Getenv("LND_REST_HOST")
-	origMacaroonHex := os.Getenv("LND_MACAROON_HEX")
-	origMacaroonPath := os.Getenv("LND_MACAROON_PATH")
-	origCertPath := os.Getenv("LND_CERT_PATH")
-
-	// Cleanup
-	defer func() {
-		os.Setenv("LND_REST_HOST", origHost)
-		os.Setenv("LND_MACAROON_HEX", origMacaroonHex)
-		os.Setenv("LND_MACAROON_PATH", origMacaroonPath)
-		os.Setenv("LND_CERT_PATH", origCertPath)
-	}()
-
-	t.Run("DetectFromEnv_with_hex_macaroon", func(t *testing.T) {
-		os.Setenv("LND_REST_HOST", "localhost:8080")
-		os.Setenv("LND_MACAROON_HEX", "0201036c6e640")
-		os.Setenv("LND_MACAROON_PATH", "")
-		os.Setenv("LND_CERT_PATH", "/path/to/cert.pem")
-
-		cfg := detectFromEnv()
-		if cfg == nil {
-			t.Fatal("expected config to be detected")
-		}
-		if cfg.Host != "localhost:8080" {
-			t.Errorf("expected host localhost:8080, got %s", cfg.Host)
-		}
-		if cfg.MacaroonHex != "0201036c6e640" {
-			t.Errorf("expected macaroon 0201036c6e640, got %s", cfg.MacaroonHex)
-		}
-		if cfg.TLSCertPath != "/path/to/cert.pem" {
-			t.Errorf("expected cert path /path/to/cert.pem, got %s", cfg.TLSCertPath)
-		}
-	})
-
-	t.Run("DetectFromEnv_returns_nil_without_host", func(t *testing.T) {
-		os.Setenv("LND_REST_HOST", "")
-		os.Setenv("LND_MACAROON_HEX", "0201036c6e640")
-
-		cfg := detectFromEnv()
-		if cfg != nil {
-			t.Error("expected nil config without host")
-		}
-	})
-
-	t.Run("DetectFromEnv_returns_nil_without_macaroon", func(t *testing.T) {
-		os.Setenv("LND_REST_HOST", "localhost:8080")
-		os.Setenv("LND_MACAROON_HEX", "")
-		os.Setenv("LND_MACAROON_PATH", "")
-
-		cfg := detectFromEnv()
-		if cfg != nil {
-			t.Error("expected nil config without macaroon")
-		}
-	})
-
-	t.Run("DetectLNDWithSource_env", func(t *testing.T) {
-		os.Setenv("LND_REST_HOST", "test.local:8080")
-		os.Setenv("LND_MACAROON_HEX", "abc123")
-
-		result := DetectLNDWithSource()
-		if !result.Detected {
-			t.Error("expected detection to succeed")
-		}
-		if result.Source != "env" {
-			t.Errorf("expected source 'env', got %s", result.Source)
-		}
-		if result.Config == nil {
-			t.Fatal("expected config to be set")
-		}
-		if result.Config.Host != "test.local:8080" {
-			t.Errorf("expected host test.local:8080, got %s", result.Config.Host)
-		}
-	})
-
-	t.Run("DetectLNDWithSource_not_detected", func(t *testing.T) {
-		os.Setenv("LND_REST_HOST", "")
-		os.Setenv("LND_MACAROON_HEX", "")
-		os.Setenv("LND_MACAROON_PATH", "")
-
-		result := DetectLNDWithSource()
-		if result.Detected {
-			t.Error("expected detection to fail")
-		}
-		if result.Error == "" {
-			t.Error("expected error message")
-		}
-	})
-}
-
-// TestLN002_ExpandPath tests path expansion (LN-002)
-func TestLN002_ExpandPath(t *testing.T) {
-	t.Run("ExpandPath_with_tilde", func(t *testing.T) {
-		home, err := os.UserHomeDir()
-		if err != nil {
-			t.Skip("could not get home dir")
-		}
-
-		result := expandPath("~/test/path")
-		expected := home + "/test/path"
-		if result != expected {
-			t.Errorf("expected %s, got %s", expected, result)
-		}
-	})
-
-	t.Run("ExpandPath_without_tilde", func(t *testing.T) {
-		result := expandPath("/absolute/path")
-		if result != "/absolute/path" {
-			t.Errorf("expected /absolute/path, got %s", result)
-		}
-	})
-}
 
 // TestLN003_CreateAccessInvoice tests access invoice creation logic (LN-003)
 func TestLN003_CreateAccessInvoice(t *testing.T) {
@@ -554,7 +439,6 @@ func TestLN001_Errors(t *testing.T) {
 		{ErrLNDConnectionFailed, "failed to connect to LND"},
 		{ErrLNDAuthFailed, "LND authentication failed"},
 		{ErrLNDNotSynced, "LND node is not synced to chain"},
-		{ErrLNDNotDetected, "LND node not detected"},
 	}
 
 	for _, tc := range tests {

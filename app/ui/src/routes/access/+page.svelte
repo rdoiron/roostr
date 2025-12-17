@@ -309,10 +309,12 @@
 						{/if}
 					</div>
 					<Button variant="primary" onclick={openAddWhitelist}>
-						<svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-						</svg>
-						Add
+						<span class="flex items-center whitespace-nowrap">
+							<svg class="w-4 h-4 sm:mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+							</svg>
+							<span class="hidden sm:inline">Add</span>
+						</span>
 					</Button>
 				</div>
 
@@ -389,10 +391,12 @@
 						<p class="text-sm text-gray-500 mt-1">These users are blocked from writing to your relay.</p>
 					</div>
 					<Button variant="primary" onclick={openAddBlacklist}>
-						<svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-						</svg>
-						Add
+						<span class="flex items-center whitespace-nowrap">
+							<svg class="w-4 h-4 sm:mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+							</svg>
+							<span class="hidden sm:inline">Add</span>
+						</span>
 					</Button>
 				</div>
 

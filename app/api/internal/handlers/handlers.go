@@ -122,7 +122,6 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/v1/lightning/status", h.GetLightningStatus)
 	mux.HandleFunc("PUT /api/v1/lightning/config", h.SaveLightningConfig)
 	mux.HandleFunc("POST /api/v1/lightning/test", h.TestLightningConnection)
-	mux.HandleFunc("POST /api/v1/lightning/detect", h.DetectLightning)
 
 	// Public signup endpoints (no auth required)
 	mux.HandleFunc("GET /public/relay-info", h.GetRelayInfo)

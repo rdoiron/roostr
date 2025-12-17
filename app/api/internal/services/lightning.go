@@ -23,7 +23,6 @@ var (
 	ErrLNDConnectionFailed = errors.New("failed to connect to LND")
 	ErrLNDAuthFailed       = errors.New("LND authentication failed")
 	ErrLNDNotSynced        = errors.New("LND node is not synced to chain")
-	ErrLNDNotDetected      = errors.New("LND node not detected")
 )
 
 // LNDConfig holds the configuration for connecting to an LND node.

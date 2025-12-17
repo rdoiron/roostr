@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/roostr/roostr/app/api/internal/services"
 )
@@ -106,8 +107,13 @@ func (h *Handler) SaveLightningConfig(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Normalize host - strip protocol prefix if present
+	host := strings.TrimPrefix(req.Host, "https://")
+	host = strings.TrimPrefix(host, "http://")
+	host = strings.TrimSuffix(host, "/")
+
 	cfg := &services.LNDConfig{
-		Host:        req.Host,
+		Host:        host,
 		MacaroonHex: req.MacaroonHex,
 		TLSCertPath: req.TLSCertPath,
 	}
@@ -150,8 +156,13 @@ func (h *Handler) TestLightningConnection(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	// Normalize host - strip protocol prefix if present
+	host := strings.TrimPrefix(req.Host, "https://")
+	host = strings.TrimPrefix(host, "http://")
+	host = strings.TrimSuffix(host, "/")
+
 	cfg := &services.LNDConfig{
-		Host:        req.Host,
+		Host:        host,
 		MacaroonHex: req.MacaroonHex,
 		TLSCertPath: req.TLSCertPath,
 	}
@@ -185,62 +196,3 @@ func (h *Handler) TestLightningConnection(w http.ResponseWriter, r *http.Request
 	})
 }
 
-// DetectLightning attempts to auto-detect LND credentials.
-// POST /api/v1/lightning/detect
-func (h *Handler) DetectLightning(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	// Run detection
-	result := services.DetectLNDWithSource()
-
-	if !result.Detected {
-		respondJSON(w, http.StatusOK, map[string]interface{}{
-			"detected": false,
-			"message":  result.Error,
-		})
-		return
-	}
-
-	// Test the detected configuration
-	info, err := h.services.Lightning.TestConnection(ctx, result.Config)
-	if err != nil {
-		respondJSON(w, http.StatusOK, map[string]interface{}{
-			"detected":    true,
-			"source":      result.Source,
-			"verified":    false,
-			"config":      sanitizeConfig(result.Config),
-			"test_error":  err.Error(),
-			"message":     "LND detected but connection test failed",
-		})
-		return
-	}
-
-	respondJSON(w, http.StatusOK, map[string]interface{}{
-		"detected":  true,
-		"source":    result.Source,
-		"verified":  true,
-		"config":    sanitizeConfig(result.Config),
-		"node_info": info,
-		"message":   "LND detected and verified",
-	})
-}
-
-// sanitizeConfig returns a config with the macaroon partially hidden for display.
-func sanitizeConfig(cfg *services.LNDConfig) map[string]interface{} {
-	if cfg == nil {
-		return nil
-	}
-
-	macaroonDisplay := ""
-	if len(cfg.MacaroonHex) > 16 {
-		macaroonDisplay = cfg.MacaroonHex[:8] + "..." + cfg.MacaroonHex[len(cfg.MacaroonHex)-8:]
-	} else if len(cfg.MacaroonHex) > 0 {
-		macaroonDisplay = "***"
-	}
-
-	return map[string]interface{}{
-		"host":         cfg.Host,
-		"macaroon":     macaroonDisplay,
-		"tls_cert_path": cfg.TLSCertPath,
-	}
-}

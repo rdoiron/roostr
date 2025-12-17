@@ -113,10 +113,10 @@
 
 				<!-- Content -->
 				<div class="flex-1 min-w-0">
-					<div class="flex items-center space-x-2">
+					<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
 						<p class="font-medium text-gray-900">{modeOption.name}</p>
 						{#if modeOption.recommended}
-							<span class="rounded bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Recommended</span>
+							<span class="flex-shrink-0 rounded bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Recommended</span>
 						{/if}
 						{#if selectedMode === modeOption.id && saving}
 							<div class="h-4 w-4 animate-spin rounded-full border-2 border-purple-600 border-t-transparent"></div>

@@ -6,59 +6,42 @@
 	let { status = null, onUpdate = () => {} } = $props();
 
 	let config = $state({
-		endpoint: '',
-		macaroon: '',
-		cert: ''
+		host: '',
+		macaroon_hex: '',
+		tls_cert_path: ''
 	});
 	let saving = $state(false);
 	let testing = $state(false);
-	let detecting = $state(false);
 	let testResult = $state(null);
 
 	// Initialize config from status
 	$effect(() => {
 		if (status?.config) {
 			config = {
-				endpoint: status.config.endpoint || '',
-				macaroon: status.config.macaroon || '',
-				cert: status.config.cert || ''
+				host: status.config.host || '',
+				macaroon_hex: status.config.macaroon_hex || '',
+				tls_cert_path: status.config.tls_cert_path || ''
 			};
 		}
 	});
-
-	async function handleDetect() {
-		detecting = true;
-		testResult = null;
-		try {
-			const result = await lightning.detect();
-			if (result.detected) {
-				config = {
-					endpoint: result.endpoint || '',
-					macaroon: result.macaroon || '',
-					cert: result.cert || ''
-				};
-				notify('success', 'LND detected! Click "Test Connection" to verify.');
-			} else {
-				notify('warning', 'Could not auto-detect LND. Please enter credentials manually.');
-			}
-		} catch (e) {
-			notify('error', e.message || 'Failed to detect LND');
-		} finally {
-			detecting = false;
-		}
-	}
 
 	async function handleTest() {
 		testing = true;
 		testResult = null;
 		try {
-			const result = await lightning.test(config);
+			const normalizedConfig = { ...config, host: normalizeHost(config.host) };
+			const result = await lightning.test(normalizedConfig);
 			testResult = {
-				success: true,
-				alias: result.alias,
-				balance: result.balance
+				success: result.success,
+				alias: result.node_info?.alias,
+				balance: result.node_info?.balance
 			};
-			notify('success', `Connected to ${result.alias || 'LND node'}`);
+			if (result.success) {
+				notify('success', `Connected to ${result.node_info?.alias || 'LND node'}`);
+			} else {
+				testResult.error = result.error || result.message || 'Connection failed';
+				notify('error', testResult.error);
+			}
 		} catch (e) {
 			testResult = {
 				success: false,
@@ -73,7 +56,8 @@
 	async function handleSave() {
 		saving = true;
 		try {
-			await lightning.updateConfig(config);
+			const normalizedConfig = { ...config, host: normalizeHost(config.host) };
+			await lightning.updateConfig(normalizedConfig);
 			notify('success', 'Lightning configuration saved');
 			onUpdate();
 		} catch (e) {
@@ -88,6 +72,13 @@
 			return (sats / 100000000).toFixed(2) + ' BTC';
 		}
 		return sats.toLocaleString() + ' sats';
+	}
+
+	// Normalize host - strip protocol prefix and trailing slash
+	function normalizeHost(host) {
+		return host
+			.replace(/^https?:\/\//i, '')
+			.replace(/\/$/, '');
 	}
 </script>
 
@@ -126,13 +117,13 @@
 
 	<div class="space-y-4">
 		<div>
-			<label for="endpoint" class="block text-sm font-medium text-gray-700 mb-1">
+			<label for="host" class="block text-sm font-medium text-gray-700 mb-1">
 				LND REST Endpoint
 			</label>
 			<input
 				type="text"
-				id="endpoint"
-				bind:value={config.endpoint}
+				id="host"
+				bind:value={config.host}
 				placeholder="umbrel.local:8080 or 127.0.0.1:8080"
 				class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
 			/>
@@ -140,13 +131,13 @@
 		</div>
 
 		<div>
-			<label for="macaroon" class="block text-sm font-medium text-gray-700 mb-1">
+			<label for="macaroon_hex" class="block text-sm font-medium text-gray-700 mb-1">
 				Admin Macaroon (hex)
 			</label>
 			<input
 				type="password"
-				id="macaroon"
-				bind:value={config.macaroon}
+				id="macaroon_hex"
+				bind:value={config.macaroon_hex}
 				placeholder="0201036c6e6402..."
 				class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent font-mono text-sm"
 			/>
@@ -154,13 +145,13 @@
 		</div>
 
 		<div>
-			<label for="cert" class="block text-sm font-medium text-gray-700 mb-1">
+			<label for="tls_cert_path" class="block text-sm font-medium text-gray-700 mb-1">
 				TLS Certificate Path (optional)
 			</label>
 			<input
 				type="text"
-				id="cert"
-				bind:value={config.cert}
+				id="tls_cert_path"
+				bind:value={config.tls_cert_path}
 				placeholder="/path/to/tls.cert"
 				class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
 			/>
@@ -195,18 +186,12 @@
 		</div>
 	{/if}
 
-	<div class="flex items-center justify-between mt-6 pt-4 border-t">
-		<Button variant="secondary" onclick={handleDetect} loading={detecting}>
-			<svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-			</svg>
-			Auto-detect
-		</Button>
-		<div class="flex items-center space-x-3">
-			<Button variant="secondary" onclick={handleTest} loading={testing} disabled={!config.endpoint || !config.macaroon}>
+	<div class="flex flex-col gap-3 mt-6 pt-4 border-t sm:flex-row sm:items-center sm:justify-end">
+		<div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+			<Button variant="secondary" onclick={handleTest} loading={testing} disabled={!config.host || !config.macaroon_hex}>
 				Test Connection
 			</Button>
-			<Button variant="primary" onclick={handleSave} loading={saving} disabled={!config.endpoint || !config.macaroon}>
+			<Button variant="primary" onclick={handleSave} loading={saving} disabled={!config.host || !config.macaroon_hex}>
 				Save Configuration
 			</Button>
 		</div>
