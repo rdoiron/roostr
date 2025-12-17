@@ -1,8 +1,17 @@
 <script>
 	import { onMount } from 'svelte';
 	import { Chart, BarController, BarElement, LinearScale, CategoryScale, Tooltip } from 'chart.js';
+	import { themeStore } from '$lib/stores/theme.svelte.js';
 
 	let { kinds = [], total = 0 } = $props();
+
+	function getChartColors() {
+		const isDark = themeStore.resolved === 'dark';
+		return {
+			grid: isDark ? '#374151' : '#e5e7eb',
+			ticks: isDark ? '#9ca3af' : '#6b7280'
+		};
+	}
 
 	let canvas = $state();
 	let chart;
@@ -29,6 +38,8 @@
 
 		const labels = kinds.map((k) => k.label.charAt(0).toUpperCase() + k.label.slice(1));
 		const values = kinds.map((k) => k.count);
+
+		const chartColors = getChartColors();
 
 		chart = new Chart(canvas, {
 			type: 'bar',
@@ -69,11 +80,11 @@
 					x: {
 						beginAtZero: true,
 						grid: {
-							color: '#e5e7eb',
+							color: chartColors.grid,
 							drawBorder: false
 						},
 						ticks: {
-							color: '#6b7280',
+							color: chartColors.ticks,
 							callback: (value) => value.toLocaleString()
 						}
 					},
@@ -82,7 +93,7 @@
 							display: false
 						},
 						ticks: {
-							color: '#374151'
+							color: chartColors.ticks
 						}
 					}
 				}
@@ -102,6 +113,8 @@
 	});
 
 	$effect(() => {
+		// Subscribe to theme changes (accessing resolved triggers re-run on change)
+		themeStore.resolved;
 		if (canvas && kinds?.length > 0) {
 			createChart();
 		}

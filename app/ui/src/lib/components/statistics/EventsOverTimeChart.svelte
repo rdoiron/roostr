@@ -1,8 +1,17 @@
 <script>
 	import { onMount } from 'svelte';
 	import { Chart, LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Filler } from 'chart.js';
+	import { themeStore } from '$lib/stores/theme.svelte.js';
 
 	let { data = [], total = 0 } = $props();
+
+	function getChartColors() {
+		const isDark = themeStore.resolved === 'dark';
+		return {
+			grid: isDark ? '#374151' : '#e5e7eb',
+			ticks: isDark ? '#9ca3af' : '#6b7280'
+		};
+	}
 
 	let canvas = $state();
 	let chart;
@@ -35,6 +44,8 @@
 
 		const labels = data.map((d) => formatDate(d.date));
 		const values = data.map((d) => d.count);
+
+		const colors = getChartColors();
 
 		chart = new Chart(canvas, {
 			type: 'line',
@@ -76,21 +87,21 @@
 				scales: {
 					x: {
 						grid: {
-							color: '#e5e7eb',
+							color: colors.grid,
 							drawBorder: false
 						},
 						ticks: {
-							color: '#6b7280'
+							color: colors.ticks
 						}
 					},
 					y: {
 						beginAtZero: true,
 						grid: {
-							color: '#e5e7eb',
+							color: colors.grid,
 							drawBorder: false
 						},
 						ticks: {
-							color: '#6b7280',
+							color: colors.ticks,
 							callback: (value) => value.toLocaleString()
 						}
 					}
@@ -111,6 +122,8 @@
 	});
 
 	$effect(() => {
+		// Subscribe to theme changes (accessing resolved triggers re-run on change)
+		themeStore.resolved;
 		if (canvas && data?.length > 0) {
 			createChart();
 		}
