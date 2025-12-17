@@ -26,7 +26,7 @@
 	let lastSyncText = $derived(formatRelativeTime(syncStatus.lastSyncTime));
 </script>
 
-<header class="flex h-16 items-center justify-between border-b border-gray-200 bg-white px-4 lg:px-6">
+<header class="relative flex h-16 items-center justify-between border-b border-gray-200 bg-white px-4 lg:px-6">
 	<!-- Mobile menu button -->
 	<button
 		type="button"
@@ -39,10 +39,14 @@
 		</svg>
 	</button>
 
-	<!-- Page title area (can be customized per page) -->
-	<div class="flex-1 lg:ml-0">
-		<!-- Empty for now, pages can use slots or context -->
+	<!-- Mobile branding - absolutely positioned for true centering -->
+	<div class="absolute left-1/2 flex -translate-x-1/2 items-center lg:hidden">
+		<img src="/roostr-icon.svg" alt="Roostr" class="h-6 w-6 rounded" />
+		<span class="ml-2 text-lg font-bold text-gray-900">Roostr</span>
 	</div>
+
+	<!-- Spacer to push right content to the right -->
+	<div class="flex-1"></div>
 
 	<!-- Right side -->
 	<div class="flex items-center gap-4">
