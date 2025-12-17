@@ -253,7 +253,7 @@
 
 			<StorageProgressBar
 				usedBytes={storageStatus?.total_size ?? 0}
-				totalBytes={storageStatus?.total_space ?? 0}
+				totalBytes={storageStatus?.available_space ?? 0}
 				status={storageStatus?.status ?? 'healthy'}
 				size="lg"
 			/>
