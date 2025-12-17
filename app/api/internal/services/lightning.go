@@ -245,8 +245,14 @@ func (s *LightningService) GetBalance(ctx context.Context) (*ChannelBalance, err
 	}
 
 	var result struct {
-		LocalBalance  string `json:"local_balance"`
-		RemoteBalance string `json:"remote_balance"`
+		LocalBalance struct {
+			Sat  string `json:"sat"`
+			Msat string `json:"msat"`
+		} `json:"local_balance"`
+		RemoteBalance struct {
+			Sat  string `json:"sat"`
+			Msat string `json:"msat"`
+		} `json:"remote_balance"`
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
@@ -254,8 +260,8 @@ func (s *LightningService) GetBalance(ctx context.Context) (*ChannelBalance, err
 	}
 
 	var localBal, remoteBal int64
-	fmt.Sscanf(result.LocalBalance, "%d", &localBal)
-	fmt.Sscanf(result.RemoteBalance, "%d", &remoteBal)
+	fmt.Sscanf(result.LocalBalance.Sat, "%d", &localBal)
+	fmt.Sscanf(result.RemoteBalance.Sat, "%d", &remoteBal)
 
 	return &ChannelBalance{
 		LocalBalance:  localBal,

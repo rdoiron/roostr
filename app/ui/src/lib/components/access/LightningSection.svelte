@@ -106,7 +106,7 @@
 			<div class="flex items-center justify-between">
 				<div>
 					<p class="font-medium text-green-800 dark:text-green-300">{status.node_info.alias || 'LND Node'}</p>
-					<p class="text-sm text-green-600 dark:text-green-400">Balance: {formatSats(status.node_info.balance || 0)}</p>
+					<p class="text-sm text-green-600 dark:text-green-400">Balance: {formatSats(status.balance?.local_balance || 0)}</p>
 				</div>
 				<svg class="w-8 h-8 text-green-500 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
