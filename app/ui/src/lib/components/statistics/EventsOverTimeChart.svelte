@@ -41,7 +41,7 @@
 						pointRadius: 4,
 						pointHoverRadius: 6,
 						pointBackgroundColor: '#9333ea',
-						pointBorderColor: '#1f2937',
+						pointBorderColor: '#ffffff',
 						pointBorderWidth: 2
 					}
 				]
@@ -66,21 +66,21 @@
 				scales: {
 					x: {
 						grid: {
-							color: '#374151',
+							color: '#e5e7eb',
 							drawBorder: false
 						},
 						ticks: {
-							color: '#9ca3af'
+							color: '#6b7280'
 						}
 					},
 					y: {
 						beginAtZero: true,
 						grid: {
-							color: '#374151',
+							color: '#e5e7eb',
 							drawBorder: false
 						},
 						ticks: {
-							color: '#9ca3af',
+							color: '#6b7280',
 							callback: (value) => value.toLocaleString()
 						}
 					}
@@ -90,7 +90,7 @@
 	}
 
 	onMount(() => {
-		if (data.length > 0) {
+		if (data?.length > 0) {
 			createChart();
 		}
 		return () => {
@@ -101,19 +101,19 @@
 	});
 
 	$effect(() => {
-		if (canvas && data.length > 0) {
+		if (canvas && data?.length > 0) {
 			createChart();
 		}
 	});
 </script>
 
-<div class="rounded-lg bg-gray-800 p-6">
+<div class="rounded-lg bg-white p-6 shadow">
 	<div class="mb-4 flex items-center justify-between">
-		<h3 class="text-lg font-semibold text-white">Events Over Time</h3>
-		<span class="text-sm text-gray-400">{total.toLocaleString()} total</span>
+		<h3 class="text-lg font-semibold text-gray-900">Events Over Time</h3>
+		<span class="text-sm text-gray-500">{total.toLocaleString()} total</span>
 	</div>
 	<div class="h-64">
-		{#if data.length > 0}
+		{#if data?.length > 0}
 			<canvas bind:this={canvas}></canvas>
 		{:else}
 			<div class="flex h-full items-center justify-center text-gray-500">No data available</div>
