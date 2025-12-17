@@ -45,7 +45,7 @@
 >
 	<!-- Logo -->
 	<div class="flex h-16 items-center gap-3 border-b border-gray-800 px-6">
-		<span class="text-2xl">🐓</span>
+		<img src="/roostr-icon.svg" alt="Roostr" class="h-8 w-8 rounded" />
 		<span class="text-xl font-bold text-white">Roostr</span>
 	</div>
 

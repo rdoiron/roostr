@@ -37,7 +37,15 @@
 			]);
 
 			dashboardData.stats = statsRes;
-			dashboardData.urls = urlsRes;
+
+			// Build local URL dynamically using current hostname + relay port
+			const relayPort = urlsRes.relay_port || '7000';
+			const localUrl = `ws://${window.location.hostname}:${relayPort}`;
+			dashboardData.urls = {
+				...urlsRes,
+				local: localUrl
+			};
+
 			dashboardData.recentEvents = eventsRes.events || [];
 			dashboardData.storage = storageRes;
 
@@ -140,7 +148,7 @@
 		<!-- Storage Card with Progress Bar -->
 		<StorageCard
 			usedBytes={dashboardData.storage?.total_size ?? 0}
-			totalBytes={dashboardData.storage?.total_space ?? 0}
+			totalBytes={dashboardData.storage?.available_space ?? 0}
 			status={dashboardData.storage?.status ?? 'healthy'}
 		/>
 

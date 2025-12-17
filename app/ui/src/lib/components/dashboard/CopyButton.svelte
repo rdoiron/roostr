@@ -12,9 +12,36 @@
 		};
 	});
 
+	// Fallback copy method for non-secure contexts (HTTP)
+	function fallbackCopy(str) {
+		const textarea = document.createElement('textarea');
+		textarea.value = str;
+		textarea.style.position = 'fixed';
+		textarea.style.left = '-9999px';
+		textarea.style.top = '-9999px';
+		document.body.appendChild(textarea);
+		textarea.focus();
+		textarea.select();
+		try {
+			document.execCommand('copy');
+			return true;
+		} catch {
+			return false;
+		} finally {
+			document.body.removeChild(textarea);
+		}
+	}
+
 	async function copy() {
 		try {
-			await navigator.clipboard.writeText(text);
+			// Try modern Clipboard API first (requires HTTPS or localhost)
+			if (navigator.clipboard && window.isSecureContext) {
+				await navigator.clipboard.writeText(text);
+			} else {
+				// Fallback for HTTP contexts
+				const success = fallbackCopy(text);
+				if (!success) throw new Error('Fallback copy failed');
+			}
 			copied = true;
 			notify('success', 'Copied to clipboard');
 			if (resetTimer) clearTimeout(resetTimer);

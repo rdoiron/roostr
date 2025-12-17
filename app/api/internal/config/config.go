@@ -18,6 +18,7 @@ type Config struct {
 	// Relay settings
 	ConfigPath  string
 	RelayBinary string
+	RelayPort   string // WebSocket port for client connections (default 7000)
 
 	// Relay URLs (provided by platform)
 	RelayURL   string // Local WebSocket URL (e.g., ws://umbrel.local:4848)
@@ -38,6 +39,7 @@ func Load() (*Config, error) {
 		AppDBPath:   getEnv("APP_DB_PATH", "data/roostr.db"),
 		ConfigPath:  getEnv("CONFIG_PATH", "data/config.toml"),
 		RelayBinary: getEnv("RELAY_BINARY", "/usr/bin/nostr-rs-relay"),
+		RelayPort:   getEnv("RELAY_PORT", "7000"),
 		RelayURL:    getEnv("RELAY_URL", ""),   // e.g., ws://umbrel.local:4848
 		TorAddress:  getEnv("TOR_ADDRESS", ""), // e.g., abc123...onion:4848
 		StaticDir:   getEnv("STATIC_DIR", ""),  // Directory with built UI files

@@ -7,7 +7,9 @@
 	let { usedBytes = 0, totalBytes = 0, status = 'healthy', showLabel = true, size = 'md' } = $props();
 
 	// Calculate percentage (avoid division by zero)
-	let percentage = $derived(totalBytes > 0 ? Math.min((usedBytes / totalBytes) * 100, 100) : 0);
+	// Use minimum 0.5% width when there's any data so the bar is visible
+	let rawPercentage = $derived(totalBytes > 0 ? Math.min((usedBytes / totalBytes) * 100, 100) : 0);
+	let percentage = $derived(usedBytes > 0 && rawPercentage < 0.5 ? 0.5 : rawPercentage);
 
 	// Determine color based on status
 	let barColor = $derived(() => {
@@ -61,12 +63,12 @@
 
 	{#if showLabel}
 		<!-- Usage label -->
-		<div class="mt-2 flex items-center justify-between text-sm">
+		<div class="mt-2 flex flex-col gap-1 text-sm sm:flex-row sm:items-center sm:justify-between">
 			<span class="text-gray-600">
-				{formatBytes(usedBytes)} / {formatBytes(totalBytes)}
-				<span class="ml-1 text-gray-400">({percentage.toFixed(1)}%)</span>
+				{formatBytes(usedBytes)} used of {formatBytes(totalBytes)} available
+				<span class="ml-1 text-gray-400">({rawPercentage.toFixed(1)}%)</span>
 			</span>
-			<span class={statusInfo().color}>
+			<span class="text-right {statusInfo().color}">
 				{statusInfo().text}
 			</span>
 		</div>

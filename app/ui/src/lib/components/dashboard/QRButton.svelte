@@ -9,15 +9,33 @@
 		if (url && typeof window !== 'undefined') {
 			const QRCode = (await import('qrcode')).default;
 			qrDataUrl = await QRCode.toDataURL(url, {
-				width: 200,
+				width: 256,
 				margin: 2,
 				color: { dark: '#1f2937', light: '#ffffff' }
 			});
 		}
 	});
+
+	function closeModal() {
+		showQR = false;
+	}
+
+	function handleBackdropClick(e) {
+		if (e.target === e.currentTarget) {
+			closeModal();
+		}
+	}
+
+	function handleKeydown(e) {
+		if (e.key === 'Escape') {
+			closeModal();
+		}
+	}
 </script>
 
-<div class="relative">
+<svelte:window onkeydown={showQR ? handleKeydown : undefined} />
+
+<div>
 	<button
 		type="button"
 		onclick={() => (showQR = !showQR)}
@@ -35,17 +53,34 @@
 	</button>
 
 	{#if showQR && qrDataUrl}
+		<!-- Modal backdrop -->
 		<div
-			class="absolute right-0 z-10 mt-2 rounded-lg border border-gray-200 bg-white p-2 shadow-lg"
+			class="fixed inset-0 z-50 flex items-start justify-center bg-black/50 pt-20"
+			onclick={handleBackdropClick}
+			onkeydown={handleKeydown}
+			role="dialog"
+			aria-modal="true"
+			tabindex="-1"
 		>
-			<img src={qrDataUrl} alt="QR Code for {url}" class="rounded" />
-			<button
-				type="button"
-				onclick={() => (showQR = false)}
-				class="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-gray-800 text-xs text-white"
-			>
-				&times;
-			</button>
+			<!-- Modal content -->
+			<div class="relative rounded-xl bg-white p-4 shadow-2xl">
+				<img
+					src={qrDataUrl}
+					alt="QR Code for {url}"
+					class="h-64 w-64 rounded-lg"
+				/>
+				<p class="mt-2 max-w-64 truncate text-center text-xs text-gray-500">{url}</p>
+				<button
+					type="button"
+					onclick={closeModal}
+					class="absolute -right-3 -top-3 flex h-8 w-8 items-center justify-center rounded-full bg-gray-800 text-white shadow-lg hover:bg-gray-700"
+					aria-label="Close QR code"
+				>
+					<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+					</svg>
+				</button>
+			</div>
 		</div>
 	{/if}
 </div>

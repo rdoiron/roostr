@@ -131,6 +131,7 @@ func (h *Handler) GetRelayStatus(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) GetRelayURLs(w http.ResponseWriter, r *http.Request) {
 	response := map[string]interface{}{
 		"local":         h.cfg.RelayURL,
+		"relay_port":    h.cfg.RelayPort,
 		"tor":           "",
 		"tor_available": false,
 	}
