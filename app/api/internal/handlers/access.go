@@ -368,6 +368,8 @@ func (h *Handler) ResolveNIP05(w http.ResponseWriter, r *http.Request) {
 // ============================================================================
 
 // syncConfigFromDB reads the whitelist/blacklist from DB and writes to config.toml.
+// Only the active list (based on current mode) is written to config.toml.
+// The inactive list is written as empty to prevent nostr-rs-relay from enforcing both.
 // It also reloads the relay if it's running.
 func (h *Handler) syncConfigFromDB(_ interface{}) error {
 	if h.configMgr == nil {
@@ -377,44 +379,71 @@ func (h *Handler) syncConfigFromDB(_ interface{}) error {
 	// Use a background context for the sync operations
 	ctx := context.Background()
 
-	// Get whitelist pubkeys from DB
-	entries, err := h.db.GetWhitelistMeta(ctx)
+	// Get current access mode to determine which list to enforce
+	mode, err := h.db.GetAccessMode(ctx)
 	if err != nil {
-		return err
+		mode = "whitelist" // Default to whitelist if error
 	}
 
-	// Extract hex pubkeys for config.toml
-	whitelist := make([]string, len(entries))
-	for i, e := range entries {
-		whitelist[i] = e.Pubkey
+	var whitelist, blacklist []string
+
+	switch mode {
+	case "whitelist", "paid":
+		// In whitelist/paid mode: enforce whitelist only, clear blacklist
+		entries, err := h.db.GetWhitelistMeta(ctx)
+		if err != nil {
+			return err
+		}
+		whitelist = make([]string, len(entries))
+		for i, e := range entries {
+			whitelist[i] = e.Pubkey
+		}
+		blacklist = []string{} // Empty blacklist so it's not enforced
+
+	case "blacklist":
+		// In blacklist mode: enforce blacklist only, clear whitelist
+		entries, err := h.db.GetBlacklist(ctx)
+		if err != nil {
+			return err
+		}
+		blacklist = make([]string, len(entries))
+		for i, e := range entries {
+			blacklist[i] = e.Pubkey
+		}
+		whitelist = []string{} // Empty whitelist so it's not enforced
+
+	case "open":
+		// In open mode: no restrictions, clear both lists
+		whitelist = []string{}
+		blacklist = []string{}
+
+	default:
+		// Unknown mode, default to whitelist behavior
+		entries, err := h.db.GetWhitelistMeta(ctx)
+		if err != nil {
+			return err
+		}
+		whitelist = make([]string, len(entries))
+		for i, e := range entries {
+			whitelist[i] = e.Pubkey
+		}
+		blacklist = []string{}
 	}
 
-	// Update config.toml whitelist
+	// Update config.toml with the appropriate lists
 	if err := h.configMgr.UpdateWhitelist(whitelist); err != nil {
 		return err
 	}
-
-	// Get blacklist pubkeys from DB
-	blacklistEntries, err := h.db.GetBlacklist(ctx)
-	if err != nil {
-		return err
-	}
-
-	// Extract hex pubkeys for config.toml
-	blacklist := make([]string, len(blacklistEntries))
-	for i, e := range blacklistEntries {
-		blacklist[i] = e.Pubkey
-	}
-
-	// Update config.toml blacklist
 	if err := h.configMgr.UpdateBlacklist(blacklist); err != nil {
 		return err
 	}
 
-	// Reload relay to pick up config changes
+	// Restart relay to pick up config changes
+	// Note: We use Restart() instead of Reload() because nostr-rs-relay
+	// doesn't hot-reload whitelist/blacklist on SIGHUP - it requires a full restart
 	if h.relay != nil {
-		if err := h.relay.Reload(); err != nil {
-			log.Printf("Warning: failed to reload relay: %v", err)
+		if err := h.relay.Restart(); err != nil {
+			log.Printf("Warning: failed to restart relay: %v", err)
 		}
 	}
 
