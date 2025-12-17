@@ -77,12 +77,12 @@ func main() {
 	)
 
 	// Create server
+	// Note: WriteTimeout is 0 (no timeout) to support SSE long-lived connections
 	server := &http.Server{
-		Addr:         ":" + cfg.Port,
-		Handler:      handler,
-		ReadTimeout:  15 * time.Second,
-		WriteTimeout: 15 * time.Second,
-		IdleTimeout:  60 * time.Second,
+		Addr:        ":" + cfg.Port,
+		Handler:     handler,
+		ReadTimeout: 15 * time.Second,
+		IdleTimeout: 60 * time.Second,
 	}
 
 	// Start server in goroutine

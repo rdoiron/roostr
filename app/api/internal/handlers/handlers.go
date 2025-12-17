@@ -48,6 +48,7 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 
 	// Dashboard/Stats endpoints
 	mux.HandleFunc("GET /api/v1/stats/summary", h.GetStatsSummary)
+	mux.HandleFunc("GET /api/v1/stats/stream", h.StreamDashboardStats)
 	mux.HandleFunc("GET /api/v1/stats/events-over-time", h.GetEventsOverTime)
 	mux.HandleFunc("GET /api/v1/stats/events-by-kind", h.GetEventsByKind)
 	mux.HandleFunc("GET /api/v1/stats/top-authors", h.GetTopAuthors)

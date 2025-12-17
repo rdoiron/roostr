@@ -1,6 +1,6 @@
 <script>
 	import { browser } from '$app/environment';
-	import { stats, relay, events, storage } from '$lib/api/client.js';
+	import { relay } from '$lib/api/client.js';
 	import { formatUptime, formatBytes, formatCompactNumber } from '$lib/utils/format.js';
 
 	import Loading from '$lib/components/Loading.svelte';
@@ -15,7 +15,8 @@
 
 	let loading = $state(true);
 	let error = $state(null);
-	let initialized = $state(false);
+	let initialized = false; // Not reactive - prevents $effect re-run
+	let connected = $state(false);
 
 	let dashboardData = $state({
 		stats: null,
@@ -24,50 +25,75 @@
 		storage: null
 	});
 
-	const REFRESH_INTERVAL = 30000; // 30 seconds
-
-	async function loadDashboard() {
+	// Fetch relay URLs (only needed once, built client-side)
+	async function loadRelayUrls() {
 		try {
-			const [statsRes, urlsRes, eventsRes, storageRes] = await Promise.all([
-				stats.getSummary(),
-				relay.getURLs(),
-				events.getRecent(),
-				storage.getStatus()
-			]);
-
-			dashboardData.stats = statsRes;
-
-			// Build local URL dynamically using current hostname + relay port
+			const urlsRes = await relay.getURLs();
 			const relayPort = urlsRes.relay_port || '7000';
 			const localUrl = `ws://${window.location.hostname}:${relayPort}`;
 			dashboardData.urls = {
 				...urlsRes,
 				local: localUrl
 			};
-
-			dashboardData.recentEvents = eventsRes.events || [];
-			dashboardData.storage = storageRes;
-
-			error = null;
 		} catch (e) {
-			error = e.message;
-		} finally {
-			loading = false;
+			console.error('Failed to load relay URLs:', e);
 		}
 	}
 
-	// Initialize on client side
+	// Initialize SSE connection for real-time dashboard updates
 	$effect(() => {
 		if (browser && !initialized) {
 			initialized = true;
-			loadDashboard();
 
-			// Auto-refresh every 30 seconds
-			const refreshInterval = setInterval(loadDashboard, REFRESH_INTERVAL);
+			// Load relay URLs once (they don't change)
+			loadRelayUrls();
+
+			// Connect to SSE stream for real-time stats
+			const eventSource = new EventSource('/api/v1/stats/stream');
+
+			eventSource.addEventListener('connected', () => {
+				connected = true;
+				error = null;
+			});
+
+			eventSource.addEventListener('stats', (e) => {
+				try {
+					const data = JSON.parse(e.data);
+
+					// Update stats
+					if (data.stats) {
+						dashboardData.stats = data.stats;
+					}
+
+					// Update recent events
+					if (data.recentEvents) {
+						dashboardData.recentEvents = data.recentEvents;
+					}
+
+					// Update storage
+					if (data.storage) {
+						dashboardData.storage = data.storage;
+					}
+
+					loading = false;
+					error = null;
+				} catch (err) {
+					console.error('Failed to parse SSE data:', err);
+				}
+			});
+
+			eventSource.onerror = () => {
+				connected = false;
+				// EventSource will automatically reconnect
+				// Only show error if we haven't loaded data yet
+				if (loading) {
+					error = 'Connection lost. Reconnecting...';
+				}
+			};
 
 			// Cleanup on unmount
 			return () => {
-				clearInterval(refreshInterval);
+				eventSource.close();
 			};
 		}
 	});

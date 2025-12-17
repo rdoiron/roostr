@@ -1,6 +1,9 @@
 package handlers
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -335,4 +338,193 @@ func getKindLabel(kind int) string {
 	default:
 		return "other"
 	}
+}
+
+// StreamDashboardStats streams dashboard statistics in real-time via Server-Sent Events (SSE).
+// GET /api/v1/stats/stream
+func (h *Handler) StreamDashboardStats(w http.ResponseWriter, r *http.Request) {
+	// Set SSE headers
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+	w.Header().Set("X-Accel-Buffering", "no") // Disable nginx buffering
+
+	// Ensure we can flush
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		http.Error(w, "SSE not supported", http.StatusInternalServerError)
+		return
+	}
+
+	// Disable write timeout for this long-lived SSE connection
+	rc := http.NewResponseController(w)
+	rc.SetWriteDeadline(time.Time{}) // No deadline
+
+	ctx := r.Context()
+
+	// Send initial connection event
+	fmt.Fprintf(w, "event: connected\ndata: {\"status\": \"connected\"}\n\n")
+	flusher.Flush()
+
+	// Ticker for pushing updates (every 2 seconds)
+	updateTicker := time.NewTicker(2 * time.Second)
+	defer updateTicker.Stop()
+
+	// Keepalive ticker (every 15 seconds)
+	keepaliveTicker := time.NewTicker(15 * time.Second)
+	defer keepaliveTicker.Stop()
+
+	// Send initial data immediately
+	h.sendDashboardUpdate(w, flusher, ctx)
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-updateTicker.C:
+			h.sendDashboardUpdate(w, flusher, ctx)
+		case <-keepaliveTicker.C:
+			// Send keepalive comment
+			fmt.Fprintf(w, ": keepalive\n\n")
+			flusher.Flush()
+		}
+	}
+}
+
+// sendDashboardUpdate gathers and sends current dashboard stats.
+func (h *Handler) sendDashboardUpdate(w http.ResponseWriter, flusher http.Flusher, ctx context.Context) {
+	// Build stats data (same logic as GetStatsSummary)
+	relayConnected := h.db.IsRelayDBConnected()
+	relayStatus := "offline"
+	if relayConnected {
+		relayStatus = "online"
+	}
+
+	uptimeSeconds := int64(time.Since(h.startTime).Seconds())
+	whitelistCount, _ := h.db.GetWhitelistCount(ctx)
+	storageBytes, _ := h.db.GetRelayDatabaseSize()
+
+	var stats map[string]interface{}
+	var recentEvents interface{}
+	var storage map[string]interface{}
+
+	if !relayConnected {
+		stats = map[string]interface{}{
+			"total_events":      0,
+			"events_today":      0,
+			"storage_bytes":     storageBytes,
+			"whitelisted_count": whitelistCount,
+			"events_by_kind":    map[string]int64{},
+			"uptime_seconds":    uptimeSeconds,
+			"relay_status":      relayStatus,
+		}
+		recentEvents = []interface{}{}
+	} else {
+		// Get relay stats
+		relayStats, err := h.db.GetRelayStats(ctx)
+		if err != nil {
+			// On error, send empty stats instead of returning
+			stats = map[string]interface{}{
+				"total_events":      0,
+				"events_today":      0,
+				"storage_bytes":     storageBytes,
+				"whitelisted_count": whitelistCount,
+				"events_by_kind":    map[string]int64{},
+				"uptime_seconds":    uptimeSeconds,
+				"relay_status":      relayStatus,
+			}
+			recentEvents = []interface{}{}
+		} else {
+			eventsToday, _ := h.db.GetEventsToday(ctx)
+
+			// Build events_by_kind
+			eventsByKind := map[string]int64{}
+			var otherCount int64 = 0
+			for kind, count := range relayStats.EventsByKind {
+				switch kind {
+				case 1:
+					eventsByKind["posts"] = count
+				case 3:
+					eventsByKind["follows"] = count
+				case 4, 14:
+					eventsByKind["dms"] = eventsByKind["dms"] + count
+				case 6:
+					eventsByKind["reposts"] = count
+				case 7:
+					eventsByKind["reactions"] = count
+				default:
+					otherCount += count
+				}
+			}
+			if otherCount > 0 {
+				eventsByKind["other"] = otherCount
+			}
+
+			stats = map[string]interface{}{
+				"total_events":      relayStats.TotalEvents,
+				"events_today":      eventsToday,
+				"storage_bytes":     storageBytes,
+				"whitelisted_count": whitelistCount,
+				"events_by_kind":    eventsByKind,
+				"uptime_seconds":    uptimeSeconds,
+				"relay_status":      relayStatus,
+			}
+
+			// Get recent events
+			events, err := h.db.GetRecentEvents(ctx, 10)
+			if err != nil {
+				recentEvents = []interface{}{}
+			} else {
+				recentEvents = events
+			}
+		}
+	}
+
+	// Get storage status
+	relayDBSize, _ := h.db.GetRelayDatabaseSize()
+	appDBSize, _ := h.db.GetAppDatabaseSize()
+	totalSize := relayDBSize + appDBSize
+	availableSpace, _ := h.db.GetAvailableDiskSpace()
+	totalSpace, _ := h.db.GetTotalDiskSpace()
+
+	var usagePercent float64
+	if totalSpace > 0 {
+		usedSpace := totalSpace - availableSpace
+		usagePercent = float64(usedSpace) / float64(totalSpace) * 100
+	}
+
+	// Determine storage status
+	storageStatus := "healthy"
+	if usagePercent > 90 {
+		storageStatus = "critical"
+	} else if usagePercent > 80 {
+		storageStatus = "low"
+	} else if usagePercent > 70 {
+		storageStatus = "warning"
+	}
+
+	storage = map[string]interface{}{
+		"database_size":     relayDBSize,
+		"app_database_size": appDBSize,
+		"total_size":        totalSize,
+		"available_space":   availableSpace,
+		"total_space":       totalSpace,
+		"usage_percent":     usagePercent,
+		"status":            storageStatus,
+	}
+
+	// Build and send update
+	update := map[string]interface{}{
+		"stats":        stats,
+		"recentEvents": recentEvents,
+		"storage":      storage,
+	}
+
+	data, err := json.Marshal(update)
+	if err != nil {
+		return
+	}
+
+	fmt.Fprintf(w, "event: stats\ndata: %s\n\n", data)
+	flusher.Flush()
 }
