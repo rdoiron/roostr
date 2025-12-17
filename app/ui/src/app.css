@@ -79,6 +79,11 @@
 	.dark ::-webkit-scrollbar-thumb:hover {
 		background: #6b7280; /* gray-500 */
 	}
+
+	/* Tell browsers to use dark-themed native form controls in dark mode */
+	.dark {
+		color-scheme: dark;
+	}
 }
 
 /* Component utilities */
