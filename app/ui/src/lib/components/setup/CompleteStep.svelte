@@ -77,15 +77,15 @@
 <div class="text-center">
 	<!-- Success icon -->
 	<div class="mb-6">
-		<div class="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full">
-			<svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+		<div class="inline-flex items-center justify-center w-20 h-20 bg-green-100 dark:bg-green-900/50 rounded-full">
+			<svg class="w-10 h-10 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
 			</svg>
 		</div>
 	</div>
 
-	<h2 class="text-3xl font-bold text-gray-900 mb-2">You're All Set!</h2>
-	<p class="text-gray-600 mb-8">Your private relay is ready to use.</p>
+	<h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">You're All Set!</h2>
+	<p class="text-gray-600 dark:text-gray-400 mb-8">Your private relay is ready to use.</p>
 
 	{#if loading}
 		<div class="py-8">
@@ -93,23 +93,23 @@
 		</div>
 	{:else}
 		<!-- Relay URLs -->
-		<div class="bg-gray-50 rounded-lg p-6 mb-6 text-left">
-			<h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Your Relay URLs</h3>
+		<div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 mb-6 text-left">
+			<h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-4">Your Relay URLs</h3>
 
 			<!-- Local URL -->
 			<div class="mb-4">
-				<label class="block text-sm font-medium text-gray-700 mb-2">Local Network</label>
+				<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Local Network</label>
 				<div class="flex items-center space-x-2">
 					<input
 						type="text"
 						value={urls.local}
 						readonly
-						class="input flex-1 font-mono text-sm bg-white"
+						class="input flex-1 font-mono text-sm bg-white dark:bg-gray-700"
 					/>
 					<button
 						type="button"
 						onclick={() => copyToClipboard(urls.local)}
-						class="inline-flex items-center justify-center p-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+						class="inline-flex items-center justify-center p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
 						title="Copy"
 					>
 						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -119,7 +119,7 @@
 					<button
 						type="button"
 						onclick={() => (showQrLocal = !showQrLocal)}
-						class="inline-flex items-center justify-center p-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+						class="inline-flex items-center justify-center p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
 						title="QR Code"
 					>
 						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -129,7 +129,7 @@
 				</div>
 				{#if showQrLocal && qrLocal}
 					<div class="mt-3 flex justify-center">
-						<img src={qrLocal} alt="Local URL QR Code" class="rounded-lg border border-gray-200" />
+						<img src={qrLocal} alt="Local URL QR Code" class="rounded-lg border border-gray-200 dark:border-gray-700" />
 					</div>
 				{/if}
 			</div>
@@ -137,18 +137,18 @@
 			<!-- Tor URL (if available) -->
 			{#if urls.tor}
 				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-2">Tor (Remote Access)</label>
+					<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tor (Remote Access)</label>
 					<div class="flex items-center space-x-2">
 						<input
 							type="text"
 							value={urls.tor}
 							readonly
-							class="input flex-1 font-mono text-sm bg-white"
+							class="input flex-1 font-mono text-sm bg-white dark:bg-gray-700"
 						/>
 						<button
 							type="button"
 							onclick={() => copyToClipboard(urls.tor)}
-							class="inline-flex items-center justify-center p-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+							class="inline-flex items-center justify-center p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
 							title="Copy"
 						>
 							<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -158,7 +158,7 @@
 						<button
 							type="button"
 							onclick={() => (showQrTor = !showQrTor)}
-							class="inline-flex items-center justify-center p-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+							class="inline-flex items-center justify-center p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
 							title="QR Code"
 						>
 							<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -168,7 +168,7 @@
 					</div>
 					{#if showQrTor && qrTor}
 						<div class="mt-3 flex justify-center">
-							<img src={qrTor} alt="Tor URL QR Code" class="rounded-lg border border-gray-200" />
+							<img src={qrTor} alt="Tor URL QR Code" class="rounded-lg border border-gray-200 dark:border-gray-700" />
 						</div>
 					{/if}
 				</div>
@@ -176,19 +176,19 @@
 		</div>
 
 		<!-- Next steps -->
-		<div class="bg-blue-50 rounded-lg p-6 mb-8 text-left">
-			<h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Next Steps</h3>
-			<ol class="space-y-3 text-sm text-gray-700">
+		<div class="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-6 mb-8 text-left">
+			<h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-4">Next Steps</h3>
+			<ol class="space-y-3 text-sm text-gray-700 dark:text-gray-300">
 				<li class="flex items-start space-x-3">
-					<span class="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-medium text-xs">1</span>
+					<span class="flex-shrink-0 w-6 h-6 bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-300 rounded-full flex items-center justify-center font-medium text-xs">1</span>
 					<span>Add your relay URL to your Nostr client (Damus: Settings &rarr; Relays &rarr; Add Relay)</span>
 				</li>
 				<li class="flex items-start space-x-3">
-					<span class="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-medium text-xs">2</span>
+					<span class="flex-shrink-0 w-6 h-6 bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-300 rounded-full flex items-center justify-center font-medium text-xs">2</span>
 					<span>Sync your existing posts from public relays (Click the Sync button on the dashboard)</span>
 				</li>
 				<li class="flex items-start space-x-3">
-					<span class="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-medium text-xs">3</span>
+					<span class="flex-shrink-0 w-6 h-6 bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-300 rounded-full flex items-center justify-center font-medium text-xs">3</span>
 					<span>Share your Tor URL with whitelisted friends so they can connect remotely</span>
 				</li>
 			</ol>

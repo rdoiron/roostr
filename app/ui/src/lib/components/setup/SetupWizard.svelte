@@ -127,15 +127,15 @@
 	}
 </script>
 
-<div class="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
 	<div class="w-full max-w-2xl">
 		<!-- Progress indicator (hidden on welcome and complete) -->
 		{#if currentStep > 0 && currentStep < 5}
 			<div class="mb-8">
 				<div class="flex items-center justify-between mb-2">
-					<span class="text-sm text-gray-500">Step {currentStep} of {totalSteps}</span>
+					<span class="text-sm text-gray-500 dark:text-gray-400">Step {currentStep} of {totalSteps}</span>
 				</div>
-				<div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+				<div class="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
 					<div
 						class="h-full bg-purple-600 transition-all duration-300"
 						style="width: {(currentStep / totalSteps) * 100}%"
@@ -145,7 +145,7 @@
 		{/if}
 
 		<!-- Step content -->
-		<div class="bg-white rounded-xl shadow-lg p-8">
+		<div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
 			{#if currentStep === 0}
 				<WelcomeStep />
 			{:else if currentStep === 1}
@@ -178,7 +178,7 @@
 
 			<!-- Error display -->
 			{#if error}
-				<div class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+				<div class="mt-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-lg text-red-700 dark:text-red-300 text-sm">
 					{error}
 				</div>
 			{/if}

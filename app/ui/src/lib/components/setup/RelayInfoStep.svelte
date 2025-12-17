@@ -26,14 +26,14 @@
 </script>
 
 <div>
-	<h2 class="text-2xl font-bold text-gray-900 mb-2">Name Your Relay</h2>
-	<p class="text-gray-600 mb-6">
+	<h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Name Your Relay</h2>
+	<p class="text-gray-600 dark:text-gray-400 mb-6">
 		Give your relay a name and description. This is shown to clients that connect.
 	</p>
 
 	<!-- Relay Name -->
 	<div class="mb-4">
-		<label for="relay-name" class="block text-sm font-medium text-gray-700 mb-2">
+		<label for="relay-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
 			Relay Name <span class="text-red-500">*</span>
 		</label>
 		<input
@@ -47,8 +47,8 @@
 
 	<!-- Description -->
 	<div class="mb-4">
-		<label for="description" class="block text-sm font-medium text-gray-700 mb-2">
-			Description <span class="text-gray-400">(optional)</span>
+		<label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+			Description <span class="text-gray-400 dark:text-gray-500">(optional)</span>
 		</label>
 		<textarea
 			id="description"
@@ -61,17 +61,17 @@
 
 	<!-- Contact (auto-filled, read-only) -->
 	<div class="mb-4">
-		<label for="contact" class="block text-sm font-medium text-gray-700 mb-2">
-			Contact <span class="text-gray-400">(auto-filled)</span>
+		<label for="contact" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+			Contact <span class="text-gray-400 dark:text-gray-500">(auto-filled)</span>
 		</label>
 		<input
 			type="text"
 			id="contact"
 			value={operatorNpub}
 			readonly
-			class="input w-full bg-gray-50 text-gray-500 cursor-not-allowed font-mono text-sm"
+			class="input w-full bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-not-allowed font-mono text-sm"
 		/>
-		<p class="text-xs text-gray-500 mt-1">
+		<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
 			Your pubkey from the previous step will be used as the relay contact.
 		</p>
 	</div>
