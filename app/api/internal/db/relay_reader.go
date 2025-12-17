@@ -462,16 +462,26 @@ type AuthorCount struct {
 }
 
 // GetEventsOverTime returns event counts grouped by date within a time range.
-func (d *DB) GetEventsOverTime(ctx context.Context, since, until time.Time) ([]DateCount, error) {
+// If hourly is true, groups by hour and returns all 24 hours for the day.
+func (d *DB) GetEventsOverTime(ctx context.Context, since, until time.Time, hourly bool) ([]DateCount, error) {
 	if d.RelayDB == nil {
 		return nil, fmt.Errorf("relay database not connected")
 	}
 
-	query := `
-		SELECT DATE(datetime(created_at, 'unixepoch')) as date, COUNT(*) as count
-		FROM event
-		WHERE 1=1
-	`
+	var query string
+	if hourly {
+		query = `
+			SELECT strftime('%Y-%m-%d %H:00', datetime(created_at, 'unixepoch')) as date, COUNT(*) as count
+			FROM event
+			WHERE 1=1
+		`
+	} else {
+		query = `
+			SELECT DATE(datetime(created_at, 'unixepoch')) as date, COUNT(*) as count
+			FROM event
+			WHERE 1=1
+		`
+	}
 	args := []interface{}{}
 
 	if !since.IsZero() {
@@ -500,7 +510,37 @@ func (d *DB) GetEventsOverTime(ctx context.Context, since, until time.Time) ([]D
 		results = append(results, dc)
 	}
 
-	return results, rows.Err()
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	// For hourly data, fill in all 24 hours with zeros for missing hours
+	if hourly && !since.IsZero() {
+		results = fillAllHours(results, since)
+	}
+
+	return results, nil
+}
+
+// fillAllHours ensures all 24 hours are represented in the results, filling missing hours with zeros.
+func fillAllHours(data []DateCount, day time.Time) []DateCount {
+	// Create a map of existing data
+	existing := make(map[string]int64)
+	for _, d := range data {
+		existing[d.Date] = d.Count
+	}
+
+	// Generate all 24 hours for the day
+	dayStart := time.Date(day.Year(), day.Month(), day.Day(), 0, 0, 0, 0, time.UTC)
+	var filled []DateCount
+	for h := 0; h < 24; h++ {
+		hourTime := dayStart.Add(time.Duration(h) * time.Hour)
+		dateStr := hourTime.Format("2006-01-02 15:00")
+		count := existing[dateStr]
+		filled = append(filled, DateCount{Date: dateStr, Count: count})
+	}
+
+	return filled
 }
 
 // GetEventsByKindInRange returns event counts by kind within a time range.

@@ -9,6 +9,16 @@
 	let registered = false;
 
 	function formatDate(dateStr) {
+		// Check if this is hourly data (contains space and :00)
+		if (dateStr.includes(' ') && dateStr.includes(':')) {
+			// Parse hourly format: "2024-12-17 09:00"
+			const hour = parseInt(dateStr.split(' ')[1].split(':')[0], 10);
+			if (hour === 0) return '12 AM';
+			if (hour === 12) return '12 PM';
+			if (hour < 12) return `${hour} AM`;
+			return `${hour - 12} PM`;
+		}
+		// Daily format: "2024-12-17"
 		const date = new Date(dateStr);
 		return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 	}

@@ -170,7 +170,10 @@ func (h *Handler) GetEventsOverTime(w http.ResponseWriter, r *http.Request) {
 
 	since, until := parseTimeRange(timeRange)
 
-	data, err := h.db.GetEventsOverTime(ctx, since, until)
+	// Use hourly buckets for "today" view
+	hourly := timeRange == "today"
+
+	data, err := h.db.GetEventsOverTime(ctx, since, until, hourly)
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, "Failed to get events over time", "STATS_FAILED")
 		return
