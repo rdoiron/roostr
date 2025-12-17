@@ -1,7 +1,6 @@
 <script>
 	import { browser } from '$app/environment';
 	import { stats, relay, events, storage } from '$lib/api/client.js';
-	import { relayStatus } from '$lib/stores';
 	import { formatUptime, formatBytes, formatCompactNumber } from '$lib/utils/format.js';
 
 	import Loading from '$lib/components/Loading.svelte';
@@ -49,18 +48,11 @@
 			dashboardData.recentEvents = eventsRes.events || [];
 			dashboardData.storage = storageRes;
 
-			// Update global relay status
-			relayStatus.online = statsRes.relay_status === 'online';
-			relayStatus.uptime = statsRes.uptime_seconds;
-			relayStatus.loading = false;
-
 			error = null;
 		} catch (e) {
 			error = e.message;
-			relayStatus.online = false;
 		} finally {
 			loading = false;
-			relayStatus.loading = false;
 		}
 	}
 

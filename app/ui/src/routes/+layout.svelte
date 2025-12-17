@@ -6,8 +6,8 @@
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Loading from '$lib/components/Loading.svelte';
-	import { setup } from '$lib/api/client.js';
-	import { notifications } from '$lib/stores/app.svelte.js';
+	import { setup, relay } from '$lib/api/client.js';
+	import { notifications, relayStatus } from '$lib/stores/app.svelte.js';
 	import { initializeTheme } from '$lib/stores/theme.svelte.js';
 
 	let { children } = $props();
@@ -17,6 +17,7 @@
 	let setupCompleted = $state(false);
 	let lastPathname = $state('');
 	let themeInitialized = $state(false);
+	let statusInterval = null;
 
 	// Initialize theme on mount
 	$effect(() => {
@@ -61,6 +62,35 @@
 			}
 		}
 	}
+
+	async function checkRelayStatus() {
+		try {
+			const res = await relay.getStatus();
+			// API returns status: "running", "stopped", "restarting", or "unknown"
+			relayStatus.online = res.status === 'running';
+			relayStatus.uptime = res.uptime_seconds || 0;
+			relayStatus.loading = false;
+		} catch (e) {
+			console.error('Failed to check relay status:', e);
+			relayStatus.online = false;
+			relayStatus.loading = false;
+		}
+	}
+
+	// Start relay status checking when setup is complete
+	$effect(() => {
+		if (browser && setupCompleted && !statusInterval) {
+			checkRelayStatus();
+			statusInterval = setInterval(checkRelayStatus, 30000);
+		}
+
+		return () => {
+			if (statusInterval) {
+				clearInterval(statusInterval);
+				statusInterval = null;
+			}
+		};
+	});
 </script>
 
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900">

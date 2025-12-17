@@ -143,6 +143,25 @@ make package-umbrel   # Build Umbrel package
 make package-startos  # Build Start9 package
 ```
 
+## Docker
+
+**Image:** `rdoiron/roostr`
+**Current version:** `0.1.0`
+
+Always use the versioned tag that matches `platforms/umbrel/umbrel-app.yml`. Do NOT use or create a `:latest` tag.
+
+```bash
+# Build and push (from project root)
+docker build -f platforms/umbrel/Dockerfile -t rdoiron/roostr:0.1.0 .
+docker push rdoiron/roostr:0.1.0
+```
+
+When releasing a new version:
+1. Update version in `platforms/umbrel/umbrel-app.yml`
+2. Update version in `platforms/umbrel/docker-compose.yml`
+3. Update the "Current version" in this section
+4. Build and push with the new tag
+
 ## Environment Variables
 
 ```bash
