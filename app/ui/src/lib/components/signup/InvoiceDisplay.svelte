@@ -9,11 +9,13 @@
 	let qrCodeUrl = $state('');
 	let copied = $state(false);
 	let timeRemaining = $state(0);
-	let pollInterval = $state(null);
-	let countdownInterval = $state(null);
-	let checking = $state(false);
 	let webLNAvailable = $state(false);
 	let payingWithWebLN = $state(false);
+
+	// Non-reactive internal state (don't use $state for these - they're used in effects)
+	let pollInterval = null;
+	let countdownInterval = null;
+	let checking = false;
 
 	// Generate QR code
 	$effect(() => {
@@ -43,17 +45,26 @@
 		if (browser && invoice?.expires_at) {
 			const updateCountdown = () => {
 				const now = new Date();
-				const expiry = new Date(invoice.expires_at);
+				const expiry = new Date(invoice.expires_at * 1000); // Convert Unix timestamp to ms
 				const diff = Math.max(0, Math.floor((expiry - now) / 1000));
 				timeRemaining = diff;
 
 				if (diff <= 0 && countdownInterval) {
 					clearInterval(countdownInterval);
+					countdownInterval = null;
 				}
 			};
 
 			updateCountdown();
 			countdownInterval = setInterval(updateCountdown, 1000);
+
+			// Cleanup when effect re-runs or component unmounts
+			return () => {
+				if (countdownInterval) {
+					clearInterval(countdownInterval);
+					countdownInterval = null;
+				}
+			};
 		}
 	});
 
@@ -81,6 +92,14 @@
 			checkPayment();
 			// Then poll every 3 seconds
 			pollInterval = setInterval(checkPayment, 3000);
+
+			// Cleanup when effect re-runs or component unmounts
+			return () => {
+				if (pollInterval) {
+					clearInterval(pollInterval);
+					pollInterval = null;
+				}
+			};
 		}
 	});
 
