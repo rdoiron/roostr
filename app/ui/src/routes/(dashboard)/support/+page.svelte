@@ -1,8 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import { support } from '$lib/api/client.js';
-	import DonationCard from '$lib/components/support/DonationCard.svelte';
-	import WebLNTipButton from '$lib/components/support/WebLNTipButton.svelte';
+	import OneTimeDonation from '$lib/components/support/OneTimeDonation.svelte';
 
 	let config = $state(null);
 	let loading = $state(true);
@@ -48,22 +47,11 @@
 			<p>{error}</p>
 		</div>
 	{:else if config}
-		<!-- Donation Cards -->
-		<div class="grid gap-6 md:grid-cols-2">
-			<!-- Lightning -->
-			<DonationCard
-				title="Lightning"
-				address={config.lightning_address}
-				icon="/lightning-logo.svg"
-			>
-				<WebLNTipButton lightningAddress={config.lightning_address} />
-			</DonationCard>
-
-			<!-- Bitcoin -->
-			<DonationCard
-				title="Bitcoin"
-				address={config.bitcoin_address}
-				icon="/bitcoin-logo.svg"
+		<!-- Donation -->
+		<div class="rounded-lg bg-white dark:bg-gray-800 p-6 shadow dark:shadow-gray-900/50">
+			<OneTimeDonation
+				lightningAddress={config.lightning_address}
+				bitcoinAddress={config.bitcoin_address}
 			/>
 		</div>
 
