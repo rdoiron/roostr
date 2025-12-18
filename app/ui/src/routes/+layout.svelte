@@ -1,23 +1,12 @@
 <script>
 	import '../app.css';
 	import { browser } from '$app/environment';
-	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
-	import Sidebar from '$lib/components/Sidebar.svelte';
-	import Header from '$lib/components/Header.svelte';
-	import Loading from '$lib/components/Loading.svelte';
-	import { setup, relay } from '$lib/api/client.js';
-	import { notifications, relayStatus } from '$lib/stores/app.svelte.js';
+	import { notifications } from '$lib/stores/app.svelte.js';
 	import { initializeTheme } from '$lib/stores/theme.svelte.js';
 
 	let { children } = $props();
 
-	let sidebarOpen = $state(false);
-	let loading = $state(true);
-	let setupCompleted = $state(false);
-	let lastPathname = $state('');
 	let themeInitialized = $state(false);
-	let statusInterval = null;
 
 	// Initialize theme on mount
 	$effect(() => {
@@ -26,102 +15,10 @@
 			themeInitialized = true;
 		}
 	});
-
-	// Check setup status on initial load and when navigating away from /setup
-	$effect(() => {
-		if (browser) {
-			const currentPath = $page.url.pathname;
-			const wasOnSetup = lastPathname.startsWith('/setup');
-			const nowOnSetup = currentPath.startsWith('/setup');
-
-			// Re-check if: first load OR navigating away from setup
-			if (!lastPathname || (wasOnSetup && !nowOnSetup)) {
-				checkSetup();
-			}
-			lastPathname = currentPath;
-		}
-	});
-
-	async function checkSetup() {
-		loading = true;
-		try {
-			const status = await setup.getStatus();
-			setupCompleted = status.completed;
-			loading = false;
-
-			// Redirect to setup if not completed and not already on setup page
-			if (!status.completed && !$page.url.pathname.startsWith('/setup')) {
-				goto('/setup');
-			}
-		} catch (e) {
-			console.error('Failed to check setup status:', e);
-			loading = false;
-			// On error, assume setup is needed
-			if (!$page.url.pathname.startsWith('/setup')) {
-				goto('/setup');
-			}
-		}
-	}
-
-	async function checkRelayStatus() {
-		try {
-			const res = await relay.getStatus();
-			// API returns status: "running", "stopped", "restarting", or "unknown"
-			relayStatus.online = res.status === 'running';
-			relayStatus.uptime = res.uptime_seconds || 0;
-			relayStatus.loading = false;
-		} catch (e) {
-			console.error('Failed to check relay status:', e);
-			relayStatus.online = false;
-			relayStatus.loading = false;
-		}
-	}
-
-	// Start relay status checking when setup is complete
-	$effect(() => {
-		if (browser && setupCompleted && !statusInterval) {
-			checkRelayStatus();
-			statusInterval = setInterval(checkRelayStatus, 30000);
-		}
-
-		return () => {
-			if (statusInterval) {
-				clearInterval(statusInterval);
-				statusInterval = null;
-			}
-		};
-	});
 </script>
 
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
-	{#if loading}
-		<!-- Loading state while checking setup status -->
-		<div class="min-h-screen flex items-center justify-center">
-			<Loading text="Loading..." />
-		</div>
-	{:else if !setupCompleted}
-		<!-- Setup wizard - no navigation -->
-		<main class="min-h-screen">
-			{@render children()}
-		</main>
-	{:else}
-		<!-- Main app layout with sidebar -->
-		<div class="flex h-screen overflow-hidden">
-			<!-- Sidebar -->
-			<Sidebar bind:open={sidebarOpen} />
-
-			<!-- Main content area -->
-			<div class="flex flex-1 flex-col overflow-hidden">
-				<!-- Header -->
-				<Header onMenuClick={() => (sidebarOpen = !sidebarOpen)} />
-
-				<!-- Page content -->
-				<main class="flex-1 overflow-y-auto p-6">
-					{@render children()}
-				</main>
-			</div>
-		</div>
-	{/if}
+	{@render children()}
 
 	<!-- Notification toasts -->
 	{#if notifications.length > 0}
