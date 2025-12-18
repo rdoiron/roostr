@@ -54,7 +54,7 @@
 			<DonationCard
 				title="Lightning"
 				address={config.lightning_address}
-				icon="⚡"
+				icon="/lightning-logo.svg"
 			>
 				<WebLNTipButton lightningAddress={config.lightning_address} />
 			</DonationCard>
@@ -63,7 +63,7 @@
 			<DonationCard
 				title="Bitcoin"
 				address={config.bitcoin_address}
-				icon="₿"
+				icon="/bitcoin-logo.svg"
 			/>
 		</div>
 
@@ -129,7 +129,7 @@
 			<h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">About</h2>
 			<div class="mt-4 space-y-3">
 				<div class="flex items-center gap-3">
-					<span class="text-2xl">🐓</span>
+					<img src="/roostr-icon.svg" alt="Roostr logo" class="h-10 w-10 rounded-lg" />
 					<div>
 						<p class="font-bold text-gray-900 dark:text-gray-100">Roostr v{config.version}</p>
 						<p class="text-gray-600 dark:text-gray-400">"Your private roost on Nostr"</p>

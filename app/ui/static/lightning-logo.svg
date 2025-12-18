@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Rounded purple background (Lightning Network brand color) -->
+  <circle cx="32" cy="32" r="32" fill="#792DE4"/>
+
+  <!-- Lightning bolt -->
+  <path fill="#FFFFFF" d="
+    M35.5 8L16 36h12l-4 20 20-28H31l4.5-20z
+  "/>
+</svg>

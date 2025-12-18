@@ -43,7 +43,11 @@
 
 <div class="rounded-lg bg-white dark:bg-gray-800 p-6 shadow dark:shadow-gray-900/50">
 	<div class="flex items-center gap-2">
-		<span class="text-2xl">{icon}</span>
+		{#if icon.startsWith('/')}
+			<img src={icon} alt="{title} logo" class="h-8 w-8" />
+		{:else}
+			<span class="text-2xl">{icon}</span>
+		{/if}
 		<h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">{title}</h2>
 	</div>
 
