@@ -2,6 +2,7 @@
 	import { config, relay } from '$lib/api/client.js';
 	import { notify } from '$lib/stores/app.svelte.js';
 	import { themeStore, setTheme } from '$lib/stores/theme.svelte.js';
+	import { timezoneStore, setTimezone, TIMEZONE_OPTIONS } from '$lib/stores/timezone.svelte.js';
 	import Loading from '$lib/components/Loading.svelte';
 	import Error from '$lib/components/Error.svelte';
 
@@ -499,6 +500,37 @@
 			</fieldset>
 			<p class="mt-3 text-xs text-gray-500 dark:text-gray-400">
 				Auto mode follows your system's appearance setting.
+			</p>
+		</div>
+	</div>
+
+	<!-- Timezone Section -->
+	<div class="rounded-lg bg-white dark:bg-gray-800 p-6 shadow dark:shadow-gray-900/50">
+		<h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Timezone</h2>
+		<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+			Set your preferred timezone for statistics and charts
+		</p>
+
+		<div class="mt-4">
+			<label for="timezone" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+				Display Timezone
+			</label>
+			<select
+				id="timezone"
+				value={timezoneStore.preference}
+				onchange={(e) => setTimezone(e.target.value)}
+				class="mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-gray-900 dark:text-gray-100 focus:border-purple-500 focus:outline-none"
+			>
+				{#each TIMEZONE_OPTIONS as tz}
+					<option value={tz.value}>{tz.label}</option>
+				{/each}
+			</select>
+			<p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+				{#if timezoneStore.preference === 'auto'}
+					Using detected timezone: {timezoneStore.resolved}
+				{:else}
+					Charts and statistics will display times in {timezoneStore.resolved}
+				{/if}
 			</p>
 		</div>
 	</div>

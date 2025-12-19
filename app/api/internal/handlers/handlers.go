@@ -99,6 +99,10 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("PATCH /api/v1/config", h.UpdateConfig)
 	mux.HandleFunc("POST /api/v1/config/reload", h.ReloadConfig)
 
+	// Settings endpoints
+	mux.HandleFunc("GET /api/v1/settings/timezone", h.GetTimezone)
+	mux.HandleFunc("PUT /api/v1/settings/timezone", h.SetTimezone)
+
 	// Storage management endpoints
 	mux.HandleFunc("GET /api/v1/storage/status", h.GetStorageStatus)
 	mux.HandleFunc("GET /api/v1/storage/retention", h.GetRetentionPolicy)

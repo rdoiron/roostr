@@ -79,6 +79,23 @@ func (d *DB) SetAccessMode(ctx context.Context, mode string) error {
 	return d.SetAppState(ctx, "access_mode", mode)
 }
 
+// GetTimezone returns the user's preferred timezone (defaults to "auto").
+func (d *DB) GetTimezone(ctx context.Context) (string, error) {
+	tz, err := d.GetAppState(ctx, "timezone")
+	if err != nil {
+		return "", err
+	}
+	if tz == "" {
+		return "auto", nil
+	}
+	return tz, nil
+}
+
+// SetTimezone sets the user's preferred timezone.
+func (d *DB) SetTimezone(ctx context.Context, timezone string) error {
+	return d.SetAppState(ctx, "timezone", timezone)
+}
+
 // ============================================================================
 // Whitelist Metadata
 // ============================================================================

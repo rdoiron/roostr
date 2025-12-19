@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { Chart, LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Filler } from 'chart.js';
 	import { themeStore } from '$lib/stores/theme.svelte.js';
+	import { formatDateInTimezone } from '$lib/stores/timezone.svelte.js';
 
 	let { data = [], total = 0 } = $props();
 
@@ -20,16 +21,18 @@
 	function formatDate(dateStr) {
 		// Check if this is hourly data (contains space and :00)
 		if (dateStr.includes(' ') && dateStr.includes(':')) {
-			// Parse hourly format: "2024-12-17 09:00"
+			// Parse hourly format: "2024-12-17 09:00" - already in user's timezone from backend
 			const hour = parseInt(dateStr.split(' ')[1].split(':')[0], 10);
 			if (hour === 0) return '12 AM';
 			if (hour === 12) return '12 PM';
 			if (hour < 12) return `${hour} AM`;
 			return `${hour - 12} PM`;
 		}
-		// Daily format: "2024-12-17"
-		const date = new Date(dateStr);
-		return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+		// Daily format: "2024-12-17" - already in user's timezone from backend
+		// Parse as local date to avoid timezone shifts
+		const [year, month, day] = dateStr.split('-').map(Number);
+		const date = new Date(year, month - 1, day);
+		return formatDateInTimezone(date, { month: 'short', day: 'numeric' });
 	}
 
 	function createChart() {

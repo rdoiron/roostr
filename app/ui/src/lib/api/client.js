@@ -121,7 +121,11 @@ export const access = {
 
 export const stats = {
 	getSummary: () => get('/stats/summary'),
-	getEventsOverTime: (timeRange = '7days') => get(`/stats/events-over-time?time_range=${timeRange}`),
+	getEventsOverTime: (timeRange = '7days', timezone = '') => {
+		let url = `/stats/events-over-time?time_range=${timeRange}`;
+		if (timezone) url += `&timezone=${encodeURIComponent(timezone)}`;
+		return get(url);
+	},
 	getEventsByKind: (timeRange = 'alltime') => get(`/stats/events-by-kind?time_range=${timeRange}`),
 	getTopAuthors: (timeRange = 'alltime', limit = 10) =>
 		get(`/stats/top-authors?time_range=${timeRange}&limit=${limit}`)
@@ -195,6 +199,11 @@ export const sync = {
 
 export const support = {
 	getConfig: () => get('/support/config')
+};
+
+export const settings = {
+	getTimezone: () => get('/settings/timezone'),
+	setTimezone: (timezone) => put('/settings/timezone', { timezone })
 };
 
 export const pricing = {

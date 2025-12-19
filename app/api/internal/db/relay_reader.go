@@ -463,26 +463,41 @@ type AuthorCount struct {
 
 // GetEventsOverTime returns event counts grouped by date within a time range.
 // If hourly is true, groups by hour and returns all 24 hours for the day.
-func (d *DB) GetEventsOverTime(ctx context.Context, since, until time.Time, hourly bool) ([]DateCount, error) {
+// The loc parameter specifies the timezone for formatting timestamps.
+func (d *DB) GetEventsOverTime(ctx context.Context, since, until time.Time, hourly bool, loc *time.Location) ([]DateCount, error) {
 	if d.RelayDB == nil {
 		return nil, fmt.Errorf("relay database not connected")
 	}
 
-	var query string
-	if hourly {
-		query = `
-			SELECT strftime('%Y-%m-%d %H:00', datetime(created_at, 'unixepoch')) as date, COUNT(*) as count
-			FROM event
-			WHERE 1=1
-		`
-	} else {
-		query = `
-			SELECT DATE(datetime(created_at, 'unixepoch')) as date, COUNT(*) as count
-			FROM event
-			WHERE 1=1
-		`
+	// Default to UTC if no location provided
+	if loc == nil {
+		loc = time.UTC
 	}
+
+	// Calculate timezone offset in seconds
+	// We use the 'since' time to get the offset (handles DST correctly for that date)
+	_, offset := since.In(loc).Zone()
+
+	var query string
 	args := []interface{}{}
+
+	if hourly {
+		// Apply timezone offset to created_at before formatting
+		query = `
+			SELECT strftime('%Y-%m-%d %H:00', datetime(created_at + ?, 'unixepoch')) as date, COUNT(*) as count
+			FROM event
+			WHERE 1=1
+		`
+		args = append(args, offset)
+	} else {
+		// Apply timezone offset to created_at before formatting
+		query = `
+			SELECT DATE(datetime(created_at + ?, 'unixepoch')) as date, COUNT(*) as count
+			FROM event
+			WHERE 1=1
+		`
+		args = append(args, offset)
+	}
 
 	if !since.IsZero() {
 		query += " AND created_at >= ?"
@@ -515,27 +530,55 @@ func (d *DB) GetEventsOverTime(ctx context.Context, since, until time.Time, hour
 	}
 
 	// For hourly data, fill in all 24 hours with zeros for missing hours
+	// For daily data, fill in all days in the range with zeros for missing days
 	if hourly && !since.IsZero() {
-		results = fillAllHours(results, since)
+		results = fillAllHours(results, since, loc)
+	} else if !hourly && !since.IsZero() && !until.IsZero() {
+		results = fillAllDays(results, since, until, loc)
 	}
 
 	return results, nil
 }
 
 // fillAllHours ensures all 24 hours are represented in the results, filling missing hours with zeros.
-func fillAllHours(data []DateCount, day time.Time) []DateCount {
+func fillAllHours(data []DateCount, day time.Time, loc *time.Location) []DateCount {
 	// Create a map of existing data
 	existing := make(map[string]int64)
 	for _, d := range data {
 		existing[d.Date] = d.Count
 	}
 
-	// Generate all 24 hours for the day
-	dayStart := time.Date(day.Year(), day.Month(), day.Day(), 0, 0, 0, 0, time.UTC)
+	// Generate all 24 hours for the day in the specified timezone
+	dayInLoc := day.In(loc)
+	dayStart := time.Date(dayInLoc.Year(), dayInLoc.Month(), dayInLoc.Day(), 0, 0, 0, 0, loc)
 	var filled []DateCount
 	for h := 0; h < 24; h++ {
 		hourTime := dayStart.Add(time.Duration(h) * time.Hour)
 		dateStr := hourTime.Format("2006-01-02 15:00")
+		count := existing[dateStr]
+		filled = append(filled, DateCount{Date: dateStr, Count: count})
+	}
+
+	return filled
+}
+
+// fillAllDays ensures all days in the range are represented, filling missing days with zeros.
+func fillAllDays(data []DateCount, since, until time.Time, loc *time.Location) []DateCount {
+	// Create a map of existing data
+	existing := make(map[string]int64)
+	for _, d := range data {
+		existing[d.Date] = d.Count
+	}
+
+	// Start from the beginning of 'since' day in the specified timezone
+	sinceInLoc := since.In(loc)
+	untilInLoc := until.In(loc)
+	dayStart := time.Date(sinceInLoc.Year(), sinceInLoc.Month(), sinceInLoc.Day(), 0, 0, 0, 0, loc)
+	dayEnd := time.Date(untilInLoc.Year(), untilInLoc.Month(), untilInLoc.Day(), 0, 0, 0, 0, loc)
+	var filled []DateCount
+
+	for day := dayStart; !day.After(dayEnd); day = day.AddDate(0, 0, 1) {
+		dateStr := day.Format("2006-01-02")
 		count := existing[dateStr]
 		filled = append(filled, DateCount{Date: dateStr, Count: count})
 	}

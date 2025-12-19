@@ -1,5 +1,6 @@
 <script>
 	import { stats } from '$lib/api/client.js';
+	import { timezoneStore } from '$lib/stores/timezone.svelte.js';
 	import Loading from '$lib/components/Loading.svelte';
 	import Error from '$lib/components/Error.svelte';
 	import TimeRangeSelector from '$lib/components/statistics/TimeRangeSelector.svelte';
@@ -9,6 +10,7 @@
 	let error = $state(null);
 	let timeRange = $state('7days');
 	let initialized = $state(false);
+	let lastTimezone = $state('');
 
 	let eventsOverTime = $state({ data: [], total: 0 });
 	let eventsByKind = $state({ kinds: [], total: 0 });
@@ -20,8 +22,9 @@
 
 	async function loadData(range) {
 		try {
+			const tz = timezoneStore.resolved;
 			const [overTimeRes, byKindRes, authorsRes] = await Promise.all([
-				stats.getEventsOverTime(range),
+				stats.getEventsOverTime(range, tz),
 				stats.getEventsByKind(range),
 				stats.getTopAuthors(range, 10)
 			]);
@@ -29,6 +32,7 @@
 			eventsOverTime = overTimeRes;
 			eventsByKind = byKindRes;
 			topAuthors = authorsRes;
+			lastTimezone = tz;
 			error = null;
 		} catch (e) {
 			error = e.message || 'Failed to load statistics';
@@ -59,6 +63,14 @@
 
 			// Load initial data
 			loadData('7days');
+		}
+	});
+
+	// Re-fetch when timezone changes
+	$effect(() => {
+		const tz = timezoneStore.resolved;
+		if (initialized && tz && tz !== lastTimezone && lastTimezone !== '') {
+			loadData(timeRange);
 		}
 	});
 </script>

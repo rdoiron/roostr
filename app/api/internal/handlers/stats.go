@@ -153,10 +153,19 @@ func (h *Handler) GetRelayURLs(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) GetEventsOverTime(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	// Parse time_range query parameter first
+	// Parse query parameters
 	timeRange := r.URL.Query().Get("time_range")
 	if timeRange == "" {
 		timeRange = "7days"
+	}
+	timezone := r.URL.Query().Get("timezone")
+
+	// Load timezone location
+	loc := time.UTC
+	if timezone != "" && timezone != "UTC" {
+		if parsed, err := time.LoadLocation(timezone); err == nil {
+			loc = parsed
+		}
 	}
 
 	if !h.db.IsRelayDBConnected() {
@@ -168,12 +177,12 @@ func (h *Handler) GetEventsOverTime(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	since, until := parseTimeRange(timeRange)
+	since, until := parseTimeRange(timeRange, timezone)
 
 	// Use hourly buckets for "today" view
 	hourly := timeRange == "today"
 
-	data, err := h.db.GetEventsOverTime(ctx, since, until, hourly)
+	data, err := h.db.GetEventsOverTime(ctx, since, until, hourly, loc)
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, "Failed to get events over time", "STATS_FAILED")
 		return
@@ -212,7 +221,7 @@ func (h *Handler) GetEventsByKind(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	since, until := parseTimeRange(timeRange)
+	since, until := parseTimeRange(timeRange, "")
 
 	kindCounts, err := h.db.GetEventsByKindInRange(ctx, since, until)
 	if err != nil {
@@ -287,7 +296,7 @@ func (h *Handler) GetTopAuthors(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	since, until := parseTimeRange(timeRange)
+	since, until := parseTimeRange(timeRange, "")
 
 	authors, err := h.db.GetTopAuthorsInRange(ctx, limit, since, until)
 	if err != nil {
@@ -303,21 +312,37 @@ func (h *Handler) GetTopAuthors(w http.ResponseWriter, r *http.Request) {
 }
 
 // parseTimeRange converts a time range string to since/until timestamps.
-func parseTimeRange(rangeStr string) (since, until time.Time) {
-	now := time.Now().UTC()
-	until = now
+// If timezone is provided, calculations are done in that timezone.
+func parseTimeRange(rangeStr, timezone string) (since, until time.Time) {
+	// Load timezone location
+	loc := time.UTC
+	if timezone != "" && timezone != "UTC" {
+		if parsed, err := time.LoadLocation(timezone); err == nil {
+			loc = parsed
+		}
+	}
+
+	now := time.Now().In(loc)
+	// Set until to end of current day
+	until = time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 999999999, loc)
 
 	switch rangeStr {
 	case "today":
-		since = time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+		since = time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, loc)
 	case "7days":
-		since = now.AddDate(0, 0, -7)
+		// -6 days to include today as day 7
+		sinceDay := now.AddDate(0, 0, -6)
+		since = time.Date(sinceDay.Year(), sinceDay.Month(), sinceDay.Day(), 0, 0, 0, 0, loc)
 	case "30days":
-		since = now.AddDate(0, 0, -30)
+		// -29 days to include today as day 30
+		sinceDay := now.AddDate(0, 0, -29)
+		since = time.Date(sinceDay.Year(), sinceDay.Month(), sinceDay.Day(), 0, 0, 0, 0, loc)
 	case "alltime":
 		since = time.Time{} // Zero value - no filter
 	default:
-		since = now.AddDate(0, 0, -7) // Default to 7 days
+		// Default to 7 days
+		sinceDay := now.AddDate(0, 0, -6)
+		since = time.Date(sinceDay.Year(), sinceDay.Month(), sinceDay.Day(), 0, 0, 0, 0, loc)
 	}
 
 	return since, until

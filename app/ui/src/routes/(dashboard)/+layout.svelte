@@ -6,6 +6,7 @@
 	import Loading from '$lib/components/Loading.svelte';
 	import { setup, relay } from '$lib/api/client.js';
 	import { relayStatus } from '$lib/stores/app.svelte.js';
+	import { initializeTimezone } from '$lib/stores/timezone.svelte.js';
 
 	let { children } = $props();
 
@@ -52,11 +53,13 @@
 		}
 	}
 
-	// Start relay status checking when setup is complete
+	// Start relay status checking and initialize timezone when setup is complete
 	$effect(() => {
 		if (browser && setupCompleted && !statusInterval) {
 			checkRelayStatus();
 			statusInterval = setInterval(checkRelayStatus, 30000);
+			// Initialize timezone preference from backend
+			initializeTimezone();
 		}
 
 		return () => {
