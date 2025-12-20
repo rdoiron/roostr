@@ -233,8 +233,8 @@ func TestLN001_MockLNDServer(t *testing.T) {
 				t.Errorf("unexpected path: %s", r.URL.Path)
 			}
 			json.NewEncoder(w).Encode(map[string]interface{}{
-				"local_balance":  "1000000",
-				"remote_balance": "500000",
+				"local_balance":  map[string]string{"sat": "1000000", "msat": "1000000000"},
+				"remote_balance": map[string]string{"sat": "500000", "msat": "500000000"},
 			})
 		}))
 		defer server.Close()
