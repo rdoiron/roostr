@@ -49,6 +49,15 @@ jobs:
           cp platforms/startos/entrypoint.sh .
           cp -r platforms/startos/scripts .
 
+      - name: Debug - List files
+        run: |
+          echo "=== Current directory ==="
+          pwd
+          echo "=== Files in root ==="
+          ls -la
+          echo "=== manifest.yaml contents ==="
+          cat manifest.yaml
+
       - name: Build StartOS package
         run: start-sdk pack
 
