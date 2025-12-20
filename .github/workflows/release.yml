@@ -38,23 +38,30 @@ jobs:
       - name: Initialize SDK
         run: start-sdk init
 
-      - name: Build StartOS package
-        working-directory: platforms/startos
+      - name: Prepare StartOS build context
         run: |
-          start-sdk pack
+          # Copy StartOS assets to project root (Dockerfile expects app/ paths)
+          cp platforms/startos/manifest.yaml .
+          cp platforms/startos/Dockerfile .
+          cp platforms/startos/LICENSE .
+          cp platforms/startos/icon.png .
+          cp platforms/startos/instructions.md .
+          cp platforms/startos/entrypoint.sh .
+          cp -r platforms/startos/scripts .
+
+      - name: Build StartOS package
+        run: start-sdk pack
 
       - name: Generate checksum
-        working-directory: platforms/startos
-        run: |
-          sha256sum roostr.s9pk > roostr.s9pk.sha256
+        run: sha256sum roostr.s9pk > roostr.s9pk.sha256
 
       - name: Upload StartOS artifact
         uses: actions/upload-artifact@v4
         with:
           name: startos-package
           path: |
-            platforms/startos/roostr.s9pk
-            platforms/startos/roostr.s9pk.sha256
+            roostr.s9pk
+            roostr.s9pk.sha256
 
   build-docker:
     name: Build & Push Docker Image
@@ -129,7 +136,7 @@ jobs:
             ## Checksums
             See `roostr.s9pk.sha256` for package verification.
           files: |
-            artifacts/roostr.s9pk
-            artifacts/roostr.s9pk.sha256
+            artifacts/startos-package/roostr.s9pk
+            artifacts/startos-package/roostr.s9pk.sha256
           draft: false
           prerelease: false
