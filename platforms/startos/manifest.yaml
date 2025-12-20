@@ -37,7 +37,12 @@ health-checks:
   api:
     name: API
     success-message: API is ready
-    type: script
+    type: docker
+    image: main
+    entrypoint: /scripts/health-check.sh
+    args: []
+    inject: true
+    io-format: yaml
 
 config: ~
 
@@ -81,6 +86,28 @@ dependencies: {}
 
 backup:
   create:
-    type: script
+    type: docker
+    image: compat
+    system: true
+    entrypoint: compat
+    args:
+      - duplicity
+      - create
+      - /mnt/backup
+      - /data
+    mounts:
+      BACKUP: /mnt/backup
+      main: /data
   restore:
-    type: script
+    type: docker
+    image: compat
+    system: true
+    entrypoint: compat
+    args:
+      - duplicity
+      - restore
+      - /mnt/backup
+      - /data
+    mounts:
+      BACKUP: /mnt/backup
+      main: /data
