@@ -305,7 +305,7 @@ This document tracks all development tasks. Check off items as they're completed
 - [x] UMBREL-002: Create umbrel-app.yml manifest
 - [x] UMBREL-003: Create exports.sh
 - [x] UMBREL-004: Add app icon
-- [ ] UMBREL-005: Test on Umbrel
+- [x] UMBREL-005: Test on Umbrel
 - [ ] UMBREL-006: Submit to Umbrel App Store
 
 ### Start9 Package
@@ -361,9 +361,9 @@ This document tracks all development tasks. Check off items as they're completed
 | 11. Paid Access | 27 | 27 | 100% |
 | 12. Relay Controls | 10 | 10 | 100% |
 | 13. Statistics | 8 | 8 | 100% |
-| 14. Packaging | 14 | 10 | 71% |
+| 14. Packaging | 14 | 11 | 79% |
 | 15. Polish | 14 | 1 | 7% |
-| **TOTAL** | **205** | **188** | **92%** |
+| **TOTAL** | **205** | **189** | **92%** |
 
 ---
 
