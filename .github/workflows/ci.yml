@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  go:
+    name: Go Build & Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app/api
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+          cache-dependency-path: app/api/go.sum
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Build
+        run: go build -v ./...
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Test
+        run: go test -v ./...
+
+  ui:
+    name: UI Build & Lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app/ui
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: app/ui/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+  docker:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: platforms/umbrel/Dockerfile
+          push: false
+          tags: roostr:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

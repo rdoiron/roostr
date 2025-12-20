@@ -1,80 +1,45 @@
 # Building the Start9 Package
 
-This document explains how to build the Roostr .s9pk package for StartOS.
+This document explains how to build the Roostr `.s9pk` package for StartOS.
 
-## Prerequisites
+## Automated Builds (Recommended)
 
-### 1. Install Rust
+The `.s9pk` package is built automatically via GitHub Actions when you create a release.
 
-If you don't have Rust installed:
+### Creating a Release
 
-```bash
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-source ~/.cargo/env
-```
+1. Tag the release:
+   ```bash
+   git tag v0.1.0
+   git push origin v0.1.0
+   ```
 
-### 2. Install Start9 SDK
+2. GitHub Actions will:
+   - Build the StartOS package using the Start9 SDK
+   - Build and push the Docker image
+   - Create a GitHub Release with the `.s9pk` attached
 
-```bash
-cargo install --git https://github.com/Start9Labs/start-os.git start-sdk
-```
+3. Download `roostr.s9pk` from the [Releases page](https://github.com/rdoiron/roostr/releases)
 
-This may take several minutes as it compiles the SDK from source.
+### Manual Trigger
 
-### 3. Install Docker
+You can also trigger a build manually:
 
-The Start9 SDK uses Docker to build the package. Ensure Docker is installed and running:
-
-```bash
-# Ubuntu/Debian
-sudo apt install docker.io
-sudo usermod -aG docker $USER
-# Log out and back in for group changes to take effect
-
-# Verify Docker is running
-docker info
-```
-
-## Building the Package
-
-### Using Make
-
-From the project root:
-
-```bash
-make package-startos
-```
-
-### Manual Build
-
-From the `platforms/startos` directory:
-
-```bash
-cd platforms/startos
-start-sdk pack
-```
-
-This will:
-1. Build the Docker image using the Dockerfile
-2. Package all assets (manifest, instructions, icon, scripts)
-3. Create a `.s9pk` file
-
-## Output
-
-The build produces a file named `roostr.s9pk` which can be:
-- Sideloaded onto a StartOS server
-- Submitted to the Start9 Marketplace
+1. Go to Actions > Release workflow
+2. Click "Run workflow"
+3. Enter the version number (e.g., `0.1.0`)
+4. Download the artifact when complete
 
 ## Sideloading for Testing
 
 1. Open your StartOS dashboard
-2. Go to System > Sideload
+2. Go to **System > Sideload Service**
 3. Upload the `.s9pk` file
 4. Follow the installation prompts
 
 ## Package Contents
 
-The .s9pk includes:
+The `.s9pk` includes:
 - `manifest.yaml` - Package metadata and configuration
 - `Dockerfile` - Container build instructions
 - `instructions.md` - User documentation
@@ -82,28 +47,35 @@ The .s9pk includes:
 - `scripts/` - Health check, backup, and restore scripts
 - `LICENSE` - MIT license
 
-## Troubleshooting
+## Local Development (Advanced)
 
-### "start-sdk not found"
+For local SDK installation, see the [Start9 Developer Docs](https://docs.start9.com/).
 
-Ensure Cargo bin is in your PATH:
+The basic process:
 ```bash
-export PATH="$HOME/.cargo/bin:$PATH"
+# Clone and build the SDK
+git clone --recursive https://github.com/Start9Labs/start-os.git --branch sdk
+cd start-os && make sdk
+
+# Build the package
+cd /path/to/roostr/platforms/startos
+start-sdk pack
 ```
 
-### Docker permission denied
+Note: Local SDK installation requires specific Rust versions and system dependencies.
+The GitHub Actions approach is recommended to avoid compatibility issues.
 
-Add your user to the docker group:
-```bash
-sudo usermod -aG docker $USER
-```
-Then log out and back in.
+## CI/CD Secrets Required
 
-### Build fails during Rust compilation
+For automated releases, configure these repository secrets:
 
-The nostr-rs-relay build requires significant memory. Ensure you have at least 4GB RAM available.
+| Secret | Description |
+|--------|-------------|
+| `DOCKERHUB_USERNAME` | Docker Hub username |
+| `DOCKERHUB_TOKEN` | Docker Hub access token |
 
 ## References
 
 - [Start9 Developer Docs](https://docs.start9.com/)
+- [Start9 SDK GitHub Action](https://github.com/Start9Labs/sdk)
 - [StartOS Package Specification](https://github.com/Start9Labs/start-os)
