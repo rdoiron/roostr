@@ -29,7 +29,7 @@ FROM rust:1.79-bookworm AS relay-builder
 RUN apt-get update && apt-get install -y cmake protobuf-compiler libsqlite3-dev
 
 WORKDIR /app
-RUN git clone --depth 1 --branch 0.8.13 https://github.com/scsibug/nostr-rs-relay.git .
+RUN git clone --depth 1 --branch 0.9.0 https://github.com/scsibug/nostr-rs-relay.git .
 RUN cargo build --release
 
 # Stage 4: Runtime
