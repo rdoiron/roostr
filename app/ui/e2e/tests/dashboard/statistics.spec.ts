@@ -61,6 +61,8 @@ test.describe('Statistics', () => {
 		const statsPage = new StatisticsPage(page);
 		await statsPage.goto();
 
+		// Wait for at least one chart canvas to be visible
+		await expect(statsPage.chartCanvas.first()).toBeVisible();
 		const chartCount = await statsPage.getChartCount();
 		expect(chartCount).toBeGreaterThan(0);
 	});

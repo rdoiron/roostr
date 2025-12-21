@@ -369,18 +369,19 @@ This document tracks all development tasks. Check off items as they're completed
 
 ## Current Focus
 
-**Completed:** Full test coverage with 661 tests total.
+**Completed:** Full test coverage with 661+ tests total.
 
 - Go backend: 478 tests (handlers, services, database layer)
 - UI: 127 Vitest tests (utilities, API client, Svelte components)
-- E2E: 98 Playwright tests (setup wizard, signup, all dashboard pages)
-  - Fixed 36 failing tests due to selector mismatches and strict mode violations
-  - All Chromium tests pass (95 passed, 3 skipped)
+- E2E: 294 Playwright tests across 3 browser projects
+  - Chromium, Firefox, Mobile (Pixel 7): 285 passed, 9 skipped
+  - WebKit: Requires system dependencies (libgstreamer, etc.)
+  - Fixed mock timing race condition with parallel route registration
+  - Fixed mobile viewport issues (icon-only buttons, case-sensitive text)
 
 **Next Tasks:**
 
 - STARTOS-007: Test on StartOS
 - DOCS-001 through DOCS-005: Documentation
-- Fix non-Chromium browser tests (Firefox, WebKit, mobile) - mock setup timing issues
 
 See SPECIFICATION.md for full details on any feature.

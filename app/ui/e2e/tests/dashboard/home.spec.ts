@@ -89,7 +89,25 @@ test.describe('Dashboard', () => {
 	});
 
 	test('shows offline status when relay is down', async ({ page }) => {
-		await mockDashboard(page, { relayOnline: false });
+		// Unroute and re-register SSE stream with offline status
+		await page.unroute('**/api/v1/stats/stream');
+		await page.route('**/api/v1/stats/stream', async (route) => {
+			const sseData = {
+				stats: {
+					relay_status: 'offline',
+					uptime_seconds: 0,
+					total_events: 0,
+					events_by_kind: {}
+				},
+				recentEvents: [],
+				storage: { relay_db_size: 0, app_db_size: 0, total_available: 10737418240 }
+			};
+			await route.fulfill({
+				status: 200,
+				contentType: 'text/event-stream',
+				body: `event: connected\ndata: {}\n\nevent: stats\ndata: ${JSON.stringify(sseData)}\n\n`
+			});
+		});
 
 		const dashboard = new DashboardPage(page);
 		await dashboard.goto();

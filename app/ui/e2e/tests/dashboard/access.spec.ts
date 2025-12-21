@@ -39,7 +39,7 @@ test.describe('Access Control', () => {
 		const accessPage = new AccessPage(page);
 		await accessPage.goto();
 
-		await expect(page.getByRole('button', { name: /add/i }).first()).toBeVisible();
+		await expect(accessPage.addButton).toBeVisible();
 	});
 
 	test('opens add pubkey modal', async ({ page }) => {

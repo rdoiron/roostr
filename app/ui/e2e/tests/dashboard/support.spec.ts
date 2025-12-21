@@ -51,7 +51,8 @@ test.describe('Support', () => {
 		const supportPage = new SupportPage(page);
 		await supportPage.goto();
 
-		expect(await supportPage.hasQrCodes()).toBe(true);
+		// Wait for QR code to be visible
+		await expect(supportPage.qrCodes.first()).toBeVisible();
 	});
 
 	test('shows about section', async ({ page }) => {

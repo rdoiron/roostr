@@ -33,11 +33,11 @@ export class DashboardPage extends BasePage {
 	}
 
 	async isRelayOnline(): Promise<boolean> {
-		return this.page.locator('text=online').first().isVisible();
+		return this.page.getByText('Online', { exact: true }).first().isVisible();
 	}
 
 	async isRelayOffline(): Promise<boolean> {
-		return this.page.locator('text=offline').first().isVisible();
+		return this.page.getByText('Offline', { exact: true }).first().isVisible();
 	}
 
 	async getTotalEvents(): Promise<string> {

@@ -22,7 +22,8 @@ export class AccessPage extends BasePage {
 		this.whitelistTab = page.getByRole('tab', { name: /whitelist/i });
 		this.blacklistTab = page.getByRole('tab', { name: /blacklist/i });
 		this.paidTab = page.getByRole('tab', { name: /paid/i });
-		this.addButton = page.getByRole('button', { name: /add/i }).first();
+		// Add button is icon-only on mobile, find it in the flex container with the Whitelisted heading
+		this.addButton = page.getByRole('heading', { name: /whitelisted pubkeys/i }).locator('..').locator('..').getByRole('button').first();
 		this.pubkeyList = page.locator('[data-testid="pubkey-list"], .space-y-2');
 		this.searchInput = page.locator('input[placeholder*="Search"]');
 		this.importButton = page.getByRole('button', { name: /import/i });

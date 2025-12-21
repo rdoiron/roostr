@@ -20,7 +20,7 @@ export class SupportPage extends BasePage {
 		this.donationSection = page.locator('text=Support Roostr').locator('..');
 		this.lightningAddress = page.locator('text=Lightning').locator('..');
 		this.bitcoinAddress = page.locator('text=Bitcoin').locator('..');
-		this.qrCodes = page.locator('canvas, img[alt*="QR"]');
+		this.qrCodes = page.locator('canvas, img[alt*="QR"]').or(page.getByRole('img', { name: /qr/i }));
 		this.helpLinks = page.locator('a[href*="github"]');
 		this.aboutSection = page.locator('text=About').locator('..');
 		this.versionText = page.locator('text=/v?\\d+\\.\\d+\\.\\d+/');
