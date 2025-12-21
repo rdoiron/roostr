@@ -152,6 +152,7 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: v${{ needs.build-startos.outputs.version }}
           name: Roostr v${{ needs.build-startos.outputs.version }}
           body: |
             ## Release Notes
