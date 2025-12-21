@@ -21,7 +21,7 @@ describe('StorageProgressBar', () => {
 	});
 
 	it('hides label when showLabel is false', () => {
-		const { container } = render(StorageProgressBar, {
+		render(StorageProgressBar, {
 			props: {
 				usedBytes: 1073741824,
 				totalBytes: 10737418240,
