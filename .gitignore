@@ -52,6 +52,10 @@ coverage/
 *.cover
 *.coverage
 
+# Playwright
+playwright-report/
+test-results/
+
 # Platform packages
 *.s9pk
 *.tar.gz
