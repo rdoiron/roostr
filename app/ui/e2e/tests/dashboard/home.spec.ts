@@ -25,8 +25,8 @@ test.describe('Dashboard', () => {
 
 		await dashboard.expectStatCards();
 
-		// Check for formatted numbers
-		await expect(page.locator('text=Total Events').locator('..').locator('text=/\\d/')).toBeVisible();
+		// Check for formatted numbers - use first() to avoid strict mode violation
+		await expect(page.locator('text=Total Events').locator('..').locator('text=/\\d/').first()).toBeVisible();
 	});
 
 	test('displays event type breakdown', async ({ page }) => {
@@ -34,11 +34,12 @@ test.describe('Dashboard', () => {
 		await dashboard.goto();
 
 		await dashboard.expectEventTypeBreakdown();
-		await expect(page.locator('text=Posts')).toBeVisible();
-		await expect(page.locator('text=Reactions')).toBeVisible();
-		await expect(page.locator('text=DMs')).toBeVisible();
-		await expect(page.locator('text=Reposts')).toBeVisible();
-		await expect(page.locator('text=Follows')).toBeVisible();
+		// Check for event type labels - use getByText with exact to avoid "Posts" matching "Reposts"
+		await expect(page.getByText('Posts', { exact: true })).toBeVisible();
+		await expect(page.getByText('Reactions', { exact: true })).toBeVisible();
+		await expect(page.getByText('DMs', { exact: true })).toBeVisible();
+		await expect(page.getByText('Reposts', { exact: true })).toBeVisible();
+		await expect(page.getByText('Follows', { exact: true })).toBeVisible();
 	});
 
 	test('shows relay URLs section', async ({ page }) => {
@@ -66,16 +67,18 @@ test.describe('Dashboard', () => {
 		const dashboard = new DashboardPage(page);
 		await dashboard.goto();
 
-		await expect(page.locator('text=Quick Actions')).toBeVisible();
+		await expect(page.getByRole('heading', { name: 'Quick Actions' })).toBeVisible();
 		await expect(page.locator('text=Sync from Relays')).toBeVisible();
-		await expect(page.locator('text=Export Events')).toBeVisible();
+		// The button says "Export Backup" not "Export Events"
+		await expect(page.locator('text=Export Backup')).toBeVisible();
 	});
 
 	test('shows storage card with progress', async ({ page }) => {
 		const dashboard = new DashboardPage(page);
 		await dashboard.goto();
 
-		await expect(page.locator('text=Storage')).toBeVisible();
+		// StorageCard has heading "Storage"
+		await expect(page.getByRole('heading', { name: 'Storage' })).toBeVisible();
 	});
 
 	test('displays uptime', async ({ page }) => {
@@ -100,8 +103,8 @@ test.describe('Dashboard', () => {
 		const dashboard = new DashboardPage(page);
 		await dashboard.goto();
 
-		// Stats should be populated from SSE
-		await expect(page.locator('text=Total Events').locator('..').locator('text=/\\d/')).toBeVisible();
+		// Stats should be populated from SSE - use first() to avoid strict mode
+		await expect(page.locator('text=Total Events').locator('..').locator('text=/\\d/').first()).toBeVisible();
 	});
 
 	test('handles SSE connection error gracefully', async ({ page }) => {
@@ -117,6 +120,6 @@ test.describe('Dashboard', () => {
 		await dashboard.goto();
 
 		// Page should still be functional even if SSE fails initially
-		await expect(page.locator('text=Dashboard')).toBeVisible();
+		await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
 	});
 });

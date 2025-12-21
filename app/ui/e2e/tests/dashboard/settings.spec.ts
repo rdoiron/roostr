@@ -15,7 +15,8 @@ test.describe('Settings', () => {
 		const settingsPage = new SettingsPage(page);
 		await settingsPage.goto();
 
-		await expect(page.locator('text=Settings')).toBeVisible();
+		// Use heading role to avoid matching nav link
+		await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
 	});
 
 	test('shows appearance section', async ({ page }) => {

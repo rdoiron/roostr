@@ -21,7 +21,7 @@ export const relayUrls = {
 	relay_port: '7000',
 	relay_url: 'ws://localhost:7000',
 	tor_available: true,
-	tor_url: 'ws://abcdef1234567890.onion'
+	tor: 'ws://abcdef1234567890.onion'
 };
 
 // Stats summary
@@ -184,20 +184,25 @@ export const relayStatus = {
 	uptime_seconds: 86400
 };
 
-// Relay config
+// Relay config - matches expected API response structure
 export const relayConfig = {
-	name: 'Test Relay',
-	description: 'A private relay for testing',
-	pubkey: 'abc123hexkey',
-	contact: 'admin@example.com',
+	info: {
+		name: 'Test Relay',
+		description: 'A private relay for testing',
+		pubkey: 'abc123hexkey',
+		contact: 'admin@example.com',
+		relay_icon: ''
+	},
 	limits: {
 		max_event_bytes: 65536,
-		max_content_length: 32768,
+		max_ws_message_bytes: 131072,
 		messages_per_sec: 10,
-		subscriptions_per_min: 60
+		max_subs_per_conn: 10,
+		min_pow_difficulty: 0
 	},
 	authorization: {
-		nip42_auth: true
+		nip42_auth: true,
+		event_kind_allowlist: []
 	}
 };
 

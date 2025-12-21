@@ -22,16 +22,16 @@ export class EventsPage extends BasePage {
 	constructor(page: Page) {
 		super(page);
 		this.eventList = page.locator('[data-testid="event-list"], .space-y-4');
-		this.kindFilter = page.locator('select#kind, select[name="kind"]').first();
-		this.authorFilter = page.locator('input[placeholder*="author"], input[placeholder*="pubkey"]');
-		this.searchInput = page.locator('input[placeholder*="Search"]');
-		this.startDateInput = page.locator('input[type="date"]').first();
-		this.endDateInput = page.locator('input[type="date"]').last();
-		this.applyFiltersButton = page.getByRole('button', { name: /apply|filter/i });
-		this.clearFiltersButton = page.getByRole('button', { name: /clear|reset/i });
+		this.kindFilter = page.locator('select#kind-filter');
+		this.authorFilter = page.locator('select#author-filter');
+		this.searchInput = page.locator('input[placeholder*="Search content"]');
+		this.startDateInput = page.locator('input#start-date');
+		this.endDateInput = page.locator('input#end-date');
+		this.applyFiltersButton = page.getByRole('button', { name: /apply filters/i });
+		this.clearFiltersButton = page.locator('text=Clear all');
 		this.pagination = page.locator('text=Showing');
-		this.prevButton = page.getByRole('button', { name: /prev|previous/i });
-		this.nextButton = page.getByRole('button', { name: /next/i });
+		this.prevButton = page.getByRole('button', { name: /prev/i }).first();
+		this.nextButton = page.getByRole('button', { name: /^next$/i }).first();
 		this.eventDetailModal = page.locator('[role="dialog"]');
 	}
 
@@ -50,7 +50,8 @@ export class EventsPage extends BasePage {
 	}
 
 	async filterByAuthor(author: string) {
-		await this.authorFilter.fill(author);
+		// Author filter is a select dropdown
+		await this.authorFilter.selectOption(author);
 	}
 
 	async filterBySearch(query: string) {
@@ -112,10 +113,10 @@ export class EventsPage extends BasePage {
 	}
 
 	async expectEventList() {
-		await expect(this.page.locator('text=Event Browser')).toBeVisible();
+		await expect(this.page.getByRole('heading', { name: 'Event Browser' })).toBeVisible();
 	}
 
 	async expectNoEvents() {
-		await expect(this.page.locator('text=No events found')).toBeVisible();
+		await expect(this.page.getByRole('heading', { name: 'No events found' })).toBeVisible();
 	}
 }

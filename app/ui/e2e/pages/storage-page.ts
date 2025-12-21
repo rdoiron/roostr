@@ -28,7 +28,7 @@ export class StoragePage extends BasePage {
 		this.retentionDaysInput = page.locator('input[type="number"]').first();
 		this.cleanupDateInput = page.locator('input[type="date"]');
 		this.vacuumButton = page.getByRole('button', { name: /vacuum/i });
-		this.integrityCheckButton = page.getByRole('button', { name: /integrity|check/i });
+		this.integrityCheckButton = page.getByRole('button', { name: /check integrity/i });
 		this.saveRetentionButton = page.getByRole('button', { name: /save/i });
 		this.deleteOldEventsButton = page.getByRole('button', { name: /delete.*events/i });
 	}
@@ -81,11 +81,13 @@ export class StoragePage extends BasePage {
 	}
 
 	async expectRetentionSettings() {
-		await expect(this.page.locator('text=Retention Policy')).toBeVisible();
+		await expect(this.page.getByRole('heading', { name: 'Retention Policy' })).toBeVisible();
 	}
 
 	async expectMaintenanceTools() {
-		await expect(this.page.locator('text=VACUUM')).toBeVisible();
+		// The section has heading "Database Maintenance" and a button "Run VACUUM"
+		await expect(this.page.getByRole('heading', { name: 'Database Maintenance' })).toBeVisible();
+		await expect(this.page.getByRole('button', { name: /vacuum/i })).toBeVisible();
 	}
 
 	async expectVacuumSuccess() {
@@ -93,6 +95,7 @@ export class StoragePage extends BasePage {
 	}
 
 	async expectIntegrityCheckPassed() {
-		await expect(this.page.locator('text=/passed|ok|no issues/i')).toBeVisible();
+		// Check for the specific result message showing all databases passed
+		await expect(this.page.getByText('All databases passed integrity check')).toBeVisible();
 	}
 }

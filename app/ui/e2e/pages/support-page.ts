@@ -56,7 +56,9 @@ export class SupportPage extends BasePage {
 	}
 
 	async expectDonationOptions() {
-		await expect(this.page.locator('text=Support Roostr, text=Donate')).toBeVisible();
+		// Check for donation toggle buttons (Bitcoin/Lightning)
+		await expect(this.page.getByRole('button', { name: /bitcoin/i })).toBeVisible();
+		await expect(this.page.getByRole('button', { name: /lightning/i })).toBeVisible();
 	}
 
 	async expectLightningSection() {

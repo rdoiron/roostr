@@ -14,7 +14,8 @@ export class StatisticsPage extends BasePage {
 
 	constructor(page: Page) {
 		super(page);
-		this.timeRangeSelector = page.locator('select').first();
+		// TimeRangeSelector is a button group, not a select dropdown
+		this.timeRangeSelector = page.locator('.flex.gap-1.rounded-lg').first();
 		this.eventsOverTimeChart = page.locator('text=Events Over Time').locator('..');
 		this.eventsByKindChart = page.locator('text=Events by Kind').locator('..');
 		this.topAuthorsSection = page.locator('text=Top Authors').locator('..');
@@ -27,7 +28,15 @@ export class StatisticsPage extends BasePage {
 	}
 
 	async selectTimeRange(range: string) {
-		await this.timeRangeSelector.selectOption(range);
+		// TimeRangeSelector uses buttons, not a select dropdown
+		const labels: Record<string, string> = {
+			today: 'Today',
+			'7days': '7 Days',
+			'30days': '30 Days',
+			alltime: 'All Time'
+		};
+		const label = labels[range] || range;
+		await this.page.getByRole('button', { name: label }).click();
 	}
 
 	async hasEventsOverTimeChart(): Promise<boolean> {

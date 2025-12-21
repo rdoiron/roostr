@@ -373,11 +373,14 @@ This document tracks all development tasks. Check off items as they're completed
 
 - Go backend: 478 tests (handlers, services, database layer)
 - UI: 127 Vitest tests (utilities, API client, Svelte components)
-- E2E: 56 Playwright tests (setup wizard, signup, dashboard pages)
+- E2E: 98 Playwright tests (setup wizard, signup, all dashboard pages)
+  - Fixed 36 failing tests due to selector mismatches and strict mode violations
+  - All Chromium tests pass (95 passed, 3 skipped)
 
 **Next Tasks:**
 
 - STARTOS-007: Test on StartOS
 - DOCS-001 through DOCS-005: Documentation
+- Fix non-Chromium browser tests (Firefox, WebKit, mobile) - mock setup timing issues
 
 See SPECIFICATION.md for full details on any feature.

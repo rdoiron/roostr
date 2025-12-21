@@ -65,7 +65,8 @@ export class DashboardPage extends BasePage {
 	}
 
 	async hasTorUrl(): Promise<boolean> {
-		return this.page.locator('text=Tor').isVisible();
+		// The label is "Tor (Remote Access)"
+		return this.page.locator('text=Tor (Remote Access)').isVisible();
 	}
 
 	async clickSyncFromRelays() {
@@ -88,8 +89,8 @@ export class DashboardPage extends BasePage {
 	}
 
 	async expectEventTypeBreakdown() {
-		await expect(this.page.locator('text=Posts')).toBeVisible();
-		await expect(this.page.locator('text=Reactions')).toBeVisible();
-		await expect(this.page.locator('text=DMs')).toBeVisible();
+		await expect(this.page.getByText('Posts', { exact: true })).toBeVisible();
+		await expect(this.page.getByText('Reactions', { exact: true })).toBeVisible();
+		await expect(this.page.getByText('DMs', { exact: true })).toBeVisible();
 	}
 }

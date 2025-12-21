@@ -92,19 +92,21 @@ export class SettingsPage extends BasePage {
 	}
 
 	async expectAppearanceSection() {
-		await expect(this.page.locator('text=Appearance')).toBeVisible();
+		// Use heading role to avoid matching description text
+		await expect(this.page.getByRole('heading', { name: 'Appearance' })).toBeVisible();
 	}
 
 	async expectIdentitySection() {
-		await expect(this.page.locator('text=Relay Identity')).toBeVisible();
+		await expect(this.page.getByRole('heading', { name: 'Relay Identity' })).toBeVisible();
 	}
 
 	async expectLimitsSection() {
-		await expect(this.page.locator('text=Limits')).toBeVisible();
+		// Use heading role to avoid matching description text
+		await expect(this.page.getByRole('heading', { name: 'Limits' })).toBeVisible();
 	}
 
 	async expectRelayControlSection() {
-		await expect(this.page.locator('text=Relay Control')).toBeVisible();
+		await expect(this.page.getByRole('heading', { name: 'Relay Control' })).toBeVisible();
 	}
 
 	async expectSaveSuccess() {

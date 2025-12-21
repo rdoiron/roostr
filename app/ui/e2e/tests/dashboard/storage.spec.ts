@@ -99,10 +99,11 @@ test.describe('Storage Management', () => {
 		await expect(page.locator('text=/healthy|good|ok/i')).toBeVisible();
 	});
 
-	test('shows deletion requests section', async ({ page }) => {
+	test('shows NIP-09 deletion option', async ({ page }) => {
 		const storagePage = new StoragePage(page);
 		await storagePage.goto();
 
-		await expect(page.locator('text=Deletion Requests, text=NIP-09')).toBeVisible();
+		// NIP-09 deletion option is a checkbox in the retention settings
+		await expect(page.locator('text=Honor NIP-09 deletion requests')).toBeVisible();
 	});
 });

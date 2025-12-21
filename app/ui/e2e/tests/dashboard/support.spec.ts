@@ -15,7 +15,8 @@ test.describe('Support', () => {
 		const supportPage = new SupportPage(page);
 		await supportPage.goto();
 
-		await expect(page.locator('text=Support')).toBeVisible();
+		// Page heading is "Support Roostr"
+		await expect(page.getByRole('heading', { name: 'Support Roostr' })).toBeVisible();
 	});
 
 	test('shows donation section', async ({ page }) => {
@@ -39,10 +40,11 @@ test.describe('Support', () => {
 		const supportPage = new SupportPage(page);
 		await supportPage.goto();
 
-		await supportPage.expectBitcoinSection();
+		// Click Bitcoin button to switch to Bitcoin address
+		await page.getByRole('button', { name: /bitcoin/i }).click();
 
-		// From mock data
-		await expect(page.locator('text=bc1q')).toBeVisible();
+		// From mock data - check that bitcoin address is displayed
+		await expect(page.locator('text=bc1qtest')).toBeVisible();
 	});
 
 	test('displays QR codes', async ({ page }) => {

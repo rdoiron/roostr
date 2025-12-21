@@ -57,10 +57,16 @@ export class AccessPage extends BasePage {
 	async addPubkeyToWhitelist(value: string, nickname?: string) {
 		await this.clickAddPubkey();
 		await this.page.locator('input[placeholder*="npub"]').fill(value);
+		// Wait for validation to complete (green checkmark appears, button becomes enabled)
+		await this.page.locator('text=Validated').waitFor({ timeout: 5000 });
 		if (nickname) {
-			await this.page.locator('input[placeholder*="nickname"]').fill(nickname);
+			// Nickname input has placeholder "e.g., Family, Friend"
+			await this.page.locator('#extra-input').fill(nickname);
 		}
-		await this.page.getByRole('button', { name: /add/i }).last().click();
+		// Click the Add button in the modal footer and wait for modal to close
+		await this.page.getByRole('button', { name: /add to whitelist/i }).click();
+		// Wait for modal to close
+		await this.page.locator('[role="dialog"]').waitFor({ state: 'hidden', timeout: 5000 });
 	}
 
 	async removePubkey(index: number = 0) {
@@ -94,14 +100,18 @@ export class AccessPage extends BasePage {
 	}
 
 	async expectWhitelistEntries() {
-		await expect(this.page.locator('text=npub1')).toBeVisible();
+		// Use .first() since there may be multiple npub elements
+		await expect(this.page.locator('text=npub1').first()).toBeVisible();
 	}
 
 	async expectLightningSection() {
-		await expect(this.page.locator('text=Lightning')).toBeVisible();
+		// LightningSection has heading "Lightning Node"
+		// Need longer timeout for async loading of paid mode sections
+		await expect(this.page.locator('text=Lightning Node')).toBeVisible({ timeout: 10000 });
 	}
 
 	async expectPricingSection() {
-		await expect(this.page.locator('text=Pricing')).toBeVisible();
+		// PricingSection has heading "Pricing"
+		await expect(this.page.locator('text=/pricing/i').first()).toBeVisible({ timeout: 10000 });
 	}
 }
