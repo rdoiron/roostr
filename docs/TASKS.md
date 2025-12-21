@@ -325,7 +325,7 @@ This document tracks all development tasks. Check off items as they're completed
 ### Testing
 - [x] TEST-001: API endpoint tests (Go)
 - [x] TEST-002: Database query tests
-- [ ] TEST-003: UI component tests
+- [x] TEST-003: UI component tests
 - [ ] TEST-004: End-to-end tests
 - [x] TEST-005: Manual testing checklist
 
@@ -362,18 +362,20 @@ This document tracks all development tasks. Check off items as they're completed
 | 12. Relay Controls | 10 | 10 | 100% |
 | 13. Statistics | 8 | 8 | 100% |
 | 14. Packaging | 14 | 11 | 79% |
-| 15. Polish | 14 | 3 | 21% |
-| **TOTAL** | **205** | **191** | **93%** |
+| 15. Polish | 14 | 4 | 29% |
+| **TOTAL** | **205** | **192** | **94%** |
 
 ---
 
 ## Current Focus
 
-**Completed:** TEST-001 (API endpoint tests) and TEST-002 (Database query tests) - 478 Go tests covering handlers, services, and database layer.
+**Completed:** Full test coverage with 605 tests total.
+
+- Go backend: 478 tests (handlers, services, database layer)
+- UI: 127 tests (utilities, API client, Svelte components)
 
 **Next Tasks:**
 
-- TEST-003: UI component tests (Svelte/Vitest)
 - TEST-004: End-to-end tests (Playwright)
 - STARTOS-007: Test on StartOS
 - DOCS-001 through DOCS-005: Documentation
