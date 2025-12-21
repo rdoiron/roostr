@@ -323,8 +323,8 @@ This document tracks all development tasks. Check off items as they're completed
 ## Phase 15: Polish & Launch
 
 ### Testing
-- [ ] TEST-001: API endpoint tests (Go)
-- [ ] TEST-002: Database query tests
+- [x] TEST-001: API endpoint tests (Go)
+- [x] TEST-002: Database query tests
 - [ ] TEST-003: UI component tests
 - [ ] TEST-004: End-to-end tests
 - [x] TEST-005: Manual testing checklist
