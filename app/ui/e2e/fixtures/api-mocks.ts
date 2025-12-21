@@ -130,8 +130,8 @@ export async function setupApiMocks(page: Page, options: MockOptions = {}) {
 		}
 	});
 
-	// Whitelist
-	await page.route('**/api/v1/access/whitelist', async (route) => {
+	// Whitelist (pattern must match query strings)
+	await page.route(/\/api\/v1\/access\/whitelist(\?.*)?$/, async (route) => {
 		if (route.request().method() === 'GET') {
 			await route.fulfill({ json: mockData.whitelist });
 		} else {
@@ -143,8 +143,8 @@ export async function setupApiMocks(page: Page, options: MockOptions = {}) {
 		await route.fulfill({ json: { success: true } });
 	});
 
-	// Blacklist
-	await page.route('**/api/v1/access/blacklist', async (route) => {
+	// Blacklist (pattern must match query strings)
+	await page.route(/\/api\/v1\/access\/blacklist(\?.*)?$/, async (route) => {
 		if (route.request().method() === 'GET') {
 			await route.fulfill({ json: mockData.blacklist });
 		} else {
@@ -161,8 +161,8 @@ export async function setupApiMocks(page: Page, options: MockOptions = {}) {
 		await route.fulfill({ json: mockData.nip05Resolution.success });
 	});
 
-	// Events list
-	await page.route('**/api/v1/events', async (route) => {
+	// Events list (pattern must match query strings)
+	await page.route(/\/api\/v1\/events(\?.*)?$/, async (route) => {
 		if (route.request().method() === 'GET') {
 			await route.fulfill({ json: hasEvents ? mockData.eventsList : { events: [], total: 0, has_more: false } });
 		}
@@ -281,8 +281,8 @@ export async function setupApiMocks(page: Page, options: MockOptions = {}) {
 		}
 	});
 
-	// Paid users
-	await page.route('**/api/v1/access/paid-users', async (route) => {
+	// Paid users (pattern must match query strings)
+	await page.route(/\/api\/v1\/access\/paid-users(\?.*)?$/, async (route) => {
 		await route.fulfill({ json: mockData.paidUsers });
 	});
 
