@@ -362,13 +362,20 @@ This document tracks all development tasks. Check off items as they're completed
 | 12. Relay Controls | 10 | 10 | 100% |
 | 13. Statistics | 8 | 8 | 100% |
 | 14. Packaging | 14 | 11 | 79% |
-| 15. Polish | 14 | 1 | 7% |
-| **TOTAL** | **205** | **189** | **92%** |
+| 15. Polish | 14 | 3 | 21% |
+| **TOTAL** | **205** | **191** | **93%** |
 
 ---
 
 ## Current Focus
 
-**Next Task:** UMBREL-005: Test on Umbrel / STARTOS-007: Test on StartOS
+**Completed:** TEST-001 (API endpoint tests) and TEST-002 (Database query tests) - 478 Go tests covering handlers, services, and database layer.
+
+**Next Tasks:**
+
+- TEST-003: UI component tests (Svelte/Vitest)
+- TEST-004: End-to-end tests (Playwright)
+- STARTOS-007: Test on StartOS
+- DOCS-001 through DOCS-005: Documentation
 
 See SPECIFICATION.md for full details on any feature.
