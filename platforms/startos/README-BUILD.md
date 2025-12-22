@@ -2,6 +2,15 @@
 
 This document explains how to build the Roostr `.s9pk` package for StartOS.
 
+## StartOS Version Compatibility
+
+| StartOS Version | Package Format | Manifest | Notes |
+|-----------------|----------------|----------|-------|
+| v0.3.5.x (stable) | s9pk v1 | YAML | Current target |
+| v0.4.x (alpha) | s9pk v2 | JavaScript | Requires `start-cli s9pk convert` |
+
+This guide targets **StartOS v0.3.5.x** (the current stable release).
+
 ## Prerequisites
 
 Install the following tools:
@@ -12,22 +21,18 @@ Install the following tools:
    docker buildx version
    ```
 
-2. **StartOS SDK** ([Installation Guide](https://docs.start9.com/0.3.5.x/developer-docs/packaging))
-   ```bash
-   # Verify installation
-   start-sdk --version
-   ```
-
-3. **yq** (YAML processor)
+2. **yq** (YAML processor)
    ```bash
    # Install via snap, brew, or your package manager
    sudo snap install yq
    ```
 
-4. **QEMU for cross-compilation** (if building ARM on x86 or vice versa)
+3. **QEMU for cross-compilation** (if building ARM on x86 or vice versa)
    ```bash
    docker run --privileged --rm linuxkit/binfmt:v0.8
    ```
+
+> **Note**: The StartOS SDK is built automatically in Docker during the pack step. You don't need to install it locally.
 
 ## Building the Package
 
@@ -125,14 +130,62 @@ The `.s9pk` includes:
 docker run --privileged --rm linuxkit/binfmt:v0.8
 ```
 
-### start-sdk not found
-Ensure the SDK is in your PATH. See [Start9 Developer Docs](https://docs.start9.com/0.3.5.x/developer-docs/packaging).
+### start-sdk not found or won't compile
+
+The SDK is difficult to compile locally due to Rust version requirements and git submodules. Use the Docker-based build instead:
+
+```bash
+# Build SDK in Docker and pack s9pk
+docker run --rm \
+  -v "$(pwd)/../..:/workspace" \
+  -w /workspace/platforms/startos \
+  rust:1.82-bookworm bash -c "
+    apt-get update -qq && apt-get install -y -qq git yq >/dev/null 2>&1
+    git config --global --add safe.directory /workspace
+    git clone --depth 1 --branch sdk --recurse-submodules \
+      https://github.com/Start9Labs/start-os.git /tmp/sdk
+    cd /tmp/sdk && echo 'sdk' > GIT_HASH.txt && mkdir -p web/dist/static
+    cd core && cargo install --path=./startos --no-default-features \
+      --features=sdk --locked --root /usr/local 2>&1 | tail -5
+    ln -sf /usr/local/bin/startbox /usr/local/bin/start-sdk
+    cd /workspace/platforms/startos
+    start-sdk init && start-sdk pack
+  "
+```
 
 ### Build fails with "no space left on device"
 Docker images are large. Clean up old images:
 ```bash
 docker system prune -a
 ```
+
+### Service crashes with "Permission denied" on /data
+
+StartOS mounts the `/data` volume with root ownership. The container must run as root, not a non-root user. Ensure the Dockerfile does NOT have a `USER` directive.
+
+```dockerfile
+# WRONG - will cause permission errors
+USER appuser
+ENTRYPOINT ["/entrypoint.sh"]
+
+# CORRECT - run as root for StartOS
+ENTRYPOINT ["/entrypoint.sh"]
+```
+
+### "Invalid Package File" when sideloading
+
+The s9pk format requires proper SDK signing/headers. You cannot manually create a tar archive - you must use `start-sdk pack`. Use the Docker-based build command above.
+
+## Converting to v2 for StartOS 0.4.x (Alpha)
+
+If testing on StartOS v0.4.x alpha, convert the v1 package to v2:
+
+```bash
+# Requires start-cli v0.4 and squashfs-tools-ng (for tar2sqfs)
+start-cli s9pk convert roostr.s9pk
+```
+
+This creates a v2 package with SquashFS format.
 
 ## References
 

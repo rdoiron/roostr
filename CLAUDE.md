@@ -162,6 +162,30 @@ When releasing a new version:
 3. Update the "Current version" in this section
 4. Build and push with the new tag
 
+## StartOS Packaging
+
+**Target:** StartOS v0.3.5.x (stable) using s9pk v1 format
+
+Key learnings:
+- **Container must run as root** - StartOS mounts `/data` with root ownership. Do NOT use `USER` directive in Dockerfile.
+- **SDK is hard to install locally** - Use Docker-based build via `make pack` in `platforms/startos/`
+- **s9pk format requires SDK** - Cannot manually create tar archives; must use `start-sdk pack`
+
+Build locally:
+```bash
+cd platforms/startos
+make x86    # Build x86_64 image (~5 min)
+make arm    # Build ARM64 image (~60 min via QEMU)
+make pack   # Create roostr.s9pk using Docker-based SDK
+```
+
+For StartOS v0.4.x (alpha), convert v1 to v2:
+```bash
+start-cli s9pk convert roostr.s9pk
+```
+
+See `platforms/startos/README-BUILD.md` for full documentation.
+
 ## Environment Variables
 
 ```bash

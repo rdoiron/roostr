@@ -1,0 +1,7 @@
+# Build artifacts
+docker-images/
+*.s9pk
+*.s9pk.sha256
+
+# SDK generated
+.embassy/
