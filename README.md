@@ -138,7 +138,6 @@ See [docs/API.md](./docs/API.md) for the complete API reference.
 - [User Guide](./docs/USER-GUIDE.md) - End-user documentation
 - [API Reference](./docs/API.md) - Complete API documentation
 - [Contributing](./CONTRIBUTING.md) - Development setup and guidelines
-- [Full Specification](./docs/SPECIFICATION.md) - Product specification
 - [Development Tasks](./docs/TASKS.md) - Task checklist and roadmap
 
 ## Support

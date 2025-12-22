@@ -96,7 +96,6 @@ roostr/
 │       │   └── lib/         # Components, stores, utilities
 │       └── e2e/             # Playwright E2E tests
 ├── docs/
-│   ├── SPECIFICATION.md     # Full product specification
 │   ├── USER-GUIDE.md        # End-user documentation
 │   ├── API.md               # API reference
 │   └── TASKS.md             # Development task checklist

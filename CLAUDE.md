@@ -44,7 +44,8 @@ roostr/
 ├── README.md              # User-facing docs
 ├── Makefile               # Build commands
 ├── docs/
-│   ├── SPECIFICATION.md   # Full product spec (READ THIS)
+│   ├── USER-GUIDE.md      # End-user documentation
+│   ├── API.md             # Complete API reference
 │   └── TASKS.md           # Development task checklist
 ├── app/
 │   ├── api/               # Go backend
@@ -109,9 +110,10 @@ roostr/
 
 When starting work, read these for context:
 
-1. `docs/SPECIFICATION.md` - Full product specification
-2. `docs/TASKS.md` - Task checklist with current progress
-3. This file for conventions and structure
+1. `docs/TASKS.md` - Task checklist with current progress
+2. `docs/USER-GUIDE.md` - Feature documentation
+3. `docs/API.md` - API endpoint reference
+4. This file for conventions and structure
 
 ## Common Commands
 

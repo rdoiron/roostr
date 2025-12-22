@@ -67,3 +67,6 @@ temp/
 .cache/
 /app/api/server
 .docker/
+
+# Archived documentation (kept locally)
+docs/archive/

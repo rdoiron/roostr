@@ -393,4 +393,4 @@ This document tracks all development tasks. Check off items as they're completed
 - STARTOS-008: Submit to Start9 Marketplace
 - LAUNCH-001 through LAUNCH-004: Release tasks
 
-See SPECIFICATION.md for full details on any feature.
+See docs/USER-GUIDE.md and docs/API.md for feature details.

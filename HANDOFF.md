@@ -65,8 +65,9 @@ I'm starting development on Roostr, a private Nostr relay management app.
 
 Please read these files to understand the project:
 1. CLAUDE.md - Project overview and conventions
-2. docs/SPECIFICATION.md - Full product specification
-3. docs/TASKS.md - Development task checklist
+2. docs/TASKS.md - Development task checklist
+3. docs/USER-GUIDE.md - Feature documentation
+4. docs/API.md - API reference
 
 After reading, let's start with the first task: SETUP-001 (Initialize git repo with .gitignore).
 
@@ -140,8 +141,9 @@ grep "\[x\]" docs/TASKS.md | wc -l
 | File | Purpose | When to Read |
 |------|---------|--------------|
 | CLAUDE.md | Project overview, conventions | Auto-read on session start |
-| docs/SPECIFICATION.md | Full product spec | When implementing features |
 | docs/TASKS.md | Task checklist | Start of each session |
+| docs/USER-GUIDE.md | Feature documentation | When implementing features |
+| docs/API.md | API reference | When working on endpoints |
 | app/api/go.mod | Go dependencies | When adding packages |
 | app/ui/package.json | UI dependencies | When adding packages |
 
@@ -168,8 +170,8 @@ grep "\[x\]" docs/TASKS.md | wc -l
 
 ### Starting a new feature
 ```
-Let's implement the [feature name] feature. 
-Please read docs/SPECIFICATION.md section [X] first, 
+Let's implement the [feature name] feature.
+Please read docs/USER-GUIDE.md and docs/API.md first,
 then let's plan the implementation before coding.
 ```
 
@@ -196,32 +198,7 @@ Let's commit our progress. Please:
 
 ---
 
-## The Full Specification
-
-The complete 2,600+ line specification is in `docs/SPECIFICATION.md`. It contains:
-
-1. First-Run Setup Wizard
-2. Dashboard
-3. Statistics & Metrics
-4. Access Control (Whitelist/Blacklist)
-5. Event Browser
-6. Relay Configuration
-7. Storage Management
-8. Export & Backup
-9. Support & Donations
-10. Sync from Public Relays
-11. Paid Relay Access
-12. Tor & Network Infrastructure
-13. Platform Integration
-14. Global UI/UX Requirements
-15. API Specification
-16. Data Models
-
-Claude Code should reference specific sections when implementing features.
-
----
-
-## You're Ready!
+## You're Ready
 
 1. ✅ Repo created on GitHub
 2. ✅ Cloned to local machine
