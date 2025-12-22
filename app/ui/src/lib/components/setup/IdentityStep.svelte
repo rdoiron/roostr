@@ -3,17 +3,13 @@
 
 	let { identity = '', onChange } = $props();
 
-	let inputValue = $state('');
+	// Initialize from prop - component recreates on navigation so this handles back nav
+	// We intentionally capture initial value only to prevent input overwrite during validation
+	// eslint-disable-next-line svelte/valid-compile
+	let inputValue = $state(identity || '');
 	let validating = $state(false);
 	let validationResult = $state(null);
 	let debounceTimer = null;
-
-	// Sync local state with prop (handles initial value and back navigation)
-	$effect(() => {
-		if (identity && identity !== inputValue) {
-			inputValue = identity;
-		}
-	});
 
 	// Cleanup on unmount
 	$effect(() => {

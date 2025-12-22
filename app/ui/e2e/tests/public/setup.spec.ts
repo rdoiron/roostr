@@ -85,6 +85,30 @@ test.describe('Setup Wizard', () => {
 		expect(await setupPage.isContinueEnabled()).toBe(true);
 	});
 
+	test('allows slow character-by-character typing without input locking', async ({ page }) => {
+		const setupPage = new SetupPage(page);
+		await setupPage.goto();
+		await setupPage.clickGetStarted();
+
+		const input = page.locator('#identity');
+		const testValue = 'alice@example.com';
+
+		// Type character by character with delays (simulates slow human typing)
+		// This tests the bug where validation firing mid-typing would lock the input
+		for (const char of testValue) {
+			await input.pressSequentially(char, { delay: 100 });
+		}
+
+		// Wait for final validation to complete
+		await page.waitForTimeout(700);
+
+		// Verify all characters were accepted (not lost during validation)
+		await expect(input).toHaveValue(testValue);
+
+		// Validation should show valid
+		expect(await setupPage.isIdentityValid()).toBe(true);
+	});
+
 	test('back button navigates to previous step', async ({ page }) => {
 		const setupPage = new SetupPage(page);
 		await setupPage.goto();
