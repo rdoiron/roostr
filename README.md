@@ -1,4 +1,4 @@
-# 🐓 Roostr
+# Roostr
 
 > Your Private Roost on Nostr
 
@@ -14,26 +14,86 @@ Roostr is a comprehensive web-based management interface for private Nostr relay
 - **Storage Management** - Retention policies, cleanup, NIP-09 deletion support
 - **Export/Backup** - Download your events in standard formats
 
+## Quick Start
+
+```bash
+# Clone the repository
+git clone https://github.com/rdoiron/roostr.git
+cd roostr
+
+# Install dependencies
+make deps
+
+# Start development servers
+make dev
+```
+
+Open `http://localhost:5173` and complete the setup wizard.
+
 ## Installation
 
 ### Umbrel
 
-Coming soon to the Umbrel App Store.
+Coming soon to the Umbrel App Store. For manual installation, see Docker instructions below.
 
 ### Start9
 
 Coming soon to the Start9 Marketplace.
 
-### Manual / Development
+### Docker
 
 ```bash
-# Clone the repo
+# Pull the image
+docker pull rdoiron/roostr:0.1.0
+
+# Run with Docker Compose (recommended)
+cd platforms/umbrel
+docker-compose up -d
+```
+
+### Manual / Development
+
+#### Prerequisites
+
+| Requirement | Version | Notes |
+|-------------|---------|-------|
+| Go | 1.22+ | [golang.org/dl](https://golang.org/dl/) |
+| Node.js | 20+ | [nodejs.org](https://nodejs.org/) |
+| SQLite3 headers | - | Required for CGO |
+
+**Install SQLite3 headers:**
+```bash
+# Ubuntu/Debian
+sudo apt install libsqlite3-dev
+
+# macOS
+brew install sqlite3
+
+# Fedora
+sudo dnf install sqlite-devel
+```
+
+**Setup:**
+```bash
 git clone https://github.com/rdoiron/roostr.git
 cd roostr
-
-# Start development servers
+make deps
 make dev
 ```
+
+## Configuration
+
+Key environment variables:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | `3001` | API server port |
+| `RELAY_DB_PATH` | `/data/nostr.db` | Path to relay SQLite database |
+| `APP_DB_PATH` | `/data/roostr.db` | Path to app SQLite database |
+| `CONFIG_PATH` | `/data/config.toml` | Path to relay config file |
+| `RELAY_BINARY` | `/usr/bin/nostr-rs-relay` | Path to relay binary |
+
+See [CLAUDE.md](./CLAUDE.md) for the complete configuration reference.
 
 ## Screenshots
 
@@ -41,37 +101,52 @@ make dev
 
 ## Tech Stack
 
-- **Frontend**: Svelte 5 + SvelteKit + Tailwind CSS
-- **Backend**: Go 1.22+ (with SQLite and TOML libraries)
-- **Relay**: nostr-rs-relay
-- **Database**: SQLite
+| Component | Technology |
+|-----------|------------|
+| Frontend | Svelte 5 + SvelteKit + Tailwind CSS |
+| Backend | Go 1.22+ |
+| Relay | nostr-rs-relay |
+| Database | SQLite |
 
 ## Development
 
-See [CLAUDE.md](./CLAUDE.md) for development conventions and [docs/TASKS.md](./docs/TASKS.md) for the development roadmap.
-
 ```bash
-# Run development servers
-make dev
-
-# Run tests
-make test
-
-# Build for production
-make build
+make dev          # Run API and UI dev servers
+make test         # Run all tests
+make build        # Build for production
+make lint         # Lint all code
 ```
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for the full development guide.
+
+## API
+
+The API is available at `/api/v1/`. Key endpoint categories:
+
+- **Setup** - Initial configuration wizard
+- **Stats** - Dashboard statistics and real-time updates
+- **Access** - Whitelist, blacklist, and paid access management
+- **Events** - Browse, search, and manage stored events
+- **Sync** - Import events from public relays
+- **Storage** - Retention policies and cleanup
+- **Config** - Relay configuration
+
+See [docs/API.md](./docs/API.md) for the complete API reference.
 
 ## Documentation
 
-- [Full Specification](./docs/SPECIFICATION.md)
-- [Development Tasks](./docs/TASKS.md)
+- [User Guide](./docs/USER-GUIDE.md) - End-user documentation
+- [API Reference](./docs/API.md) - Complete API documentation
+- [Contributing](./CONTRIBUTING.md) - Development setup and guidelines
+- [Full Specification](./docs/SPECIFICATION.md) - Product specification
+- [Development Tasks](./docs/TASKS.md) - Task checklist and roadmap
 
 ## Support
 
 If you find Roostr useful, consider supporting development:
 
-⚡ Lightning: `[your-lightning-address]`  
-₿ Bitcoin: `[your-bitcoin-address]`
+Lightning: `ryand@getalby.com`
+Bitcoin: `[bitcoin-address]`
 
 ## License
 
@@ -82,4 +157,4 @@ MIT License - see [LICENSE](./LICENSE) for details.
 - [nostr-rs-relay](https://github.com/scsibug/nostr-rs-relay) - The relay we wrap
 - [Umbrel](https://umbrel.com/) - Home server platform
 - [Start9](https://start9.com/) - Sovereign computing platform
-- The Nostr community 💜
+- The Nostr community

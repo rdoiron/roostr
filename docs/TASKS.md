@@ -330,10 +330,10 @@ This document tracks all development tasks. Check off items as they're completed
 - [x] TEST-005: Manual testing checklist
 
 ### Documentation
-- [ ] DOCS-001: README with installation
-- [ ] DOCS-002: User guide
-- [ ] DOCS-003: API documentation
-- [ ] DOCS-004: Contributing guide
+- [x] DOCS-001: README with installation
+- [x] DOCS-002: User guide
+- [x] DOCS-003: API documentation
+- [x] DOCS-004: Contributing guide
 - [ ] DOCS-005: Screenshots for app stores
 
 ### Launch
@@ -362,8 +362,8 @@ This document tracks all development tasks. Check off items as they're completed
 | 12. Relay Controls | 10 | 10 | 100% |
 | 13. Statistics | 8 | 8 | 100% |
 | 14. Packaging | 14 | 12 | 86% |
-| 15. Polish | 14 | 5 | 36% |
-| **TOTAL** | **205** | **194** | **95%** |
+| 15. Polish | 14 | 9 | 64% |
+| **TOTAL** | **205** | **198** | **97%** |
 
 ---
 
@@ -379,9 +379,18 @@ This document tracks all development tasks. Check off items as they're completed
   - Fixed mock timing race condition with parallel route registration
   - Fixed mobile viewport issues (icon-only buttons, case-sensitive text)
 
+**Completed:** Documentation (DOCS-001 to DOCS-004)
+
+- README.md with installation instructions
+- docs/USER-GUIDE.md - End-user documentation
+- docs/API.md - Complete API reference
+- CONTRIBUTING.md - Development setup and guidelines
+
 **Next Tasks:**
 
+- DOCS-005: Screenshots for app stores
+- UMBREL-006: Submit to Umbrel App Store
 - STARTOS-008: Submit to Start9 Marketplace
-- DOCS-001 through DOCS-005: Documentation
+- LAUNCH-001 through LAUNCH-004: Release tasks
 
 See SPECIFICATION.md for full details on any feature.
