@@ -59,6 +59,7 @@ test-results/
 # Platform packages
 *.s9pk
 *.tar.gz
+docker-images/
 
 # Temporary
 tmp/
