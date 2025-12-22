@@ -65,13 +65,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Extract release notes
-        id: notes
-        run: |
-          # Extract release notes from umbrel manifest
-          NOTES=$(grep -A 50 "releaseNotes:" platforms/umbrel/umbrel-app.yml | head -n 10 | sed 's/releaseNotes: >//')
-          echo "notes=$NOTES" >> $GITHUB_OUTPUT
-
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
@@ -79,7 +72,16 @@ jobs:
           name: Roostr v${{ needs.build-docker.outputs.version }}
           body: |
             ## Release Notes
-            ${{ steps.notes.outputs.notes }}
+            Initial release of Roostr - Your Private Roost on Nostr.
+
+            Features:
+            - Dashboard with relay stats and status
+            - Whitelist/blacklist management
+            - Event browser with filtering
+            - Sync from public relays
+            - Export functionality
+            - Storage management
+            - Lightning payments for paid relay access
 
             ## Downloads
 
