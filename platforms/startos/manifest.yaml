@@ -75,11 +75,12 @@ interfaces:
         7000: "7000"
     lan-config:
       7000:
-        ssl: false
+        ssl: true
         internal: 7000
     ui: false
     protocols:
       - tcp
+      - http
       - ws
 
 dependencies: {}
