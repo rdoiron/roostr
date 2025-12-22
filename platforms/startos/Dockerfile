@@ -43,9 +43,6 @@ RUN apt-get update && apt-get install -y \
     procps \
     && rm -rf /var/lib/apt/lists/*
 
-# Create app user
-RUN useradd -m -u 1000 appuser
-
 # Copy binaries
 COPY --from=api-builder /roostr-api /usr/local/bin/roostr-api
 COPY --from=relay-builder /app/target/release/nostr-rs-relay /usr/local/bin/nostr-rs-relay
@@ -55,10 +52,9 @@ COPY --from=ui-builder /app/build /app/ui
 
 # Set permissions
 RUN chmod +x /usr/local/bin/roostr-api /usr/local/bin/nostr-rs-relay
-RUN chown -R appuser:appuser /app
 
 # Create data directory
-RUN mkdir -p /data && chown appuser:appuser /data
+RUN mkdir -p /data
 
 # Copy scripts
 COPY --chmod=755 platforms/startos/entrypoint.sh /entrypoint.sh
@@ -78,6 +74,5 @@ ENV PORT=8080 \
 
 EXPOSE 8080 7000
 
-USER appuser
-
+# Note: Running as root because StartOS mounts data volumes with root ownership
 ENTRYPOINT ["/entrypoint.sh"]
