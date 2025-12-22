@@ -315,7 +315,7 @@ This document tracks all development tasks. Check off items as they're completed
 - [x] STARTOS-004: Create health check script
 - [x] STARTOS-005: Create config scripts
 - [x] STARTOS-006: Build .s9pk package
-- [ ] STARTOS-007: Test on StartOS
+- [x] STARTOS-007: Test on StartOS
 - [ ] STARTOS-008: Submit to Start9 Marketplace
 
 ---
@@ -361,9 +361,9 @@ This document tracks all development tasks. Check off items as they're completed
 | 11. Paid Access | 27 | 27 | 100% |
 | 12. Relay Controls | 10 | 10 | 100% |
 | 13. Statistics | 8 | 8 | 100% |
-| 14. Packaging | 14 | 11 | 79% |
+| 14. Packaging | 14 | 12 | 86% |
 | 15. Polish | 14 | 5 | 36% |
-| **TOTAL** | **205** | **193** | **94%** |
+| **TOTAL** | **205** | **194** | **95%** |
 
 ---
 
@@ -381,7 +381,7 @@ This document tracks all development tasks. Check off items as they're completed
 
 **Next Tasks:**
 
-- STARTOS-007: Test on StartOS
+- STARTOS-008: Submit to Start9 Marketplace
 - DOCS-001 through DOCS-005: Documentation
 
 See SPECIFICATION.md for full details on any feature.
