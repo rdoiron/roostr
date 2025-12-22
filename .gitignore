@@ -68,5 +68,7 @@ temp/
 /app/api/server
 .docker/
 
-# Archived documentation (kept locally)
+# Archived/internal documentation (kept locally)
 docs/archive/
+docs/TASKS.md
+HANDOFF.md
