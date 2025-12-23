@@ -111,6 +111,7 @@ export const access = {
 	setMode: (mode) => put('/access/mode', { mode }),
 	getWhitelist: () => get('/access/whitelist'),
 	addToWhitelist: (data) => post('/access/whitelist', data),
+	bulkAddToWhitelist: (entries) => post('/access/whitelist/bulk', { entries }),
 	removeFromWhitelist: (pubkey) => del(`/access/whitelist/${pubkey}`),
 	updateWhitelist: (pubkey, data) => patch(`/access/whitelist/${pubkey}`, data),
 	getBlacklist: () => get('/access/blacklist'),
@@ -181,6 +182,21 @@ export const exportApi = {
 		if (params.since) query.set('since', params.since);
 		if (params.until) query.set('until', params.until);
 		return `${API_BASE}/events/export${query.toString() ? '?' + query.toString() : ''}`;
+	}
+};
+
+export const importApi = {
+	importEvents: async (formData) => {
+		const response = await fetch(`${API_BASE}/events/import`, {
+			method: 'POST',
+			body: formData
+			// Note: Don't set Content-Type header - browser will set it with boundary for multipart/form-data
+		});
+		if (!response.ok) {
+			const error = await response.json().catch(() => ({ error: response.statusText }));
+			throw new Error(error.error || 'Import failed');
+		}
+		return response.json();
 	}
 };
 

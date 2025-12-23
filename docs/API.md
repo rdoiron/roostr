@@ -398,6 +398,39 @@ Add a pubkey to the whitelist.
 }
 ```
 
+### POST /api/v1/access/whitelist/bulk
+
+Add multiple pubkeys to the whitelist in one operation. More efficient than individual API calls for importing large lists.
+
+**Request Body:**
+```json
+{
+  "entries": [
+    {
+      "pubkey": "hex pubkey",
+      "npub": "npub1...",
+      "nickname": "Alice"
+    },
+    {
+      "pubkey": "hex pubkey",
+      "npub": "npub1...",
+      "nickname": "Bob"
+    }
+  ]
+}
+```
+
+**Response:**
+```json
+{
+  "total": 2,
+  "added": 1,
+  "duplicates": 1,
+  "errors": 0,
+  "error_list": []
+}
+```
+
 ### DELETE /api/v1/access/whitelist/{pubkey}
 
 Remove a pubkey from the whitelist.
@@ -707,7 +740,51 @@ Queue an event for deletion (NIP-09).
 
 ---
 
-## Export
+## Import & Export
+
+### POST /api/v1/events/import
+
+Import events from a backup file. Accepts NDJSON (newline-delimited JSON) or JSON array format. Compatible with exports from Roostr, strfry, nosdump, nostrudel, and other standard Nostr tools.
+
+**Request:** Multipart form data with the following fields:
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `file` | file | required | NDJSON or JSON file containing Nostr events |
+| `verify_signatures` | boolean | `true` | Verify event signatures before import |
+| `skip_duplicates` | boolean | `true` | Skip events that already exist |
+| `stop_on_error` | boolean | `false` | Stop import on first error |
+
+**Response:**
+```json
+{
+  "total": 1000,
+  "processed": 1000,
+  "added": 850,
+  "duplicates": 140,
+  "errors": 10,
+  "error_list": [
+    "Event 5: verification failed: invalid signature",
+    "Event 23: insert failed: invalid event ID"
+  ]
+}
+```
+
+**Supported Formats:**
+
+NDJSON (recommended):
+```
+{"id":"abc...","pubkey":"def...","created_at":1234567890,...}
+{"id":"ghi...","pubkey":"jkl...","created_at":1234567891,...}
+```
+
+JSON array:
+```json
+[
+  {"id":"abc...","pubkey":"def...","created_at":1234567890,...},
+  {"id":"ghi...","pubkey":"jkl...","created_at":1234567891,...}
+]
+```
 
 ### GET /api/v1/events/export
 

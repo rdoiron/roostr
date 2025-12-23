@@ -196,6 +196,87 @@ func (h *Handler) RemoveFromWhitelist(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// BulkAddToWhitelistRequest is the request body for bulk adding to whitelist.
+type BulkAddToWhitelistRequest struct {
+	Entries []AddToWhitelistRequest `json:"entries"`
+}
+
+// BulkAddToWhitelistResponse contains the results of a bulk import operation.
+type BulkAddToWhitelistResponse struct {
+	Total      int      `json:"total"`       // Total entries in request
+	Added      int      `json:"added"`       // Successfully added (new)
+	Duplicates int      `json:"duplicates"`  // Already existed
+	Errors     int      `json:"errors"`      // Failed to add
+	ErrorList  []string `json:"error_list"`  // Error messages (limited to first 100)
+}
+
+// BulkAddToWhitelist adds multiple pubkeys to the whitelist in one operation.
+// This is more efficient than individual API calls for importing large lists.
+func (h *Handler) BulkAddToWhitelist(w http.ResponseWriter, r *http.Request) {
+	var req BulkAddToWhitelistRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		respondError(w, http.StatusBadRequest, "Invalid request body", "INVALID_JSON")
+		return
+	}
+
+	if len(req.Entries) == 0 {
+		respondError(w, http.StatusBadRequest, "No entries provided", "EMPTY_REQUEST")
+		return
+	}
+
+	ctx := r.Context()
+	response := BulkAddToWhitelistResponse{
+		Total:     len(req.Entries),
+		ErrorList: make([]string, 0),
+	}
+
+	for i, entry := range req.Entries {
+		if entry.Pubkey == "" {
+			response.Errors++
+			if len(response.ErrorList) < 100 {
+				response.ErrorList = append(response.ErrorList, fmt.Sprintf("Entry %d: missing pubkey", i+1))
+			}
+			continue
+		}
+
+		dbEntry := db.WhitelistEntry{
+			Pubkey:   entry.Pubkey,
+			Npub:     entry.Npub,
+			Nickname: entry.Nickname,
+		}
+
+		err := h.db.AddWhitelistEntry(ctx, dbEntry)
+		if err != nil {
+			// Check if it's a duplicate (already exists)
+			if err.Error() == "pubkey already in whitelist" {
+				response.Duplicates++
+			} else {
+				response.Errors++
+				if len(response.ErrorList) < 100 {
+					response.ErrorList = append(response.ErrorList, fmt.Sprintf("Entry %d (%s): %v", i+1, entry.Pubkey[:8], err))
+				}
+			}
+			continue
+		}
+
+		response.Added++
+	}
+
+	// Sync to config.toml once at the end (more efficient than per-entry)
+	if response.Added > 0 {
+		if err := h.syncConfigFromDB(ctx); err != nil {
+			log.Printf("Warning: failed to sync config.toml: %v", err)
+		}
+
+		// Log the bulk action
+		h.db.AddAuditLog(ctx, "whitelist_bulk_add", map[string]string{
+			"count": fmt.Sprintf("%d", response.Added),
+		}, "")
+	}
+
+	respondJSON(w, http.StatusOK, response)
+}
+
 // UpdateWhitelistEntryRequest is the request body for updating a whitelist entry.
 type UpdateWhitelistEntryRequest struct {
 	Nickname string `json:"nickname"`

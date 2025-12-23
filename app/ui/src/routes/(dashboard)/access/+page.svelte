@@ -182,37 +182,51 @@
 					entries = content.split('\n').filter((line) => line.trim()).map((line) => ({ npub: line.trim() }));
 				}
 
-				let added = 0;
-				let failed = 0;
+				// Validate all entries first to get pubkeys
+				const validatedEntries = [];
+				let validationErrors = 0;
 
 				for (const entry of entries) {
 					try {
 						const npub = entry.npub || entry;
-						if (typeof npub !== 'string' || !npub.startsWith('npub')) continue;
+						if (typeof npub !== 'string' || !npub.startsWith('npub')) {
+							validationErrors++;
+							continue;
+						}
 
 						// Use the validate endpoint to get the pubkey
 						const validation = await fetch(`/api/v1/setup/validate-identity?input=${encodeURIComponent(npub)}`);
 						const result = await validation.json();
 
 						if (result.valid) {
-							await access.addToWhitelist({
+							validatedEntries.push({
 								pubkey: result.pubkey,
 								npub: result.npub,
 								nickname: entry.nickname || ''
 							});
-							added++;
 						} else {
-							failed++;
+							validationErrors++;
 						}
 					} catch {
-						failed++;
+						validationErrors++;
 					}
 				}
 
-				notify('success', `Imported ${added} entries${failed > 0 ? `, ${failed} failed` : ''}`);
-				loadData();
-			} catch {
-				notify('error', 'Failed to parse import file');
+				// Use bulk import API for efficiency
+				if (validatedEntries.length > 0) {
+					const result = await access.bulkAddToWhitelist(validatedEntries);
+					notify(
+						'success',
+						`Imported ${result.added} entries` +
+						(result.duplicates > 0 ? `, ${result.duplicates} duplicates` : '') +
+						(result.errors > 0 || validationErrors > 0 ? `, ${result.errors + validationErrors} failed` : '')
+					);
+					loadData();
+				} else {
+					notify('error', 'No valid entries to import');
+				}
+			} catch (error) {
+				notify('error', error.message || 'Failed to import whitelist');
 			} finally {
 				importing = false;
 				// Reset file input
