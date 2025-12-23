@@ -334,6 +334,7 @@
 								<li>strfry relay exports (<code>strfry export</code>)</li>
 								<li>nosdump backups</li>
 								<li>nostrudel exports</li>
+								<li>Primal.net exports</li>
 								<li>Any standard Nostr event JSON file</li>
 							</ul>
 						</div>

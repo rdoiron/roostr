@@ -744,7 +744,7 @@ Queue an event for deletion (NIP-09).
 
 ### POST /api/v1/events/import
 
-Import events from a backup file. Accepts NDJSON (newline-delimited JSON) or JSON array format. Compatible with exports from Roostr, strfry, nosdump, nostrudel, and other standard Nostr tools.
+Import events from a backup file. Accepts NDJSON (newline-delimited JSON) or JSON array format. Compatible with exports from Roostr, strfry, nosdump, nostrudel, Primal.net, and other standard Nostr tools.
 
 **Request:** Multipart form data with the following fields:
 
