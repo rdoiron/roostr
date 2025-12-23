@@ -150,19 +150,61 @@ make package-startos  # Build Start9 package
 **Image:** `rdoiron/roostr`
 **Current version:** `0.1.0`
 
-Always use the versioned tag that matches `platforms/umbrel/umbrel-app.yml`. Do NOT use or create a `:latest` tag.
+All Docker builds are done locally (no CI) for speed. Multi-arch builds take ~13 min locally vs 60+ min in GitHub Actions.
 
 ```bash
-# Build and push (from project root)
-docker build -f platforms/umbrel/Dockerfile -t rdoiron/roostr:0.1.0 .
-docker push rdoiron/roostr:0.1.0
+# Build and push multi-arch (from project root)
+docker buildx build \
+  --platform linux/amd64,linux/arm64 \
+  --push \
+  --tag rdoiron/roostr:0.1.0 \
+  --tag rdoiron/roostr:latest \
+  -f platforms/umbrel/Dockerfile .
 ```
 
-When releasing a new version:
-1. Update version in `platforms/umbrel/umbrel-app.yml`
-2. Update version in `platforms/umbrel/docker-compose.yml`
-3. Update the "Current version" in this section
-4. Build and push with the new tag
+## Releasing
+
+All releases are built locally. No CI workflows for releases.
+
+### Full Release Checklist
+
+```bash
+# 1. Build StartOS package (both architectures)
+cd platforms/startos
+make clean
+make x86              # ~2 min
+make arm              # ~4 min (cached) or ~60 min (first build)
+make pack             # Creates roostr.s9pk
+
+# 2. Build and push Docker image
+cd ../..
+docker buildx build \
+  --platform linux/amd64,linux/arm64 \
+  --push \
+  --tag rdoiron/roostr:X.Y.Z \
+  --tag rdoiron/roostr:latest \
+  -f platforms/umbrel/Dockerfile .
+
+# 3. Create git tag
+git tag vX.Y.Z
+git push origin vX.Y.Z
+
+# 4. Create GitHub release
+gh release create vX.Y.Z --title "Roostr vX.Y.Z" --notes "..."
+
+# 5. Upload StartOS package
+gh release upload vX.Y.Z platforms/startos/roostr.s9pk
+sha256sum platforms/startos/roostr.s9pk > platforms/startos/roostr.s9pk.sha256
+gh release upload vX.Y.Z platforms/startos/roostr.s9pk.sha256
+```
+
+### Version Bumps
+
+When releasing a new version, update:
+1. `platforms/umbrel/umbrel-app.yml` - version field
+2. `platforms/umbrel/docker-compose.yml` - image tag
+3. `platforms/startos/manifest.yaml` - version field
+4. This file - "Current version" above
 
 ## StartOS Packaging
 
