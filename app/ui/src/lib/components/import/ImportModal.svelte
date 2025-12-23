@@ -1,7 +1,6 @@
 <script>
 	import { importApi } from '$lib/api/client.js';
 	import { formatBytes } from '$lib/utils/format.js';
-	import Loading from '$lib/components/Loading.svelte';
 	import Button from '$lib/components/Button.svelte';
 
 	let { onClose, onSuccess } = $props();
@@ -200,6 +199,7 @@
 							type="button"
 							onclick={() => { selectedFile = null; fileName = ''; fileSize = 0; detectedFormat = ''; }}
 							disabled={importing}
+							aria-label="Remove selected file"
 							class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
 						>
 							<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
