@@ -1346,7 +1346,7 @@ Get support and donation configuration.
 ```json
 {
   "lightning_address": "ryand@getalby.com",
-  "bitcoin_address": "[bitcoin-address]",
+  "bitcoin_address": "bc1qgt9ysyn4m9995s565tcxdgppq29y4h0ul4gj2u",
   "github_repo": "https://github.com/rdoiron/roostr",
   "developer_npub": "npub1...",
   "version": "0.1.0"

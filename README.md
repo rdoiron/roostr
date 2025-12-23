@@ -97,7 +97,14 @@ See [CLAUDE.md](./CLAUDE.md) for the complete configuration reference.
 
 ## Screenshots
 
-*Coming soon*
+### Dashboard
+![Dashboard](docs/screenshots/1-dashboard.png)
+
+### Access Control
+![Access Control](docs/screenshots/2-access.png)
+
+### Event Browser
+![Event Browser](docs/screenshots/3-events.png)
 
 ## Tech Stack
 
@@ -145,7 +152,7 @@ See [docs/API.md](./docs/API.md) for the complete API reference.
 If you find Roostr useful, consider supporting development:
 
 Lightning: `ryand@getalby.com`
-Bitcoin: `[bitcoin-address]`
+Bitcoin: `bc1qgt9ysyn4m9995s565tcxdgppq29y4h0ul4gj2u`
 
 ## License
 

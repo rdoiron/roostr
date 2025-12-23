@@ -19,7 +19,7 @@ type SupportConfigResponse struct {
 func (h *Handler) GetSupportConfig(w http.ResponseWriter, r *http.Request) {
 	config := SupportConfigResponse{
 		LightningAddress: getEnvOrDefault("DONATION_LIGHTNING_ADDRESS", "ryand@getalby.com"),
-		BitcoinAddress:   getEnvOrDefault("DONATION_BITCOIN_ADDRESS", "bc1qexample..."),
+		BitcoinAddress:   getEnvOrDefault("DONATION_BITCOIN_ADDRESS", "bc1qgt9ysyn4m9995s565tcxdgppq29y4h0ul4gj2u"),
 		GithubRepo:       getEnvOrDefault("GITHUB_REPO", "https://github.com/rdoiron/roostr"),
 		DeveloperNpub:    getEnvOrDefault("DEVELOPER_NPUB", "npub1..."),
 		Version:          "0.1.0",
