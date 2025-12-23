@@ -69,6 +69,7 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	// Whitelist endpoints
 	mux.HandleFunc("GET /api/v1/access/whitelist", h.GetWhitelist)
 	mux.HandleFunc("POST /api/v1/access/whitelist", h.AddToWhitelist)
+	mux.HandleFunc("POST /api/v1/access/whitelist/bulk", h.BulkAddToWhitelist)
 	mux.HandleFunc("DELETE /api/v1/access/whitelist/{pubkey}", h.RemoveFromWhitelist)
 	mux.HandleFunc("PATCH /api/v1/access/whitelist/{pubkey}", h.UpdateWhitelistEntry)
 
@@ -91,6 +92,7 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/v1/events", h.GetEvents)
 	mux.HandleFunc("GET /api/v1/events/export", h.ExportEvents)
 	mux.HandleFunc("GET /api/v1/events/export/estimate", h.GetExportEstimate)
+	mux.HandleFunc("POST /api/v1/events/import", h.ImportEvents)
 	mux.HandleFunc("GET /api/v1/events/{id}", h.GetEvent)
 	mux.HandleFunc("DELETE /api/v1/events/{id}", h.DeleteEvent)
 

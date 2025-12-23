@@ -35,6 +35,7 @@
 	// Import state
 	let importing = $state(false);
 	let fileInput = $state(null);
+	let importProgress = $state({ current: 0, total: 0, phase: '' });
 
 	async function loadData() {
 		try {
@@ -182,39 +183,57 @@
 					entries = content.split('\n').filter((line) => line.trim()).map((line) => ({ npub: line.trim() }));
 				}
 
-				let added = 0;
-				let failed = 0;
+				// Validate all entries first to get pubkeys
+				const validatedEntries = [];
+				let validationErrors = 0;
+				importProgress = { current: 0, total: entries.length, phase: 'Validating' };
 
 				for (const entry of entries) {
+					importProgress.current++;
 					try {
 						const npub = entry.npub || entry;
-						if (typeof npub !== 'string' || !npub.startsWith('npub')) continue;
+						if (typeof npub !== 'string' || !npub.startsWith('npub')) {
+							validationErrors++;
+							continue;
+						}
 
 						// Use the validate endpoint to get the pubkey
 						const validation = await fetch(`/api/v1/setup/validate-identity?input=${encodeURIComponent(npub)}`);
 						const result = await validation.json();
 
 						if (result.valid) {
-							await access.addToWhitelist({
+							validatedEntries.push({
 								pubkey: result.pubkey,
 								npub: result.npub,
 								nickname: entry.nickname || ''
 							});
-							added++;
 						} else {
-							failed++;
+							validationErrors++;
 						}
 					} catch {
-						failed++;
+						validationErrors++;
 					}
 				}
 
-				notify('success', `Imported ${added} entries${failed > 0 ? `, ${failed} failed` : ''}`);
-				loadData();
-			} catch {
-				notify('error', 'Failed to parse import file');
+				// Use bulk import API for efficiency
+				if (validatedEntries.length > 0) {
+					importProgress = { current: 0, total: 1, phase: 'Importing' };
+					const result = await access.bulkAddToWhitelist(validatedEntries);
+					notify(
+						'success',
+						`Imported ${result.added} entries` +
+						(result.duplicates > 0 ? `, ${result.duplicates} duplicates` : '') +
+						(result.errors > 0 || validationErrors > 0 ? `, ${result.errors + validationErrors} failed` : '')
+					);
+					loadData();
+				} else {
+					notify('error', 'No valid entries to import');
+				}
+			} catch (error) {
+				notify('error', error.message || 'Failed to import whitelist');
 			} finally {
 				importing = false;
+				importProgress = { current: 0, total: 0, phase: '' };
 				// Reset file input
 				if (fileInput) fileInput.value = '';
 			}
@@ -356,13 +375,18 @@
 						class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer {importing ? 'opacity-50 pointer-events-none' : ''}"
 					>
 						{#if importing}
-							<div class="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-gray-600 border-t-transparent"></div>
+							<div class="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-gray-600 dark:border-gray-300 border-t-transparent"></div>
+							{#if importProgress.total > 0}
+								{importProgress.phase} {importProgress.current}/{importProgress.total}
+							{:else}
+								Reading...
+							{/if}
 						{:else}
 							<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
 							</svg>
+							Import
 						{/if}
-						Import
 					</label>
 					<button
 						type="button"
