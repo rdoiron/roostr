@@ -49,7 +49,7 @@
 			loadRelayUrls();
 
 			// Connect to SSE stream for real-time stats with timezone
-			const tz = timezoneStore.resolved;
+			const tz = timezoneStore.resolved || '';
 			const streamUrl = tz
 				? `/api/v1/stats/stream?timezone=${encodeURIComponent(tz)}`
 				: '/api/v1/stats/stream';

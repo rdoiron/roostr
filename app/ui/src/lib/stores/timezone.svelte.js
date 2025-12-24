@@ -107,14 +107,31 @@ function resolveTimezone() {
 
 /**
  * Format a date in the user's selected timezone.
- * @param {Date|number} date - Date object or Unix timestamp in milliseconds
+ * @param {Date|number|string} date - Date object, Unix timestamp, or ISO date string
  * @param {Intl.DateTimeFormatOptions} options - Formatting options
  * @returns {string} Formatted date string
  */
 export function formatDateInTimezone(date, options = {}) {
 	if (!browser) return '';
 
-	const d = typeof date === 'number' ? new Date(date) : date;
+	let d;
+	if (date instanceof Date) {
+		d = date;
+	} else if (typeof date === 'number') {
+		// Unix timestamp - check if seconds or milliseconds
+		// Timestamps before year 2001 in ms would be < 1e12
+		d = new Date(date < 1e12 ? date * 1000 : date);
+	} else if (typeof date === 'string') {
+		d = new Date(date);
+	} else {
+		return ''; // Invalid input
+	}
+
+	// Check for invalid date
+	if (isNaN(d.getTime())) {
+		return '';
+	}
+
 	return new Intl.DateTimeFormat('en-US', {
 		timeZone: timezoneStore.resolved,
 		...options
