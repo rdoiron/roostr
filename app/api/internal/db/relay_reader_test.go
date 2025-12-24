@@ -458,7 +458,7 @@ func TestGetEventsToday(t *testing.T) {
 	insertTestEvent(t, db.RelayDB, testEventID2, testPubkey1, 1, startOfDay.Add(-time.Hour), "Yesterday's event")
 
 	t.Run("GetEventsToday", func(t *testing.T) {
-		count, err := db.GetEventsToday(ctx)
+		count, err := db.GetEventsToday(ctx, time.UTC)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}

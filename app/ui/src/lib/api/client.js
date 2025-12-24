@@ -121,15 +121,26 @@ export const access = {
 };
 
 export const stats = {
-	getSummary: () => get('/stats/summary'),
+	getSummary: (timezone = '') => {
+		let url = '/stats/summary';
+		if (timezone) url += `?timezone=${encodeURIComponent(timezone)}`;
+		return get(url);
+	},
 	getEventsOverTime: (timeRange = '7days', timezone = '') => {
 		let url = `/stats/events-over-time?time_range=${timeRange}`;
 		if (timezone) url += `&timezone=${encodeURIComponent(timezone)}`;
 		return get(url);
 	},
-	getEventsByKind: (timeRange = 'alltime') => get(`/stats/events-by-kind?time_range=${timeRange}`),
-	getTopAuthors: (timeRange = 'alltime', limit = 10) =>
-		get(`/stats/top-authors?time_range=${timeRange}&limit=${limit}`)
+	getEventsByKind: (timeRange = 'alltime', timezone = '') => {
+		let url = `/stats/events-by-kind?time_range=${timeRange}`;
+		if (timezone) url += `&timezone=${encodeURIComponent(timezone)}`;
+		return get(url);
+	},
+	getTopAuthors: (timeRange = 'alltime', limit = 10, timezone = '') => {
+		let url = `/stats/top-authors?time_range=${timeRange}&limit=${limit}`;
+		if (timezone) url += `&timezone=${encodeURIComponent(timezone)}`;
+		return get(url);
+	}
 };
 
 export const events = {
@@ -181,6 +192,7 @@ export const exportApi = {
 		if (params.kinds) query.set('kinds', params.kinds);
 		if (params.since) query.set('since', params.since);
 		if (params.until) query.set('until', params.until);
+		if (params.timezone) query.set('timezone', params.timezone);
 		return `${API_BASE}/events/export${query.toString() ? '?' + query.toString() : ''}`;
 	}
 };

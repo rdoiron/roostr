@@ -64,8 +64,17 @@ func (h *Handler) ExportEvents(w http.ResponseWriter, r *http.Request) {
 		// Continue without count header
 	}
 
-	// Generate filename with current date
-	filename := fmt.Sprintf("nostr-backup-%s", time.Now().Format("2006-01-02"))
+	// Parse timezone for filename date
+	timezone := query.Get("timezone")
+	loc := time.UTC
+	if timezone != "" && timezone != "UTC" {
+		if parsed, err := time.LoadLocation(timezone); err == nil {
+			loc = parsed
+		}
+	}
+
+	// Generate filename with current date in user's timezone
+	filename := fmt.Sprintf("nostr-backup-%s", time.Now().In(loc).Format("2006-01-02"))
 	if format == "ndjson" {
 		filename += ".ndjson"
 	} else {

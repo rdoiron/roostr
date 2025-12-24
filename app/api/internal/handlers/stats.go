@@ -13,6 +13,15 @@ import (
 func (h *Handler) GetStatsSummary(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
+	// Parse timezone from query parameter
+	timezone := r.URL.Query().Get("timezone")
+	loc := time.UTC
+	if timezone != "" && timezone != "UTC" {
+		if parsed, err := time.LoadLocation(timezone); err == nil {
+			loc = parsed
+		}
+	}
+
 	// Determine relay status
 	relayConnected := h.db.IsRelayDBConnected()
 	relayStatus := "offline"
@@ -50,8 +59,8 @@ func (h *Handler) GetStatsSummary(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get events today
-	eventsToday, _ := h.db.GetEventsToday(ctx)
+	// Get events today (in user's timezone)
+	eventsToday, _ := h.db.GetEventsToday(ctx, loc)
 
 	// Build events_by_kind with human-friendly labels per spec
 	eventsByKind := map[string]int64{}
@@ -221,7 +230,9 @@ func (h *Handler) GetEventsByKind(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	since, until := parseTimeRange(timeRange, "")
+	// Parse timezone from query parameter
+	timezone := r.URL.Query().Get("timezone")
+	since, until := parseTimeRange(timeRange, timezone)
 
 	kindCounts, err := h.db.GetEventsByKindInRange(ctx, since, until)
 	if err != nil {
@@ -296,7 +307,9 @@ func (h *Handler) GetTopAuthors(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	since, until := parseTimeRange(timeRange, "")
+	// Parse timezone from query parameter
+	timezone := r.URL.Query().Get("timezone")
+	since, until := parseTimeRange(timeRange, timezone)
 
 	authors, err := h.db.GetTopAuthorsInRange(ctx, limit, since, until)
 	if err != nil {
@@ -390,6 +403,15 @@ func (h *Handler) StreamDashboardStats(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
+	// Parse timezone from query parameter (read once at connection start)
+	timezone := r.URL.Query().Get("timezone")
+	loc := time.UTC
+	if timezone != "" && timezone != "UTC" {
+		if parsed, err := time.LoadLocation(timezone); err == nil {
+			loc = parsed
+		}
+	}
+
 	// Send initial connection event
 	fmt.Fprintf(w, "event: connected\ndata: {\"status\": \"connected\"}\n\n")
 	flusher.Flush()
@@ -403,14 +425,14 @@ func (h *Handler) StreamDashboardStats(w http.ResponseWriter, r *http.Request) {
 	defer keepaliveTicker.Stop()
 
 	// Send initial data immediately
-	h.sendDashboardUpdate(w, flusher, ctx)
+	h.sendDashboardUpdate(w, flusher, ctx, loc)
 
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case <-updateTicker.C:
-			h.sendDashboardUpdate(w, flusher, ctx)
+			h.sendDashboardUpdate(w, flusher, ctx, loc)
 		case <-keepaliveTicker.C:
 			// Send keepalive comment
 			fmt.Fprintf(w, ": keepalive\n\n")
@@ -420,7 +442,7 @@ func (h *Handler) StreamDashboardStats(w http.ResponseWriter, r *http.Request) {
 }
 
 // sendDashboardUpdate gathers and sends current dashboard stats.
-func (h *Handler) sendDashboardUpdate(w http.ResponseWriter, flusher http.Flusher, ctx context.Context) {
+func (h *Handler) sendDashboardUpdate(w http.ResponseWriter, flusher http.Flusher, ctx context.Context, loc *time.Location) {
 	// Build stats data (same logic as GetStatsSummary)
 	relayConnected := h.db.IsRelayDBConnected()
 	relayStatus := "offline"
@@ -463,7 +485,7 @@ func (h *Handler) sendDashboardUpdate(w http.ResponseWriter, flusher http.Flushe
 			}
 			recentEvents = []interface{}{}
 		} else {
-			eventsToday, _ := h.db.GetEventsToday(ctx)
+			eventsToday, _ := h.db.GetEventsToday(ctx, loc)
 
 			// Build events_by_kind
 			eventsByKind := map[string]int64{}

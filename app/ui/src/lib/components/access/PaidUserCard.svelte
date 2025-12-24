@@ -1,5 +1,6 @@
 <script>
 	import { formatRelativeTime } from '$lib/utils/format.js';
+	import { formatDateInTimezone } from '$lib/stores/timezone.svelte.js';
 
 	let { user, onRevoke = () => {} } = $props();
 
@@ -27,7 +28,7 @@
 		if (days === 0) return 'Expires today';
 		if (days === 1) return 'Expires tomorrow';
 		if (days <= 7) return `Expires in ${days} days`;
-		return new Date(expiresAt).toLocaleDateString();
+		return formatDateInTimezone(expiresAt, { month: 'short', day: 'numeric', year: 'numeric' });
 	}
 
 	function formatSats(sats) {

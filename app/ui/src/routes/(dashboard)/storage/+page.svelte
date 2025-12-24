@@ -3,6 +3,7 @@
 	import { storage } from '$lib/api/client.js';
 	import { notify } from '$lib/stores/app.svelte.js';
 	import { formatBytes, formatRelativeTime } from '$lib/utils/format.js';
+	import { formatDateInTimezone } from '$lib/stores/timezone.svelte.js';
 
 	import Loading from '$lib/components/Loading.svelte';
 	import Error from '$lib/components/Error.svelte';
@@ -287,7 +288,7 @@
 
 			{#if storageStatus?.oldest_event && storageStatus?.newest_event}
 				<div class="mt-4 text-sm text-gray-500 dark:text-gray-400">
-					Events span from {new Date(storageStatus.oldest_event).toLocaleDateString()} to {new Date(storageStatus.newest_event).toLocaleDateString()}
+					Events span from {formatDateInTimezone(storageStatus.oldest_event, { month: 'short', day: 'numeric', year: 'numeric' })} to {formatDateInTimezone(storageStatus.newest_event, { month: 'short', day: 'numeric', year: 'numeric' })}
 				</div>
 			{/if}
 		</div>
@@ -602,7 +603,7 @@
 			<h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Confirm Cleanup</h3>
 			<p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
 				You are about to delete <strong>{cleanupEstimate?.event_count?.toLocaleString()}</strong> events
-				created before <strong>{new Date(cleanupDate).toLocaleDateString()}</strong>.
+				created before <strong>{formatDateInTimezone(cleanupDate, { month: 'short', day: 'numeric', year: 'numeric' })}</strong>.
 			</p>
 			<p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
 				This will free approximately <strong>{formatBytes(cleanupEstimate?.estimated_space ?? 0)}</strong>

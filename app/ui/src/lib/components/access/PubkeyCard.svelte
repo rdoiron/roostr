@@ -1,4 +1,6 @@
 <script>
+	import { formatDateInTimezone } from '$lib/stores/timezone.svelte.js';
+
 	let { entry, listType = 'whitelist', onEdit = null, onRemove = null } = $props();
 
 	function truncateNpub(npub) {
@@ -12,7 +14,7 @@
 		const date = typeof timestamp === 'string'
 			? new Date(timestamp)
 			: new Date(timestamp * 1000);
-		return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+		return formatDateInTimezone(date, { month: 'short', day: 'numeric', year: 'numeric' });
 	}
 
 	const isOperator = $derived(entry.is_operator);

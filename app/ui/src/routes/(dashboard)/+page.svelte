@@ -2,6 +2,7 @@
 	import { browser } from '$app/environment';
 	import { relay } from '$lib/api/client.js';
 	import { formatUptime, formatBytes, formatCompactNumber } from '$lib/utils/format.js';
+	import { timezoneStore } from '$lib/stores/timezone.svelte.js';
 
 	import Loading from '$lib/components/Loading.svelte';
 	import Error from '$lib/components/Error.svelte';
@@ -47,8 +48,12 @@
 			// Load relay URLs once (they don't change)
 			loadRelayUrls();
 
-			// Connect to SSE stream for real-time stats
-			const eventSource = new EventSource('/api/v1/stats/stream');
+			// Connect to SSE stream for real-time stats with timezone
+			const tz = timezoneStore.resolved;
+			const streamUrl = tz
+				? `/api/v1/stats/stream?timezone=${encodeURIComponent(tz)}`
+				: '/api/v1/stats/stream';
+			const eventSource = new EventSource(streamUrl);
 
 			eventSource.addEventListener('connected', () => {
 				error = null;

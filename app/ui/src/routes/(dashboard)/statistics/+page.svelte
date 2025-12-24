@@ -25,8 +25,8 @@
 			const tz = timezoneStore.resolved;
 			const [overTimeRes, byKindRes, authorsRes] = await Promise.all([
 				stats.getEventsOverTime(range, tz),
-				stats.getEventsByKind(range),
-				stats.getTopAuthors(range, 10)
+				stats.getEventsByKind(range, tz),
+				stats.getTopAuthors(range, 10, tz)
 			]);
 
 			eventsOverTime = overTimeRes;

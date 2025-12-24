@@ -1,6 +1,7 @@
 <script>
 	import { exportApi } from '$lib/api/client.js';
 	import { formatBytes } from '$lib/utils/format.js';
+	import { timezoneStore } from '$lib/stores/timezone.svelte.js';
 	import Loading from '$lib/components/Loading.svelte';
 	import Button from '$lib/components/Button.svelte';
 
@@ -88,6 +89,10 @@
 			if (dateFrom) params.since = Math.floor(new Date(dateFrom).getTime() / 1000).toString();
 			if (dateTo) params.until = Math.floor(new Date(dateTo + 'T23:59:59').getTime() / 1000).toString();
 		}
+
+		// Include timezone for proper filename date formatting
+		const tz = timezoneStore.resolved;
+		if (tz) params.timezone = tz;
 
 		return params;
 	}

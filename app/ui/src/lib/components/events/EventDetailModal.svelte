@@ -1,6 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import { notify } from '$lib/stores/app.svelte.js';
+	import { formatDateInTimezone } from '$lib/stores/timezone.svelte.js';
 	import Button from '$lib/components/Button.svelte';
 
 	let { event, onClose, onDelete } = $props();
@@ -31,8 +32,15 @@
 	}
 
 	function formatDate(timestamp) {
-		const date = new Date(timestamp);
-		return date.toLocaleString();
+		// Use timezone-aware formatting
+		return formatDateInTimezone(timestamp, {
+			year: 'numeric',
+			month: 'short',
+			day: 'numeric',
+			hour: '2-digit',
+			minute: '2-digit',
+			second: '2-digit'
+		});
 	}
 
 	function getUnixTimestamp(timestamp) {

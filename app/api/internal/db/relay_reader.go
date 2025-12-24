@@ -237,15 +237,20 @@ func (d *DB) GetRelayStats(ctx context.Context) (*RelayStats, error) {
 	return stats, nil
 }
 
-// GetEventsToday returns the count of events created today (since midnight UTC).
-func (d *DB) GetEventsToday(ctx context.Context) (int64, error) {
+// GetEventsToday returns the count of events created today (since midnight in the given timezone).
+func (d *DB) GetEventsToday(ctx context.Context, loc *time.Location) (int64, error) {
 	if d.RelayDB == nil {
 		return 0, fmt.Errorf("relay database not connected")
 	}
 
-	// Get the start of today (midnight UTC)
-	now := time.Now().UTC()
-	startOfDay := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+	// Use UTC if no location provided
+	if loc == nil {
+		loc = time.UTC
+	}
+
+	// Get the start of today (midnight in user's timezone)
+	now := time.Now().In(loc)
+	startOfDay := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, loc)
 
 	var count int64
 	err := d.RelayDB.QueryRowContext(ctx,
