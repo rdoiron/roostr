@@ -23,11 +23,13 @@
 
 	async function loadRelayInfo() {
 		try {
-			// Get relay URLs from API
-			const status = await relay.getStatus();
+			// Get relay URLs from API (same approach as dashboard)
+			const urlsRes = await relay.getURLs();
+			const relayPort = urlsRes.relay_port || '7000';
+			const localUrl = `ws://${window.location.hostname}:${relayPort}`;
 			urls = {
-				local: status.websocket_url || 'ws://localhost:4848',
-				tor: status.tor_url || ''
+				local: localUrl,
+				tor: urlsRes.tor || ''
 			};
 
 			// Generate QR codes
@@ -49,10 +51,11 @@
 				});
 			}
 		} catch (e) {
-			console.error('Failed to load relay status:', e);
-			// Use fallback values
+			console.error('Failed to load relay URLs:', e);
+			// Use fallback values with dynamic hostname
+			const relayPort = '7000';
 			urls = {
-				local: 'ws://localhost:4848',
+				local: `ws://${window.location.hostname}:${relayPort}`,
 				tor: ''
 			};
 		} finally {
@@ -60,9 +63,36 @@
 		}
 	}
 
+	// Fallback copy method for non-secure contexts (HTTP)
+	function fallbackCopy(str) {
+		const textarea = document.createElement('textarea');
+		textarea.value = str;
+		textarea.style.position = 'fixed';
+		textarea.style.left = '-9999px';
+		textarea.style.top = '-9999px';
+		document.body.appendChild(textarea);
+		textarea.focus();
+		textarea.select();
+		try {
+			document.execCommand('copy');
+			return true;
+		} catch {
+			return false;
+		} finally {
+			document.body.removeChild(textarea);
+		}
+	}
+
 	async function copyToClipboard(text) {
 		try {
-			await navigator.clipboard.writeText(text);
+			// Try modern Clipboard API first (requires HTTPS or localhost)
+			if (navigator.clipboard && window.isSecureContext) {
+				await navigator.clipboard.writeText(text);
+			} else {
+				// Fallback for HTTP contexts
+				const success = fallbackCopy(text);
+				if (!success) throw new Error('Fallback copy failed');
+			}
 			notify('success', 'Copied to clipboard');
 		} catch {
 			notify('error', 'Failed to copy');

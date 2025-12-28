@@ -53,7 +53,7 @@
 		<!-- Sync button with last sync time -->
 		<div class="flex items-center gap-2">
 			{#if lastSyncText}
-				<span class="hidden text-xs text-gray-500 dark:text-gray-400 sm:inline">
+				<span class="hidden text-xs text-gray-500 dark:text-gray-400 lg:inline">
 					Last synced: {lastSyncText}
 				</span>
 			{/if}
