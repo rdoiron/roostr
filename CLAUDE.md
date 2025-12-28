@@ -200,11 +200,18 @@ gh release upload vX.Y.Z platforms/startos/roostr.s9pk.sha256
 
 ### Version Bumps
 
-When releasing a new version, update:
-1. `platforms/umbrel/umbrel-app.yml` - version field
-2. `platforms/umbrel/docker-compose.yml` - image tag
-3. `platforms/startos/manifest.yaml` - version field
-4. This file - "Current version" above
+When releasing a new version, update ALL of these files:
+
+| Location | File | Field |
+|----------|------|-------|
+| API Support Config | `app/api/internal/handlers/support.go` | `Version` (line ~25) |
+| Umbrel Official | `platforms/umbrel/umbrel-app.yml` | `version` |
+| Umbrel Official | `platforms/umbrel/docker-compose.yml` | `image` tag |
+| Umbrel Community | `rdoiron-roostr/umbrel-app.yml` | `version` + `releaseNotes` |
+| Umbrel Community | `rdoiron-roostr/docker-compose.yml` | `image` tag |
+| StartOS | `platforms/startos/manifest.yaml` | `version` + `release-notes` |
+| CLAUDE.md | This file | "Current version" in Docker section |
+| E2E Mock Data | `app/ui/e2e/fixtures/mock-data.ts` | `version` in supportConfig |
 
 ## StartOS Packaging
 
