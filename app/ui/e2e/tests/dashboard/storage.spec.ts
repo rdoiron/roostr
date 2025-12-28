@@ -99,11 +99,19 @@ test.describe('Storage Management', () => {
 		await expect(page.locator('text=/healthy|good|ok/i')).toBeVisible();
 	});
 
-	test('shows NIP-09 deletion option', async ({ page }) => {
+	test('shows apply retention exceptions option in manual cleanup', async ({ page }) => {
 		const storagePage = new StoragePage(page);
 		await storagePage.goto();
 
-		// NIP-09 deletion option is a checkbox in the retention settings
-		await expect(page.locator('text=Honor NIP-09 deletion requests')).toBeVisible();
+		// Manual cleanup has option to apply retention exceptions
+		await expect(page.locator('text=Apply retention exceptions')).toBeVisible();
+	});
+
+	test('shows run now button for retention policy', async ({ page }) => {
+		const storagePage = new StoragePage(page);
+		await storagePage.goto();
+
+		// Retention policy section has a Run Now button
+		await expect(page.getByRole('button', { name: 'Run Now' })).toBeVisible();
 	});
 });
