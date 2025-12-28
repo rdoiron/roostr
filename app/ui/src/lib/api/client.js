@@ -174,8 +174,13 @@ export const storage = {
 	cleanup: (data) => post('/storage/cleanup', data),
 	vacuum: () => post('/storage/vacuum', {}),
 	getDeletionRequests: (status) => get(`/storage/deletion-requests${status ? `?status=${status}` : ''}`),
-	getEstimate: (beforeDate) => get(`/storage/estimate?before_date=${encodeURIComponent(beforeDate)}`),
-	integrityCheck: () => post('/storage/integrity-check', {})
+	getEstimate: (beforeDate, applyExceptions = false) => {
+		let url = `/storage/estimate?before_date=${encodeURIComponent(beforeDate)}`;
+		if (applyExceptions) url += '&apply_exceptions=true';
+		return get(url);
+	},
+	integrityCheck: () => post('/storage/integrity-check', {}),
+	runRetentionNow: () => post('/storage/retention/run', {})
 };
 
 export const exportApi = {

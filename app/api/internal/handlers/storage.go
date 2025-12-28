@@ -30,7 +30,9 @@ type RetentionPolicyRequest struct {
 
 // CleanupRequest represents a manual cleanup request.
 type CleanupRequest struct {
-	BeforeDate string `json:"before_date"` // ISO 8601 format
+	BeforeDate      string   `json:"before_date"`      // ISO 8601 format
+	ApplyExceptions bool     `json:"apply_exceptions"` // If true, use retention policy exceptions
+	Exceptions      []string `json:"exceptions"`       // Optional explicit exceptions (overrides retention policy)
 }
 
 // GetStorageStatus returns the current storage usage and status.
@@ -214,15 +216,26 @@ func (h *Handler) ManualCleanup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get retention policy for exceptions
-	policy, err := h.db.GetRetentionPolicy(ctx)
-	if err != nil {
-		respondError(w, http.StatusInternalServerError, "Failed to get retention policy", "RETENTION_GET_FAILED")
-		return
-	}
+	// Determine which exceptions to apply (if any)
+	var exceptions []string
+	var operatorPubkey string
 
-	// Get operator pubkey for exception handling
-	operatorPubkey, _ := h.db.GetOperatorPubkey(ctx)
+	if req.ApplyExceptions {
+		// Use explicit exceptions if provided, otherwise use retention policy
+		if len(req.Exceptions) > 0 {
+			exceptions = req.Exceptions
+		} else {
+			policy, err := h.db.GetRetentionPolicy(ctx)
+			if err != nil {
+				respondError(w, http.StatusInternalServerError, "Failed to get retention policy", "RETENTION_GET_FAILED")
+				return
+			}
+			exceptions = policy.Exceptions
+		}
+		// Get operator pubkey for exception handling
+		operatorPubkey, _ = h.db.GetOperatorPubkey(ctx)
+	}
+	// If ApplyExceptions is false, exceptions stays nil/empty - delete ALL events
 
 	// Get size before cleanup
 	sizeBefore, _ := h.db.GetRelayDatabaseSize()
@@ -236,7 +249,7 @@ func (h *Handler) ManualCleanup(w http.ResponseWriter, r *http.Request) {
 	defer writer.Close()
 
 	// Delete events
-	deletedCount, err := writer.DeleteEventsBefore(ctx, beforeDate, policy.Exceptions, operatorPubkey)
+	deletedCount, err := writer.DeleteEventsBefore(ctx, beforeDate, exceptions, operatorPubkey)
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, "Failed to delete events", "DELETE_FAILED")
 		return
@@ -248,9 +261,11 @@ func (h *Handler) ManualCleanup(w http.ResponseWriter, r *http.Request) {
 
 	// Add audit log
 	h.db.AddAuditLog(ctx, "manual_cleanup", map[string]interface{}{
-		"before_date":   req.BeforeDate,
-		"deleted_count": deletedCount,
-		"space_freed":   spaceFreed,
+		"before_date":       req.BeforeDate,
+		"deleted_count":     deletedCount,
+		"space_freed":       spaceFreed,
+		"apply_exceptions":  req.ApplyExceptions,
+		"exceptions_used":   exceptions,
 	}, "")
 
 	respondJSON(w, http.StatusOK, map[string]interface{}{
@@ -338,7 +353,7 @@ func (h *Handler) GetDeletionRequests(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetStorageEstimate returns an estimate of space that would be freed by cleanup.
-// GET /api/v1/storage/estimate
+// GET /api/v1/storage/estimate?before_date=X&apply_exceptions=true
 func (h *Handler) GetStorageEstimate(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -360,11 +375,37 @@ func (h *Handler) GetStorageEstimate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Count events before date
-	eventCount, err := h.db.CountEventsBefore(ctx, beforeDate)
-	if err != nil {
-		respondError(w, http.StatusInternalServerError, "Failed to count events", "COUNT_FAILED")
-		return
+	// Check if we should apply retention exceptions
+	applyExceptions := r.URL.Query().Get("apply_exceptions") == "true"
+
+	var eventCount int64
+	var exceptions []string
+
+	if applyExceptions {
+		// Get retention policy exceptions
+		policy, err := h.db.GetRetentionPolicy(ctx)
+		if err != nil {
+			respondError(w, http.StatusInternalServerError, "Failed to get retention policy", "RETENTION_GET_FAILED")
+			return
+		}
+		exceptions = policy.Exceptions
+
+		// Get operator pubkey for exception handling
+		operatorPubkey, _ := h.db.GetOperatorPubkey(ctx)
+
+		// Count events excluding exceptions
+		eventCount, err = h.db.CountEventsBeforeWithExceptions(ctx, beforeDate, exceptions, operatorPubkey)
+		if err != nil {
+			respondError(w, http.StatusInternalServerError, "Failed to count events", "COUNT_FAILED")
+			return
+		}
+	} else {
+		// Count all events before date
+		eventCount, err = h.db.CountEventsBefore(ctx, beforeDate)
+		if err != nil {
+			respondError(w, http.StatusInternalServerError, "Failed to count events", "COUNT_FAILED")
+			return
+		}
 	}
 
 	// Estimate average event size
@@ -376,9 +417,38 @@ func (h *Handler) GetStorageEstimate(w http.ResponseWriter, r *http.Request) {
 	estimatedSpace := eventCount * avgSize
 
 	respondJSON(w, http.StatusOK, map[string]interface{}{
-		"event_count":     eventCount,
-		"estimated_space": estimatedSpace,
-		"before_date":     beforeDate,
+		"event_count":       eventCount,
+		"estimated_space":   estimatedSpace,
+		"before_date":       beforeDate,
+		"apply_exceptions":  applyExceptions,
+		"exceptions_applied": exceptions,
+	})
+}
+
+// RunRetentionNow runs the retention policy immediately.
+// POST /api/v1/storage/retention/run
+func (h *Handler) RunRetentionNow(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	if h.services == nil || h.services.Retention == nil {
+		respondError(w, http.StatusServiceUnavailable, "Retention service not available", "SERVICE_UNAVAILABLE")
+		return
+	}
+
+	result, err := h.services.Retention.RunNowSync(ctx)
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, "Failed to run retention: "+err.Error(), "RETENTION_FAILED")
+		return
+	}
+
+	respondJSON(w, http.StatusOK, map[string]interface{}{
+		"success":                   true,
+		"events_deleted":            result.EventsDeleted,
+		"deletion_requests_processed": result.DeletionRequests,
+		"deletion_events_deleted":   result.DeletionEventsDeleted,
+		"retention_days":            result.RetentionDays,
+		"cutoff":                    result.Cutoff,
+		"disabled":                  result.Disabled,
 	})
 }
 

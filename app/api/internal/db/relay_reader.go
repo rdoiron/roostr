@@ -355,6 +355,76 @@ func (d *DB) CountEventsBefore(ctx context.Context, before time.Time) (int64, er
 	return count, nil
 }
 
+// CountEventsBeforeWithExceptions counts events created before the given timestamp,
+// excluding events that match the exceptions (same logic as DeleteEventsBefore).
+func (d *DB) CountEventsBeforeWithExceptions(ctx context.Context, before time.Time, exceptions []string, operatorPubkey string) (int64, error) {
+	if d.RelayDB == nil {
+		return 0, fmt.Errorf("relay database not connected")
+	}
+
+	// If no exceptions, use simpler query
+	if len(exceptions) == 0 {
+		return d.CountEventsBefore(ctx, before)
+	}
+
+	// Build query with exceptions (mirrors DeleteEventsBefore logic)
+	query := "SELECT COUNT(*) FROM event WHERE created_at < ?"
+	args := []interface{}{before.Unix()}
+
+	// Parse exceptions
+	var kindExceptions []int
+	var pubkeyExceptions [][]byte
+
+	for _, exc := range exceptions {
+		if strings.HasPrefix(exc, "kind:") {
+			var kind int
+			fmt.Sscanf(exc, "kind:%d", &kind)
+			kindExceptions = append(kindExceptions, kind)
+		} else if strings.HasPrefix(exc, "pubkey:") {
+			pubkey := strings.TrimPrefix(exc, "pubkey:")
+			if pubkey == "operator" && operatorPubkey != "" {
+				pubkeyBytes, err := hex.DecodeString(operatorPubkey)
+				if err == nil {
+					pubkeyExceptions = append(pubkeyExceptions, pubkeyBytes)
+				}
+			} else {
+				pubkeyBytes, err := hex.DecodeString(pubkey)
+				if err == nil {
+					pubkeyExceptions = append(pubkeyExceptions, pubkeyBytes)
+				}
+			}
+		}
+	}
+
+	// Add kind exceptions
+	if len(kindExceptions) > 0 {
+		placeholders := make([]string, len(kindExceptions))
+		for i, kind := range kindExceptions {
+			placeholders[i] = "?"
+			args = append(args, kind)
+		}
+		query += fmt.Sprintf(" AND kind NOT IN (%s)", strings.Join(placeholders, ","))
+	}
+
+	// Add pubkey exceptions
+	if len(pubkeyExceptions) > 0 {
+		placeholders := make([]string, len(pubkeyExceptions))
+		for i, pubkey := range pubkeyExceptions {
+			placeholders[i] = "?"
+			args = append(args, pubkey)
+		}
+		query += fmt.Sprintf(" AND author NOT IN (%s)", strings.Join(placeholders, ","))
+	}
+
+	var count int64
+	err := d.RelayDB.QueryRowContext(ctx, query, args...).Scan(&count)
+	if err != nil {
+		return 0, fmt.Errorf("failed to count events: %w", err)
+	}
+
+	return count, nil
+}
+
 // EstimateEventSize estimates the average size of an event in bytes.
 // This is a rough estimate used for storage calculations.
 func (d *DB) EstimateEventSize(ctx context.Context) (int64, error) {

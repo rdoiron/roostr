@@ -160,6 +160,89 @@ func (s *RetentionService) RunNow() {
 	go s.runRetention()
 }
 
+// RetentionResult holds the results of a retention job run.
+type RetentionResult struct {
+	EventsDeleted       int64     `json:"events_deleted"`
+	DeletionRequests    int       `json:"deletion_requests_processed"`
+	DeletionEventsDeleted int64   `json:"deletion_events_deleted"`
+	RetentionDays       int64     `json:"retention_days"`
+	Cutoff              time.Time `json:"cutoff,omitempty"`
+	Disabled            bool      `json:"disabled"`
+}
+
+// RunNowSync forces an immediate execution of the retention policy synchronously.
+// Returns the results of the retention run.
+func (s *RetentionService) RunNowSync(ctx context.Context) (*RetentionResult, error) {
+	log.Println("Starting retention job (manual trigger)")
+
+	result := &RetentionResult{}
+
+	// Get retention policy
+	policy, err := s.db.GetRetentionPolicy(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	result.RetentionDays = policy.RetentionDays
+
+	// Process NIP-09 deletion requests first
+	if s.deletionService != nil && policy.HonorNIP09 {
+		delResult, err := s.deletionService.ProcessPendingDeletions(ctx)
+		if err != nil {
+			log.Printf("Failed to process deletion requests: %v", err)
+		} else if delResult.Processed > 0 {
+			result.DeletionRequests = delResult.Processed
+			result.DeletionEventsDeleted = delResult.EventsDeleted
+			log.Printf("Processed %d deletion requests, deleted %d events", delResult.Processed, delResult.EventsDeleted)
+		}
+	}
+
+	// Check if retention policy is enabled
+	if policy.RetentionDays <= 0 {
+		log.Println("Retention policy disabled (keep forever)")
+		result.Disabled = true
+		s.db.SetLastRetentionRun(ctx, time.Now())
+		return result, nil
+	}
+
+	// Calculate cutoff date
+	cutoff := time.Now().AddDate(0, 0, -int(policy.RetentionDays))
+	result.Cutoff = cutoff
+
+	// Get operator pubkey for exception handling
+	operatorPubkey, _ := s.db.GetOperatorPubkey(ctx)
+
+	// Open relay writer for deletion
+	writer, err := s.db.NewRelayWriter()
+	if err != nil {
+		return nil, err
+	}
+	defer writer.Close()
+
+	// Delete old events
+	deleted, err := writer.DeleteEventsBefore(ctx, cutoff, policy.Exceptions, operatorPubkey)
+	if err != nil {
+		return nil, err
+	}
+
+	result.EventsDeleted = deleted
+
+	// Update last run timestamp
+	s.db.SetLastRetentionRun(ctx, time.Now())
+
+	// Add audit log
+	s.db.AddAuditLog(ctx, "retention_job_run", map[string]interface{}{
+		"retention_days": policy.RetentionDays,
+		"cutoff":         cutoff,
+		"deleted":        deleted,
+		"manual":         true,
+	}, "")
+
+	log.Printf("Retention job completed: deleted %d events older than %v", deleted, cutoff)
+
+	return result, nil
+}
+
 // IsRunning returns whether the retention service is currently running.
 func (s *RetentionService) IsRunning() bool {
 	s.mu.Lock()

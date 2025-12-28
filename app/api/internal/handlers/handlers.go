@@ -109,6 +109,7 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/v1/storage/status", h.GetStorageStatus)
 	mux.HandleFunc("GET /api/v1/storage/retention", h.GetRetentionPolicy)
 	mux.HandleFunc("PUT /api/v1/storage/retention", h.UpdateRetentionPolicy)
+	mux.HandleFunc("POST /api/v1/storage/retention/run", h.RunRetentionNow)
 	mux.HandleFunc("POST /api/v1/storage/cleanup", h.ManualCleanup)
 	mux.HandleFunc("POST /api/v1/storage/vacuum", h.RunVacuum)
 	mux.HandleFunc("GET /api/v1/storage/deletion-requests", h.GetDeletionRequests)

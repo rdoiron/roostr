@@ -29,17 +29,16 @@
 	let cleanupDate = $state('');
 	let cleanupEstimate = $state(null);
 	let estimateLoading = $state(false);
+	let applyCleanupExceptions = $state(false);
 
 	// Operation states
 	let savingRetention = $state(false);
+	let runningRetention = $state(false);
 	let runningCleanup = $state(false);
 	let runningVacuum = $state(false);
 	let runningIntegrity = $state(false);
 	let integrityResult = $state(null);
 
-	// Deletion requests
-	let deletionRequests = $state([]);
-	let showDeletionModal = $state(false);
 
 	// Cleanup confirmation
 	let showCleanupConfirm = $state(false);
@@ -137,13 +136,36 @@
 		}
 	}
 
+	async function runRetentionNow() {
+		runningRetention = true;
+		try {
+			const result = await storage.runRetentionNow();
+			if (result.disabled) {
+				notify('info', 'Retention policy is set to "keep forever" - no events deleted');
+			} else {
+				notify('success', `Retention completed: deleted ${result.events_deleted} events`);
+			}
+			// Reload storage status and retention policy
+			const [statusRes, retentionRes] = await Promise.all([
+				storage.getStatus(),
+				storage.getRetention()
+			]);
+			storageStatus = statusRes;
+			retentionPolicy = retentionRes;
+		} catch (e) {
+			notify('error', e.message);
+		} finally {
+			runningRetention = false;
+		}
+	}
+
 	async function loadCleanupEstimate() {
 		if (!cleanupDate) return;
 
 		estimateLoading = true;
 		try {
 			const isoDate = new Date(cleanupDate).toISOString();
-			cleanupEstimate = await storage.getEstimate(isoDate);
+			cleanupEstimate = await storage.getEstimate(isoDate, applyCleanupExceptions);
 		} catch {
 			cleanupEstimate = null;
 		} finally {
@@ -157,7 +179,10 @@
 		runningCleanup = true;
 		try {
 			const isoDate = new Date(cleanupDate).toISOString();
-			const result = await storage.cleanup({ before_date: isoDate });
+			const result = await storage.cleanup({
+				before_date: isoDate,
+				apply_exceptions: applyCleanupExceptions
+			});
 			notify('success', `Deleted ${result.deleted_count} events. Run VACUUM to reclaim space.`);
 			showCleanupConfirm = false;
 			cleanupDate = '';
@@ -203,20 +228,6 @@
 		}
 	}
 
-	async function loadDeletionRequests() {
-		try {
-			const result = await storage.getDeletionRequests();
-			deletionRequests = result.requests || [];
-		} catch (e) {
-			console.error('Failed to load deletion requests:', e);
-		}
-	}
-
-	function openDeletionModal() {
-		loadDeletionRequests();
-		showDeletionModal = true;
-	}
-
 	// Load data on mount (using $effect for Svelte 5 compatibility)
 	let initialized = $state(false);
 	$effect(() => {
@@ -226,8 +237,10 @@
 		}
 	});
 
-	// Watch cleanup date for estimate
+	// Watch cleanup date and exceptions for estimate
 	$effect(() => {
+		// Track both cleanupDate and applyCleanupExceptions for reactivity
+		void applyCleanupExceptions;
 		if (cleanupDate) {
 			loadCleanupEstimate();
 		}
@@ -426,30 +439,7 @@
 					</div>
 				</fieldset>
 
-				<div class="border-t border-gray-200 dark:border-gray-700 pt-4">
-					<label class="flex cursor-pointer items-start gap-3">
-						<input
-							type="checkbox"
-							bind:checked={retentionPolicy.honor_nip09}
-							class="mt-0.5 h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-purple-600"
-						/>
-						<div>
-							<span class="text-sm font-medium text-gray-700 dark:text-gray-200">Honor NIP-09 deletion requests</span>
-							<p class="text-xs text-gray-500 dark:text-gray-400">Delete events when authors request their removal</p>
-						</div>
-					</label>
-
-					{#if storageStatus?.pending_deletions > 0}
-						<button
-							onclick={openDeletionModal}
-							class="mt-2 text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:underline"
-						>
-							{storageStatus.pending_deletions} pending deletion request{storageStatus.pending_deletions !== 1 ? 's' : ''}
-						</button>
-					{/if}
-				</div>
-
-				<div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+				<div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700 pt-4">
 					<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
 					</svg>
@@ -460,7 +450,10 @@
 					{/if}
 				</div>
 
-				<div class="flex justify-end">
+				<div class="flex justify-end gap-3">
+					<Button variant="secondary" onclick={runRetentionNow} loading={runningRetention}>
+						Run Now
+					</Button>
 					<Button variant="primary" onclick={saveRetentionPolicy} loading={savingRetention}>
 						Save Retention Policy
 					</Button>
@@ -485,6 +478,25 @@
 						class="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-4 py-2 focus:border-purple-500 focus:outline-none"
 					/>
 				</div>
+
+				<label class="flex cursor-pointer items-start gap-3">
+					<input
+						type="checkbox"
+						bind:checked={applyCleanupExceptions}
+						class="mt-0.5 h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-purple-600"
+					/>
+					<div>
+						<span class="text-sm font-medium text-gray-700 dark:text-gray-200">Apply retention exceptions</span>
+						<p class="text-xs text-gray-500 dark:text-gray-400">
+							Protect event types selected in Retention Policy above
+							{#if applyCleanupExceptions && retentionPolicy.exceptions?.length > 0}
+								<span class="text-purple-600 dark:text-purple-400">
+									(protecting: {retentionPolicy.exceptions.map(e => e.replace('kind:', 'kind ').replace('pubkey:operator', 'operator')).join(', ')})
+								</span>
+							{/if}
+						</p>
+					</div>
+				</label>
 
 				{#if cleanupEstimate}
 					<div class="rounded-lg bg-gray-50 dark:bg-gray-700 p-4">
@@ -624,79 +636,3 @@
 	</div>
 {/if}
 
-<!-- Deletion Requests Modal -->
-{#if showDeletionModal}
-	<div
-		class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-		onclick={() => showDeletionModal = false}
-		onkeydown={(e) => e.key === 'Escape' && (showDeletionModal = false)}
-		role="dialog"
-		aria-modal="true"
-		tabindex="-1"
-	>
-		<!-- svelte-ignore a11y_click_events_have_key_events -->
-		<!-- svelte-ignore a11y_no_static_element_interactions -->
-		<div
-			class="mx-4 max-h-[80vh] w-full max-w-2xl overflow-hidden rounded-lg bg-white dark:bg-gray-800 shadow-xl"
-			onclick={(e) => e.stopPropagation()}
-		>
-			<div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-6 py-4">
-				<h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">NIP-09 Deletion Requests</h3>
-				<button
-					onclick={() => showDeletionModal = false}
-					class="rounded-lg p-1 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-600 dark:hover:text-gray-300"
-					aria-label="Close"
-				>
-					<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-					</svg>
-				</button>
-			</div>
-
-			<div class="max-h-[60vh] overflow-y-auto p-6">
-				{#if deletionRequests.length === 0}
-					<div class="py-8 text-center text-gray-500 dark:text-gray-400">
-						No deletion requests found
-					</div>
-				{:else}
-					<div class="space-y-3">
-						{#each deletionRequests as request}
-							<div class="rounded-lg border border-gray-200 dark:border-gray-700 p-4">
-								<div class="flex items-start justify-between">
-									<div>
-										<div class="text-sm font-medium text-gray-900 dark:text-gray-100">
-											{request.target_event_ids?.length ?? 0} event{request.target_event_ids?.length !== 1 ? 's' : ''}
-										</div>
-										<div class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-											From: {request.author_pubkey?.slice(0, 8)}...{request.author_pubkey?.slice(-4)}
-										</div>
-										<div class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-											Received: {formatRelativeTime(request.received_at)}
-										</div>
-									</div>
-									<span class="rounded-full px-2 py-1 text-xs font-medium
-										{request.status === 'processed' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200' :
-										 request.status === 'failed' ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200' :
-										 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200'}">
-										{request.status}
-									</span>
-								</div>
-								{#if request.reason}
-									<div class="mt-2 text-xs text-gray-600 dark:text-gray-400">
-										Reason: {request.reason}
-									</div>
-								{/if}
-							</div>
-						{/each}
-					</div>
-				{/if}
-			</div>
-
-			<div class="border-t border-gray-200 dark:border-gray-700 px-6 py-4">
-				<Button variant="secondary" onclick={() => showDeletionModal = false}>
-					Close
-				</Button>
-			</div>
-		</div>
-	</div>
-{/if}
