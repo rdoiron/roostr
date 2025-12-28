@@ -405,7 +405,7 @@ export const supportConfig = {
 	lightning_address: 'dev@getalby.com',
 	bitcoin_address: 'bc1qtest...',
 	github_repo: 'https://github.com/example/roostr',
-	version: '0.1.1'
+	version: '0.1.2'
 };
 
 // Relay logs

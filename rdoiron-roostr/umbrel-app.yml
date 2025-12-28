@@ -5,7 +5,7 @@ manifestVersion: 1
 id: rdoiron-roostr
 category: social
 name: Roostr
-version: "0.1.1"
+version: "0.1.2"
 tagline: Your Private Roost on Nostr
 icon: https://raw.githubusercontent.com/rdoiron/roostr/main/rdoiron-roostr/icon.svg
 description: >-
@@ -44,13 +44,11 @@ support: https://github.com/rdoiron/roostr/issues
 port: 8880
 dependencies: []
 releaseNotes: >-
-  v0.1.1 - Storage UI fixes
+  v0.1.2 - UI fixes
 
-  - Fixed manual cleanup to delete all events by default
-  - Added "Apply retention exceptions" checkbox for optional protection
-  - Fixed estimate to accurately reflect deletable events
-  - Added "Run Now" button to trigger retention policy immediately
-  - Removed non-functional NIP-09 deletion requests feature
+  - Fixed setup page relay URLs to display correct local IP and Tor address
+  - Fixed copy button on setup page for HTTP contexts
+  - Fixed header text overlap at tablet/mobile widths
 gallery:
   - https://raw.githubusercontent.com/rdoiron/roostr/main/rdoiron-roostr/1.jpg
   - https://raw.githubusercontent.com/rdoiron/roostr/main/rdoiron-roostr/2.jpg

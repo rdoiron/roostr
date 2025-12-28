@@ -148,7 +148,7 @@ make package-startos  # Build Start9 package
 ## Docker
 
 **Image:** `rdoiron/roostr`
-**Current version:** `0.1.1`
+**Current version:** `0.1.2`
 
 All Docker builds are done locally (no CI) for speed. Multi-arch builds take ~13 min locally vs 60+ min in GitHub Actions.
 

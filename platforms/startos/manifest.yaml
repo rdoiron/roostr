@@ -3,13 +3,12 @@
 
 id: roostr
 title: Roostr
-version: 0.1.1
+version: 0.1.2
 release-notes: |
-  v0.1.1 - Storage UI fixes
-  - Fixed manual cleanup to delete all events by default
-  - Added "Apply retention exceptions" checkbox for optional protection
-  - Fixed estimate to accurately reflect deletable events
-  - Added "Run Now" button to trigger retention policy immediately
+  v0.1.2 - UI fixes
+  - Fixed setup page relay URLs to display correct local IP and Tor address
+  - Fixed copy button on setup page for HTTP contexts
+  - Fixed header text overlap at tablet/mobile widths
 license: MIT
 wrapper-repo: https://github.com/rdoiron/roostr
 upstream-repo: https://github.com/rdoiron/roostr

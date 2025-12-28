@@ -22,7 +22,7 @@ func (h *Handler) GetSupportConfig(w http.ResponseWriter, r *http.Request) {
 		BitcoinAddress:   getEnvOrDefault("DONATION_BITCOIN_ADDRESS", "bc1qgt9ysyn4m9995s565tcxdgppq29y4h0ul4gj2u"),
 		GithubRepo:       getEnvOrDefault("GITHUB_REPO", "https://github.com/rdoiron/roostr"),
 		DeveloperNpub:    getEnvOrDefault("DEVELOPER_NPUB", "npub1..."),
-		Version:          "0.1.1",
+		Version:          "0.1.2",
 	}
 
 	respondJSON(w, http.StatusOK, config)

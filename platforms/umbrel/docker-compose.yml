@@ -16,7 +16,7 @@ services:
 
   # Main Roostr application (API + UI + embedded relay)
   app:
-    image: rdoiron/roostr:0.1.1
+    image: rdoiron/roostr:0.1.2
     restart: on-failure
     stop_grace_period: 30s
     ports:
