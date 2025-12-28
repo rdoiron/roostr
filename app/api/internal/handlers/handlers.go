@@ -120,7 +120,15 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/v1/sync/status", h.GetSyncStatus)
 	mux.HandleFunc("POST /api/v1/sync/cancel", h.CancelSync)
 	mux.HandleFunc("GET /api/v1/sync/history", h.GetSyncHistory)
-	mux.HandleFunc("GET /api/v1/sync/relays", h.GetDefaultRelays)
+	// Sync pubkeys configuration
+	mux.HandleFunc("GET /api/v1/sync/pubkeys", h.GetSyncPubkeys)
+	mux.HandleFunc("POST /api/v1/sync/pubkeys", h.AddSyncPubkey)
+	mux.HandleFunc("DELETE /api/v1/sync/pubkeys/{pubkey}", h.RemoveSyncPubkey)
+	// Sync relays configuration
+	mux.HandleFunc("GET /api/v1/sync/relays", h.GetSyncRelays)
+	mux.HandleFunc("POST /api/v1/sync/relays", h.AddSyncRelay)
+	mux.HandleFunc("DELETE /api/v1/sync/relays/{url}", h.RemoveSyncRelay)
+	mux.HandleFunc("POST /api/v1/sync/relays/reset", h.ResetSyncRelays)
 
 	// Support endpoints
 	mux.HandleFunc("GET /api/v1/support/config", h.GetSupportConfig)

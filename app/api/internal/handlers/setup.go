@@ -210,6 +210,16 @@ func (h *Handler) CompleteSetup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Add operator to sync pubkeys (for sync configuration)
+	if err := h.db.AddSyncPubkey(ctx, db.SyncPubkey{
+		Pubkey:     hexPubkey,
+		Npub:       npub,
+		Nickname:   "Operator",
+		IsOperator: true,
+	}); err != nil {
+		// Non-fatal, sync pubkeys can be managed later
+	}
+
 	// Set access mode
 	if err := h.db.SetAccessMode(ctx, accessMode); err != nil {
 		respondError(w, http.StatusInternalServerError, "Failed to set access mode", "MODE_FAILED")

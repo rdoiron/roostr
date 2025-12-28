@@ -222,7 +222,15 @@ export const sync = {
 		if (params.offset) query.set('offset', params.offset.toString());
 		return get(`/sync/history${query.toString() ? '?' + query.toString() : ''}`);
 	},
-	getRelays: () => get('/sync/relays')
+	// Sync pubkeys configuration
+	getPubkeys: () => get('/sync/pubkeys'),
+	addPubkey: (identifier) => post('/sync/pubkeys', { identifier }),
+	removePubkey: (pubkey) => del(`/sync/pubkeys/${pubkey}`),
+	// Sync relays configuration
+	getRelays: () => get('/sync/relays'),
+	addRelay: (url) => post('/sync/relays', { url }),
+	removeRelay: (url) => del(`/sync/relays/${encodeURIComponent(url)}`),
+	resetRelays: () => post('/sync/relays/reset', {})
 };
 
 export const support = {

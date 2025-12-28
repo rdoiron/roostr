@@ -150,6 +150,31 @@ CREATE INDEX IF NOT EXISTS idx_sync_jobs_status ON sync_jobs(status);
 CREATE INDEX IF NOT EXISTS idx_sync_jobs_started ON sync_jobs(started_at);
 
 -- ============================================================================
+-- Sync Configuration
+-- ============================================================================
+
+-- Custom pubkeys to sync (separate from whitelist)
+-- These are pubkeys the user wants to sync content for
+CREATE TABLE IF NOT EXISTS sync_pubkeys (
+    pubkey TEXT PRIMARY KEY,                 -- hex format
+    npub TEXT NOT NULL,                       -- bech32 format for display
+    nickname TEXT,                            -- user-assigned nickname or NIP-05 input
+    is_operator INTEGER NOT NULL DEFAULT 0,   -- 1 if this is the relay operator (protected)
+    added_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_sync_pubkeys_added ON sync_pubkeys(added_at);
+
+-- Custom sync relays (user-configured relay list for syncing)
+CREATE TABLE IF NOT EXISTS sync_relays (
+    url TEXT PRIMARY KEY,                     -- relay URL (wss://...)
+    is_default INTEGER NOT NULL DEFAULT 0,    -- 1 if this was from the default list
+    added_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_sync_relays_added ON sync_relays(added_at);
+
+-- ============================================================================
 -- Lightning Node Configuration
 -- ============================================================================
 

@@ -825,6 +825,174 @@ func (d *DB) CancelSyncJob(ctx context.Context, id int64) error {
 }
 
 // ============================================================================
+// Sync Configuration
+// ============================================================================
+
+// SyncPubkey represents a pubkey configured for syncing.
+type SyncPubkey struct {
+	Pubkey     string    `json:"pubkey"`
+	Npub       string    `json:"npub"`
+	Nickname   string    `json:"nickname,omitempty"`
+	IsOperator bool      `json:"is_operator"`
+	AddedAt    time.Time `json:"added_at"`
+}
+
+// GetSyncPubkeys retrieves all configured sync pubkeys.
+func (d *DB) GetSyncPubkeys(ctx context.Context) ([]SyncPubkey, error) {
+	rows, err := d.AppDB.QueryContext(ctx, `
+		SELECT pubkey, npub, nickname, is_operator, added_at
+		FROM sync_pubkeys
+		ORDER BY is_operator DESC, added_at ASC
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var entries []SyncPubkey
+	for rows.Next() {
+		var e SyncPubkey
+		var nickname sql.NullString
+		var addedAt int64
+
+		err := rows.Scan(&e.Pubkey, &e.Npub, &nickname, &e.IsOperator, &addedAt)
+		if err != nil {
+			return nil, err
+		}
+
+		e.Nickname = nickname.String
+		e.AddedAt = time.Unix(addedAt, 0)
+		entries = append(entries, e)
+	}
+
+	return entries, rows.Err()
+}
+
+// AddSyncPubkey adds a pubkey to the sync configuration.
+func (d *DB) AddSyncPubkey(ctx context.Context, entry SyncPubkey) error {
+	_, err := d.AppDB.ExecContext(ctx, `
+		INSERT INTO sync_pubkeys (pubkey, npub, nickname, is_operator, added_at)
+		VALUES (?, ?, ?, ?, strftime('%s', 'now'))
+		ON CONFLICT(pubkey) DO UPDATE SET
+			npub = excluded.npub,
+			nickname = COALESCE(excluded.nickname, sync_pubkeys.nickname)
+	`, entry.Pubkey, entry.Npub, nullString(entry.Nickname), entry.IsOperator)
+	return err
+}
+
+// GetSyncPubkeyByPubkey retrieves a single sync pubkey entry.
+func (d *DB) GetSyncPubkeyByPubkey(ctx context.Context, pubkey string) (*SyncPubkey, error) {
+	var e SyncPubkey
+	var nickname sql.NullString
+	var addedAt int64
+
+	err := d.AppDB.QueryRowContext(ctx, `
+		SELECT pubkey, npub, nickname, is_operator, added_at
+		FROM sync_pubkeys WHERE pubkey = ?
+	`, pubkey).Scan(&e.Pubkey, &e.Npub, &nickname, &e.IsOperator, &addedAt)
+
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	e.Nickname = nickname.String
+	e.AddedAt = time.Unix(addedAt, 0)
+	return &e, nil
+}
+
+// RemoveSyncPubkey removes a pubkey from sync configuration.
+// Returns error if trying to remove the operator pubkey.
+func (d *DB) RemoveSyncPubkey(ctx context.Context, pubkey string) error {
+	// Check if it's the operator pubkey
+	var isOperator bool
+	err := d.AppDB.QueryRowContext(ctx, "SELECT is_operator FROM sync_pubkeys WHERE pubkey = ?", pubkey).Scan(&isOperator)
+	if err == sql.ErrNoRows {
+		return fmt.Errorf("pubkey not found in sync configuration")
+	}
+	if err != nil {
+		return err
+	}
+	if isOperator {
+		return fmt.Errorf("cannot remove operator pubkey from sync configuration")
+	}
+
+	_, err = d.AppDB.ExecContext(ctx, "DELETE FROM sync_pubkeys WHERE pubkey = ?", pubkey)
+	return err
+}
+
+// SyncRelay represents a relay configured for syncing.
+type SyncRelay struct {
+	URL       string    `json:"url"`
+	IsDefault bool      `json:"is_default"`
+	AddedAt   time.Time `json:"added_at"`
+}
+
+// GetSyncRelays retrieves all configured sync relays.
+func (d *DB) GetSyncRelays(ctx context.Context) ([]SyncRelay, error) {
+	rows, err := d.AppDB.QueryContext(ctx, `
+		SELECT url, is_default, added_at
+		FROM sync_relays
+		ORDER BY added_at ASC
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var entries []SyncRelay
+	for rows.Next() {
+		var e SyncRelay
+		var addedAt int64
+
+		err := rows.Scan(&e.URL, &e.IsDefault, &addedAt)
+		if err != nil {
+			return nil, err
+		}
+
+		e.AddedAt = time.Unix(addedAt, 0)
+		entries = append(entries, e)
+	}
+
+	return entries, rows.Err()
+}
+
+// AddSyncRelay adds a relay to the sync configuration.
+func (d *DB) AddSyncRelay(ctx context.Context, entry SyncRelay) error {
+	_, err := d.AppDB.ExecContext(ctx, `
+		INSERT INTO sync_relays (url, is_default, added_at)
+		VALUES (?, ?, strftime('%s', 'now'))
+		ON CONFLICT(url) DO NOTHING
+	`, entry.URL, entry.IsDefault)
+	return err
+}
+
+// RemoveSyncRelay removes a relay from sync configuration.
+func (d *DB) RemoveSyncRelay(ctx context.Context, url string) error {
+	_, err := d.AppDB.ExecContext(ctx, "DELETE FROM sync_relays WHERE url = ?", url)
+	return err
+}
+
+// ResetSyncRelays clears all sync relays.
+func (d *DB) ResetSyncRelays(ctx context.Context) error {
+	_, err := d.AppDB.ExecContext(ctx, "DELETE FROM sync_relays")
+	return err
+}
+
+// InitSyncRelaysFromDefaults populates sync_relays with default relays.
+func (d *DB) InitSyncRelaysFromDefaults(ctx context.Context, defaults []string) error {
+	for _, url := range defaults {
+		err := d.AddSyncRelay(ctx, SyncRelay{URL: url, IsDefault: true})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// ============================================================================
 // Deletion Requests
 // ============================================================================
 

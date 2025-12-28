@@ -1,5 +1,5 @@
 <script>
-	import { sync, access } from '$lib/api/client.js';
+	import { sync } from '$lib/api/client.js';
 	import { syncStatus, notify } from '$lib/stores';
 	import Loading from '$lib/components/Loading.svelte';
 	import Button from '$lib/components/Button.svelte';
@@ -10,8 +10,9 @@
 	let phase = $state('config');
 
 	// Configuration state
-	let whitelist = $state([]);
-	let defaultRelays = $state([]);
+	let syncPubkeys = $state([]); // Pubkeys configured for sync (from sync.getPubkeys)
+	let syncRelays = $state([]); // Relays configured for sync
+	let usingDefaults = $state(true); // Whether using default relays
 	let loadingConfig = $state(true);
 	let configError = $state(null);
 	let configLoaded = $state(false);
@@ -23,7 +24,6 @@
 	let customPubkey = $state('');
 	let customPubkeyError = $state(null);
 	let validatingPubkey = $state(false);
-	let addedCustomPubkeys = $state([]);
 
 	// Selected relays
 	let selectedRelays = $state({});
@@ -31,7 +31,7 @@
 	// Custom relay input
 	let customRelay = $state('');
 	let customRelayError = $state(null);
-	let addedCustomRelays = $state([]);
+	let restoringDefaults = $state(false);
 
 	// Event types
 	let eventTypes = $state({
@@ -72,25 +72,28 @@
 
 	async function loadConfig() {
 		try {
-			const [whitelistRes, relaysRes] = await Promise.all([
-				access.getWhitelist(),
+			const [syncPubkeysRes, relaysRes] = await Promise.all([
+				sync.getPubkeys(),
 				sync.getRelays()
 			]);
 
-			whitelist = whitelistRes.entries || [];
-			defaultRelays = relaysRes.relays || [];
+			syncPubkeys = syncPubkeysRes.pubkeys || [];
+			syncRelays = relaysRes.relays || [];
+			usingDefaults = relaysRes.using_defaults || false;
 
 			// Initialize selected pubkeys (all checked by default)
 			const pubkeySelections = {};
-			whitelist.forEach((entry) => {
+			syncPubkeys.forEach((entry) => {
 				pubkeySelections[entry.pubkey] = true;
 			});
 			selectedPubkeys = pubkeySelections;
 
 			// Initialize selected relays (all checked by default)
 			const relaySelections = {};
-			defaultRelays.forEach((relay) => {
-				relaySelections[relay] = true;
+			syncRelays.forEach((relay) => {
+				// relay can be either string (when using defaults) or object
+				const url = typeof relay === 'string' ? relay : relay.url;
+				relaySelections[url] = true;
 			});
 			selectedRelays = relaySelections;
 
@@ -142,6 +145,17 @@
 		return num.toString();
 	}
 
+	// Get relay URL from relay object or string
+	function getRelayUrl(relay) {
+		return typeof relay === 'string' ? relay : relay.url;
+	}
+
+	// Check if relay is a default
+	function isDefaultRelay(relay) {
+		if (typeof relay === 'string') return true;
+		return relay.is_default || false;
+	}
+
 	// Add custom pubkey
 	async function addCustomPubkey() {
 		if (!customPubkey.trim()) return;
@@ -150,45 +164,41 @@
 		validatingPubkey = true;
 
 		try {
-			let pubkey = customPubkey.trim();
+			// Call the API to add the pubkey
+			const result = await sync.addPubkey(customPubkey.trim());
 
-			// If it looks like a NIP-05, resolve it
-			if (pubkey.includes('@')) {
-				const res = await access.resolveNip05(pubkey);
-				pubkey = res.pubkey;
-			} else if (pubkey.startsWith('npub')) {
-				// Validate npub format - the API will handle conversion
-				const res = await access.resolveNip05(pubkey);
-				pubkey = res.pubkey;
-			}
-
-			// Check if already in whitelist
-			if (whitelist.some((e) => e.pubkey === pubkey)) {
-				customPubkeyError = 'Already in whitelist';
-				return;
-			}
-
-			// Check if already added as custom
-			if (addedCustomPubkeys.some((e) => e.pubkey === pubkey)) {
-				customPubkeyError = 'Already added';
-				return;
-			}
-
-			addedCustomPubkeys = [
-				...addedCustomPubkeys,
-				{ pubkey, nickname: customPubkey, npub: '' }
-			];
-			selectedPubkeys[pubkey] = true;
+			// Add to local state
+			syncPubkeys = [...syncPubkeys, result.pubkey];
+			selectedPubkeys[result.pubkey.pubkey] = true;
 			customPubkey = '';
 		} catch (e) {
-			customPubkeyError = e.message || 'Invalid pubkey or NIP-05';
+			if (e.code === 'DUPLICATE') {
+				customPubkeyError = 'Already in sync configuration';
+			} else {
+				customPubkeyError = e.message || 'Failed to add pubkey';
+			}
 		} finally {
 			validatingPubkey = false;
 		}
 	}
 
+	// Remove pubkey from sync configuration
+	async function removePubkey(pubkey) {
+		try {
+			await sync.removePubkey(pubkey);
+			syncPubkeys = syncPubkeys.filter(p => p.pubkey !== pubkey);
+			delete selectedPubkeys[pubkey];
+		} catch (e) {
+			if (e.code === 'OPERATOR_PROTECTED') {
+				notify('error', 'Cannot remove operator pubkey');
+			} else {
+				notify('error', e.message || 'Failed to remove pubkey');
+			}
+		}
+	}
+
 	// Add custom relay
-	function addCustomRelay() {
+	async function addCustomRelay() {
 		if (!customRelay.trim()) return;
 
 		customRelayError = null;
@@ -207,21 +217,57 @@
 			return;
 		}
 
-		// Check if already in defaults
-		if (defaultRelays.includes(relay)) {
+		// Check if already in list
+		const existingUrls = syncRelays.map(r => getRelayUrl(r));
+		if (existingUrls.includes(relay)) {
 			customRelayError = 'Already in list';
 			return;
 		}
 
-		// Check if already added as custom
-		if (addedCustomRelays.includes(relay)) {
-			customRelayError = 'Already added';
-			return;
+		try {
+			const result = await sync.addRelay(relay);
+			syncRelays = [...syncRelays, result.relay];
+			selectedRelays[relay] = true;
+			usingDefaults = false;
+			customRelay = '';
+		} catch (e) {
+			customRelayError = e.message || 'Failed to add relay';
 		}
+	}
 
-		addedCustomRelays = [...addedCustomRelays, relay];
-		selectedRelays[relay] = true;
-		customRelay = '';
+	// Remove relay from sync configuration
+	async function removeRelay(url) {
+		try {
+			await sync.removeRelay(url);
+			syncRelays = syncRelays.filter(r => getRelayUrl(r) !== url);
+			delete selectedRelays[url];
+		} catch (e) {
+			notify('error', e.message || 'Failed to remove relay');
+		}
+	}
+
+	// Restore default relays
+	async function restoreDefaultRelays() {
+		restoringDefaults = true;
+		try {
+			const result = await sync.resetRelays();
+			syncRelays = result.relays || [];
+			usingDefaults = true;
+
+			// Re-select all relays
+			const relaySelections = {};
+			syncRelays.forEach((relay) => {
+				const url = getRelayUrl(relay);
+				relaySelections[url] = true;
+			});
+			selectedRelays = relaySelections;
+
+			notify('success', 'Relays reset to defaults');
+		} catch (e) {
+			notify('error', e.message || 'Failed to restore defaults');
+		} finally {
+			restoringDefaults = false;
+		}
 	}
 
 	// Get selected kinds array
@@ -428,30 +474,36 @@
 						<fieldset>
 							<legend class="mb-3 block text-sm font-medium text-gray-700 dark:text-gray-200">Pubkeys to sync:</legend>
 							<div class="max-h-40 space-y-2 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-600 p-3">
-								{#each whitelist as entry}
-									<label class="flex cursor-pointer items-center gap-3">
-										<input
-											type="checkbox"
-											bind:checked={selectedPubkeys[entry.pubkey]}
-											class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-purple-600 dark:bg-gray-700"
-										/>
-										<span class="text-sm text-gray-700 dark:text-gray-300">{getDisplayName(entry)}</span>
-										{#if entry.is_operator}
-											<span class="rounded bg-purple-100 dark:bg-purple-900/50 px-1.5 py-0.5 text-xs text-purple-700 dark:text-purple-300">You</span>
+								{#each syncPubkeys as entry}
+									<div class="flex items-center justify-between gap-2">
+										<label class="flex flex-1 cursor-pointer items-center gap-3">
+											<input
+												type="checkbox"
+												bind:checked={selectedPubkeys[entry.pubkey]}
+												class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-purple-600 dark:bg-gray-700"
+											/>
+											<span class="text-sm text-gray-700 dark:text-gray-300">{getDisplayName(entry)}</span>
+											{#if entry.is_operator}
+												<span class="rounded bg-purple-100 dark:bg-purple-900/50 px-1.5 py-0.5 text-xs text-purple-700 dark:text-purple-300">Operator</span>
+											{/if}
+										</label>
+										{#if !entry.is_operator}
+											<button
+												type="button"
+												onclick={() => removePubkey(entry.pubkey)}
+												class="rounded p-1 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-red-500"
+												title="Remove from sync"
+											>
+												<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+												</svg>
+											</button>
 										{/if}
-									</label>
+									</div>
 								{/each}
-								{#each addedCustomPubkeys as entry}
-									<label class="flex cursor-pointer items-center gap-3">
-										<input
-											type="checkbox"
-											bind:checked={selectedPubkeys[entry.pubkey]}
-											class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-purple-600 dark:bg-gray-700"
-										/>
-										<span class="text-sm text-gray-700 dark:text-gray-300">{entry.nickname}</span>
-										<span class="rounded bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 text-xs text-gray-600 dark:text-gray-400">Custom</span>
-									</label>
-								{/each}
+								{#if syncPubkeys.length === 0}
+									<p class="text-sm text-gray-500 dark:text-gray-400 italic">No pubkeys configured. Add one below.</p>
+								{/if}
 							</div>
 
 							<!-- Add custom pubkey -->
@@ -482,29 +534,49 @@
 
 						<!-- Relays Section -->
 						<fieldset>
-							<legend class="mb-3 block text-sm font-medium text-gray-700 dark:text-gray-200">Source relays:</legend>
+							<div class="mb-3 flex items-center justify-between">
+								<legend class="text-sm font-medium text-gray-700 dark:text-gray-200">Source relays:</legend>
+								{#if !usingDefaults}
+									<button
+										type="button"
+										onclick={restoreDefaultRelays}
+										disabled={restoringDefaults}
+										class="text-xs text-purple-600 dark:text-purple-400 hover:underline disabled:opacity-50"
+									>
+										{restoringDefaults ? 'Restoring...' : 'Restore defaults'}
+									</button>
+								{/if}
+							</div>
 							<div class="max-h-40 space-y-2 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-600 p-3">
-								{#each defaultRelays as relay}
-									<label class="flex cursor-pointer items-center gap-3">
-										<input
-											type="checkbox"
-											bind:checked={selectedRelays[relay]}
-											class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-purple-600 dark:bg-gray-700"
-										/>
-										<span class="truncate text-sm text-gray-700 dark:text-gray-300">{relay}</span>
-									</label>
+								{#each syncRelays as relay}
+									{@const url = getRelayUrl(relay)}
+									<div class="flex items-center justify-between gap-2">
+										<label class="flex flex-1 cursor-pointer items-center gap-3">
+											<input
+												type="checkbox"
+												bind:checked={selectedRelays[url]}
+												class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-purple-600 dark:bg-gray-700"
+											/>
+											<span class="truncate text-sm text-gray-700 dark:text-gray-300">{url}</span>
+											{#if isDefaultRelay(relay)}
+												<span class="shrink-0 rounded bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 text-xs text-gray-600 dark:text-gray-400">Default</span>
+											{/if}
+										</label>
+										<button
+											type="button"
+											onclick={() => removeRelay(url)}
+											class="rounded p-1 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-red-500"
+											title="Remove relay"
+										>
+											<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+											</svg>
+										</button>
+									</div>
 								{/each}
-								{#each addedCustomRelays as relay}
-									<label class="flex cursor-pointer items-center gap-3">
-										<input
-											type="checkbox"
-											bind:checked={selectedRelays[relay]}
-											class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-purple-600 dark:bg-gray-700"
-										/>
-										<span class="truncate text-sm text-gray-700 dark:text-gray-300">{relay}</span>
-										<span class="rounded bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 text-xs text-gray-600 dark:text-gray-400">Custom</span>
-									</label>
-								{/each}
+								{#if syncRelays.length === 0}
+									<p class="text-sm text-gray-500 dark:text-gray-400 italic">No relays configured. Add one below or restore defaults.</p>
+								{/if}
 							</div>
 
 							<!-- Add custom relay -->

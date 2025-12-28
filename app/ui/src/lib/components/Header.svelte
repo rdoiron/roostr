@@ -39,8 +39,8 @@
 		</svg>
 	</button>
 
-	<!-- Mobile branding - absolutely positioned for true centering -->
-	<div class="absolute left-1/2 flex -translate-x-1/2 items-center lg:hidden">
+	<!-- Mobile branding - absolutely positioned for true centering, lower z-index -->
+	<div class="absolute left-1/2 flex -translate-x-1/2 items-center lg:hidden z-0">
 		<img src="/roostr-icon.svg" alt="Roostr" class="h-6 w-6 rounded" />
 		<span class="ml-2 text-lg font-bold text-gray-900 dark:text-gray-100">Roostr</span>
 	</div>
@@ -48,8 +48,8 @@
 	<!-- Spacer to push right content to the right -->
 	<div class="flex-1"></div>
 
-	<!-- Right side -->
-	<div class="flex items-center gap-4">
+	<!-- Right side - higher z-index, reduced gap on mobile -->
+	<div class="relative z-10 flex items-center gap-2 sm:gap-4">
 		<!-- Sync button with last sync time -->
 		<div class="flex items-center gap-2">
 			{#if lastSyncText}
