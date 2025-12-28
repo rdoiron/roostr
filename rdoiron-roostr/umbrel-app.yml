@@ -52,9 +52,9 @@ releaseNotes: >-
   - Added "Run Now" button to trigger retention policy immediately
   - Removed non-functional NIP-09 deletion requests feature
 gallery:
-  - 1.jpg
-  - 2.jpg
-  - 3.jpg
+  - https://raw.githubusercontent.com/rdoiron/roostr/main/rdoiron-roostr/1.jpg
+  - https://raw.githubusercontent.com/rdoiron/roostr/main/rdoiron-roostr/2.jpg
+  - https://raw.githubusercontent.com/rdoiron/roostr/main/rdoiron-roostr/3.jpg
 path: ""
 submitter: rdoiron
 submission: ~
