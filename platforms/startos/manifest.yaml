@@ -3,8 +3,13 @@
 
 id: roostr
 title: Roostr
-version: 0.1.0
-release-notes: Initial release
+version: 0.1.1
+release-notes: |
+  v0.1.1 - Storage UI fixes
+  - Fixed manual cleanup to delete all events by default
+  - Added "Apply retention exceptions" checkbox for optional protection
+  - Fixed estimate to accurately reflect deletable events
+  - Added "Run Now" button to trigger retention policy immediately
 license: MIT
 wrapper-repo: https://github.com/rdoiron/roostr
 upstream-repo: https://github.com/rdoiron/roostr
